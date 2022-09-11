@@ -38,7 +38,7 @@ function RegistrationCanvas(props) {
             left: props.moving_X +"px", //"100px",
             top: props.moving_Y+"px", 
             width: props.moving.width * 0.1 + 0 + "px",
-            opacity: 0.5
+            opacity: props.opacity_Moving //0.5
         }}/>
 
       </div>
@@ -49,6 +49,7 @@ function RegistrationCanvas(props) {
 function App() {
   const [movingX, setMovingX] = useState(0);
   const [movingY, setMovingY] = useState(0);
+  const [opacity, setOpacity] = useState(1);
 
   return (
     <div className="App">
@@ -67,7 +68,7 @@ function App() {
 
         }
 
-        <RegistrationCanvas fixed={fixedimage} moving={movingimage} moving_X={movingX} moving_Y={movingY} />
+        <RegistrationCanvas fixed={fixedimage} moving={movingimage} moving_X={movingX} moving_Y={movingY} opacity_Moving={opacity} />
       
         <div style={{
           display:"flex",
@@ -80,6 +81,11 @@ function App() {
           <div>
             y-moving: <input value={movingY} type="number" onChange={event=>setMovingY(event.target.value)} />
           </div>
+
+          <div>
+            opacity-moving: <input value={opacity} type="range" min={0} max={1} step={0.1} onChange={event=>setOpacity(event.target.value)} />
+          </div>
+
         </div>
       </div>
     </div>
