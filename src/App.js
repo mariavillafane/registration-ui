@@ -27,8 +27,8 @@ function RegistrationCanvas(props) {
         <img src={props.fixed.path} 
           style={{
             position: "absolute",   //FIXED IMAGE
-            left: "20px",           //x-position inside canvas,
-            top: "20px",            //y-position inside canvas,
+            left: props.fixed_X +"px",           //x-position inside canvas,"20px"
+            top: props.fixed_Y +"px",            //y-position inside canvas,"20px"
             width: props.fixed.width * 0.1
         }}/>
 
@@ -50,6 +50,9 @@ function App() {
   const [movingX, setMovingX] = useState(0);
   const [movingY, setMovingY] = useState(0);
   const [opacity, setOpacity] = useState(1);
+  const [fixedX, setFixedX] = useState(0);
+  const [fixedY, setFixedY] = useState(0);
+
 
   return (
     <div className="App">
@@ -68,7 +71,7 @@ function App() {
 
         }
 
-        <RegistrationCanvas fixed={fixedimage} moving={movingimage} moving_X={movingX} moving_Y={movingY} opacity_Moving={opacity} />
+        <RegistrationCanvas fixed={fixedimage} moving={movingimage} moving_X={movingX} moving_Y={movingY} opacity_Moving={opacity} fixed_X={fixedX} fixed_Y={fixedY} />
       
         <div style={{
           display:"flex",
@@ -85,6 +88,15 @@ function App() {
           <div>
             opacity-moving: <input value={opacity} type="range" min={0} max={1} step={0.1} onChange={event=>setOpacity(event.target.value)} />
           </div>
+
+          <div>
+            x-fixed: <input value={fixedX} type="number" onChange={event=>setFixedX(event.target.value)} />
+          </div>
+
+          <div>
+            y-fixed: <input value={fixedY} type="number" onChange={event=>setFixedY(event.target.value)} />
+          </div>
+
 
         </div>
       </div>
