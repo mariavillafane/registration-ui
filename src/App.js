@@ -17,9 +17,10 @@ function RegistrationCanvas(props) {
   return (
 
     <div style={{
-      width: props.fixed.width * 0.15,  // dim canvas
-      height: "500px",                  // dim canvas
-      border: "1px solid red"           //canvas
+      width: props.canvas_X+"px",              //props.fixed.width * 0.15,  // dim canvas
+      height:  props.canvas_Y+"px", //"500px",                  // dim canvas
+      border: "1px solid grey",            //canvas
+      marginLeft: "20px"
     }}>
 
       <div style={{position: "absolute"}}> 
@@ -37,7 +38,7 @@ function RegistrationCanvas(props) {
             position: "absolute",       //MOVING IMAGE
             left: props.moving_X +"px", //"100px",
             top: props.moving_Y+"px", 
-            width: props.moving.width * 0.1 + 0 + "px",
+            width: props.moving.width * props.moving_Scale*0.1 + "px", //width: props.moving.width * 0.1 + 0 + "px",
             opacity: props.opacity_Moving //0.5
         }}/>
 
@@ -47,18 +48,27 @@ function RegistrationCanvas(props) {
 }
 
 function App() {
-  const [movingX, setMovingX] = useState(0);
-  const [movingY, setMovingY] = useState(0);
-  const [opacity, setOpacity] = useState(1);
+  const [canvasX, setCanvasX] = useState(500);
+  const [canvasY, setCanvasY] = useState(500);
+
   const [fixedX, setFixedX] = useState(0);
   const [fixedY, setFixedY] = useState(0);
+  const [movingX, setMovingX] = useState(220); //0
+  const [movingY, setMovingY] = useState(143); //0
+  const [movingScale, setMovingScale] = useState(1); //0
+  const [opacity, setOpacity] = useState(1);
 
 
   return (
     <div className="App">
       <h1 style={{
-        marginLeft: "3em"
-      }}> CANVAS</h1>
+        marginLeft: "20px", //"0em"
+        color: "grey",
+        fontSize: "40px",
+        //fontFamily: "Lucida Console, Courier New, monospace",
+        //lineHeight: "40px",
+        marginBottom: "-8px",
+      }}>image registration<br/>CANVAS</h1>
        
       <div style={{
         display: "flex",
@@ -71,32 +81,62 @@ function App() {
 
         }
 
-        <RegistrationCanvas fixed={fixedimage} moving={movingimage} moving_X={movingX} moving_Y={movingY} opacity_Moving={opacity} fixed_X={fixedX} fixed_Y={fixedY} />
+        <RegistrationCanvas fixed={fixedimage} moving={movingimage} 
+        moving_X={movingX} moving_Y={movingY} moving_Scale={movingScale} opacity_Moving={opacity} 
+        fixed_X={fixedX} fixed_Y={fixedY}
+        canvas_X={canvasX} canvas_Y={canvasY}  />
       
         <div style={{
           display:"flex",
           flexDirection: "column"
         }}>
           <div>
-            x-moving: <input value={movingX} type="number" onChange={event=>setMovingX(event.target.value)} />
+          canvas
           </div>
 
           <div>
-            y-moving: <input value={movingY} type="number" onChange={event=>setMovingY(event.target.value)} />
+          size_x: <input value={canvasX} type="number" onChange={event=>setCanvasX(event.target.value)} />
           </div>
 
           <div>
-            opacity-moving: <input value={opacity} type="range" min={0} max={1} step={0.1} onChange={event=>setOpacity(event.target.value)} />
+          size_y: <input value={canvasY} type="number" onChange={event=>setCanvasY(event.target.value)} />
+          </div>
+
+
+
+          <div>
+          <br/>
+          fixed-image
           </div>
 
           <div>
-            x-fixed: <input value={fixedX} type="number" onChange={event=>setFixedX(event.target.value)} />
+          coord_x: <input value={fixedX} type="number" onChange={event=>setFixedX(event.target.value)} />
           </div>
 
           <div>
-            y-fixed: <input value={fixedY} type="number" onChange={event=>setFixedY(event.target.value)} />
+          coord_y: <input value={fixedY} type="number" onChange={event=>setFixedY(event.target.value)} />
           </div>
 
+          <div>
+          <br/>
+          moving-image
+          </div>
+
+          <div>          
+          coord_x: <input value={movingX} type="number" onChange={event=>setMovingX(event.target.value)} />
+          </div>
+
+          <div>
+          coord_y: <input value={movingY} type="number" onChange={event=>setMovingY(event.target.value)} />
+          </div>         
+
+          <div>
+            scaling: <input value={movingScale} type="number" min={0.8} max={1.2} step={0.01} onChange={event=>setMovingScale(event.target.value)} />
+          </div>          
+
+          <div>
+            opacity: <input value={opacity} type="range" min={0} max={1} step={0.1} onChange={event=>setOpacity(event.target.value)} />
+          </div>
 
         </div>
       </div>
