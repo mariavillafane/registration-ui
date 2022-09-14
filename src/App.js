@@ -1,19 +1,21 @@
 import logo from './logo.svg';
 import './App.css';
 import { useState } from 'react';
+import { useRef } from "react";
 
 const fixedimage = {
   path: "/fixed-image.jpg",
-  width: 3521
+  //width: 3521
 };
 
 const movingimage = {
   path: "/moving-image-d02.jpg",
-  width: 941
+  //width: 941
 };
 
 function RegistrationCanvas(props) {
   console.log(props.moving_X);
+
   return (
 
     <div style={{
@@ -25,20 +27,23 @@ function RegistrationCanvas(props) {
 
       <div style={{position: "absolute"}}> 
 
-        <img src={props.fixed.path} 
+        <img src={props.fixed.path} ref={props.setImageRef_Fixed}
           style={{
             position: "absolute",   //FIXED IMAGE
             left: props.fixed_X +"px",           //x-position inside canvas,"20px"
             top: props.fixed_Y +"px",            //y-position inside canvas,"20px"
-            width: props.fixed.width * 0.1
+            //width: props.fixed.width * 0.1
+            width: props.imageRef_Fixed?.naturalWidth *0.1        
+
         }}/>
 
-        <img src={props.moving.path} 
+        <img src={props.moving.path} ref={props.setImageRef_Moving}
           style={{
             position: "absolute",       //MOVING IMAGE
             left: props.moving_X +"px", //"100px",
             top: props.moving_Y+"px", 
-            width: props.moving.width * props.moving_Scale*0.1 + "px", //width: props.moving.width * 0.1 + 0 + "px",
+            //width: props.moving.width * props.moving_Scale*0.1 + "px", 
+            width: props.imageRef_Moving?.naturalWidth *0.1,
             opacity: props.opacity_Moving //0.5
         }}/>
 
@@ -57,6 +62,9 @@ function App() {
   const [movingY, setMovingY] = useState(143); //0
   const [movingScale, setMovingScale] = useState(1); //0
   const [opacity, setOpacity] = useState(1);
+
+  const [imageRefFixed, setImageRefFixed] = useState(null);
+  const [imageRefMoving, setImageRefMoving] = useState(null);
 
 
   return (
@@ -84,8 +92,10 @@ function App() {
         <RegistrationCanvas fixed={fixedimage} moving={movingimage} 
         moving_X={movingX} moving_Y={movingY} moving_Scale={movingScale} opacity_Moving={opacity} 
         fixed_X={fixedX} fixed_Y={fixedY}
-        canvas_X={canvasX} canvas_Y={canvasY}  />
-      
+        canvas_X={canvasX} canvas_Y={canvasY} 
+        imageRef_Fixed = {imageRefFixed} setImageRef_Fixed = {setImageRefFixed} 
+        imageRef_Moving = {imageRefMoving} setImageRef_Moving ={setImageRefMoving}/>
+
         <div style={{
           display:"flex",
           flexDirection: "column"
@@ -136,6 +146,10 @@ function App() {
 
           <div>
             opacity: <input value={opacity} type="range" min={0} max={1} step={0.1} onChange={event=>setOpacity(event.target.value)} />
+          </div>
+
+          <div>
+            image dimensions: {imageRefMoving?.naturalWidth} x {imageRefMoving?.naturalHeight}{" "} 
           </div>
 
         </div>
