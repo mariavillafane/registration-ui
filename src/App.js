@@ -43,7 +43,7 @@ function RegistrationCanvas(props) {
             left: props.moving_X +"px", //"100px",
             top: props.moving_Y+"px", 
             //width: props.moving.width * props.moving_Scale*0.1 + "px", 
-            width: props.imageRef_Moving?.naturalWidth *0.1,
+            width: props.imageRef_Moving?.naturalWidth *0.1 * props.moving_Scale,
             opacity: props.opacity_Moving //0.5
         }}/>
 
@@ -126,6 +126,10 @@ function App() {
           <div>
           coord_y: <input value={fixedY} type="number" onChange={event=>setFixedY(event.target.value)} />
           </div>
+          <div>
+            image dimensions (original): {imageRefFixed?.naturalWidth} x {imageRefFixed?.naturalHeight}{" "} 
+          </div>
+
 
           <div>
           <br/>
@@ -149,7 +153,9 @@ function App() {
           </div>
 
           <div>
-            image dimensions: {imageRefMoving?.naturalWidth} x {imageRefMoving?.naturalHeight}{" "} 
+            image dimensions (original): {imageRefMoving?.naturalWidth} x {imageRefMoving?.naturalHeight}{" "} 
+            <br/>
+            image dimensions (scaled): {(imageRefMoving?.naturalWidth * movingScale).toFixed(0)} x {(imageRefMoving?.naturalHeight * movingScale).toFixed(0)}{" "} 
           </div>
 
         </div>
