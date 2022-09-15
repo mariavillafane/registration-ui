@@ -48,12 +48,13 @@ function RegistrationCanvas(props) {
           <img id="myMovingImage" src={props.moving.path} ref={props.setImageRef_Moving}
             style={{
               position: "absolute",       //MOVING IMAGE
-              left: props.moving_X +"px", //"100px",
-              top: props.moving_Y+"px", 
+              left: props.moving_X + "px", //"100px",
+              top: props.moving_Y + "px", 
               //width: props.moving.width * props.moving_Scale*0.1 + "px", 
               width: props.imageRef_Moving?.naturalWidth *0.1 * props.moving_Scale,
               opacity: props.opacity_Moving //0.5
           }}/>
+
 
         </div>
       </div>
@@ -167,13 +168,21 @@ function App() {
             <br/>
             image dimensions (scaled): {(imageRefMoving?.naturalWidth * movingScale).toFixed(0)} x {(imageRefMoving?.naturalHeight * movingScale).toFixed(0)}{" "} 
           </div>
-
         </div>
       </div>
       ^myMask
+      
     </div>
     
+
   );
 }
 
 export default App;
+
+//var a = document.createElement("a");
+//a.href = window.URL.createObjectURL(new Blob(["CONTENT , for example movingScale= " + {movingScale}], {type: "text/plain"}));
+//a.download = "demo.txt";
+//a.click();
+
+//https://code-boxx.com/create-save-files-javascript/#:~:text=The%20possible%20ways%20to%20create,offer%20a%20%E2%80%9Csave%20as%E2%80%9D.
