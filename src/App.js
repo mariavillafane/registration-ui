@@ -18,35 +18,44 @@ function RegistrationCanvas(props) {
 
   return (
 
-    <div style={{
-      width: props.canvas_X+"px",              //props.fixed.width * 0.15,  // dim canvas
-      height:  props.canvas_Y+"px", //"500px",                  // dim canvas
-      border: "1px solid grey",            //canvas
-      marginLeft: "20px"
+    <div id="myMask" style={{
+      //position: "absolute", //220915 check with Gaetano
+      width: "400px",
+      height: "400px", 
+      overflow: "scroll"
     }}>
 
-      <div style={{position: "absolute"}}> 
+      <div id="myCanvas" style={{
+        position: "absolute",
+        width: props.canvas_X+"px",              //props.fixed.width * 0.15,  // dim canvas
+        height:  props.canvas_Y+"px",           //"500px",                  // dim canvas
+        border: "1px solid grey",               //canvas
+        marginLeft: "20px"
+      }}>
 
-        <img src={props.fixed.path} ref={props.setImageRef_Fixed}
-          style={{
-            position: "absolute",   //FIXED IMAGE
-            left: props.fixed_X +"px",           //x-position inside canvas,"20px"
-            top: props.fixed_Y +"px",            //y-position inside canvas,"20px"
-            //width: props.fixed.width * 0.1
-            width: props.imageRef_Fixed?.naturalWidth *0.1        
+        <div style={{position: "absolute"}}> 
 
-        }}/>
+          <img id="myFixedImage" src={props.fixed.path} ref={props.setImageRef_Fixed}
+            style={{
+              position: "absolute",   //FIXED IMAGE
+              left: props.fixed_X +"px",           //x-position inside canvas,"20px"
+              top: props.fixed_Y +"px",            //y-position inside canvas,"20px"
+              //width: props.fixed.width * 0.1
+              width: props.imageRef_Fixed?.naturalWidth *0.1        
 
-        <img src={props.moving.path} ref={props.setImageRef_Moving}
-          style={{
-            position: "absolute",       //MOVING IMAGE
-            left: props.moving_X +"px", //"100px",
-            top: props.moving_Y+"px", 
-            //width: props.moving.width * props.moving_Scale*0.1 + "px", 
-            width: props.imageRef_Moving?.naturalWidth *0.1 * props.moving_Scale,
-            opacity: props.opacity_Moving //0.5
-        }}/>
+          }}/>
 
+          <img id="myMovingImage" src={props.moving.path} ref={props.setImageRef_Moving}
+            style={{
+              position: "absolute",       //MOVING IMAGE
+              left: props.moving_X +"px", //"100px",
+              top: props.moving_Y+"px", 
+              //width: props.moving.width * props.moving_Scale*0.1 + "px", 
+              width: props.imageRef_Moving?.naturalWidth *0.1 * props.moving_Scale,
+              opacity: props.opacity_Moving //0.5
+          }}/>
+
+        </div>
       </div>
     </div>
   )
@@ -77,7 +86,8 @@ function App() {
         //lineHeight: "40px",
         marginBottom: "-8px",
       }}>image registration<br/>CANVAS</h1>
-       
+      
+
       <div style={{
         display: "flex",
         flexDirection: "row"
@@ -86,7 +96,6 @@ function App() {
         {// RegistrationCanvas + PROPS (fixed, moving, moving_X, moving_Y)
         // input = box for values, with type=number to limit input to numbers
         // onChange gets called everytime the value changes, and calls the provided function (event)
-
         }
 
         <RegistrationCanvas fixed={fixedimage} moving={movingimage} 
@@ -96,12 +105,14 @@ function App() {
         imageRef_Fixed = {imageRefFixed} setImageRef_Fixed = {setImageRefFixed} 
         imageRef_Moving = {imageRefMoving} setImageRef_Moving ={setImageRefMoving}/>
 
+        
+
         <div style={{
           display:"flex",
-          flexDirection: "column"
+          flexDirection: "column" 
         }}>
           <div>
-          canvas
+          canvas (bigger than Fixed image)
           </div>
 
           <div>
@@ -111,7 +122,6 @@ function App() {
           <div>
           size_y: <input value={canvasY} type="number" onChange={event=>setCanvasY(event.target.value)} />
           </div>
-
 
 
           <div>
@@ -160,7 +170,9 @@ function App() {
 
         </div>
       </div>
+      ^myMask
     </div>
+    
   );
 }
 
