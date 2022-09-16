@@ -15,17 +15,15 @@ const movingimage = {
 
 function RegistrationCanvas(props) {
   console.log(props.moving_X);
-
   return (
-
     <div id="myMask" style={{
+      //flexDirection: "row",
       marginLeft: "20px",
       position: "absolute", //220915 check with Gaetano
       width: "500px",
       height: "500px", 
       overflow: "scroll"
     }}>
-
       <div id="myCanvas" style={{
         position: "absolute",
         width: props.canvas_X+"px",              //props.fixed.width * 0.15,  // dim canvas
@@ -33,27 +31,19 @@ function RegistrationCanvas(props) {
         border: "1px solid red",               //canvas
         marginLeft: "20px"
       }}>
-
         <div style={{position: "absolute"}}> 
-
           <img id="myFixedImage" src={props.fixed.path} ref={props.setImageRef_Fixed}
             style={{
               position: "absolute",   //FIXED IMAGE
               left: props.fixed_X +"px",           //x-position inside canvas,"20px"
               top: props.fixed_Y +"px",            //y-position inside canvas,"20px"
-              //width: props.fixed.width * 0.1
-              //width: props.imageRef_Fixed?.naturalWidth * 0.1        
               width: props.imageRef_Fixed?.naturalWidth * props.world_Scale 
-
           }}/>
-
           <img id="myMovingImage" src={props.moving.path} ref={props.setImageRef_Moving}
             style={{
               position: "absolute",       //MOVING IMAGE
               left: props.moving_X + "px", //"100px",
               top: props.moving_Y + "px", 
-              //width: props.moving.width * props.moving_Scale*0.1 + "px", 
-              //width: props.imageRef_Moving?.naturalWidth *0.1 * props.moving_Scale,
               width: props.imageRef_Moving?.naturalWidth * props.world_Scale * props.moving_Scale,
               opacity: props.opacity_Moving //0.5
           }}/>
@@ -79,7 +69,6 @@ function App() {
   const [imageRefFixed, setImageRefFixed] = useState(null);
   const [imageRefMoving, setImageRefMoving] = useState(null);
 
-
   return (
     <div className="App">
       <h1 style={{
@@ -89,8 +78,7 @@ function App() {
         //fontFamily: "Lucida Console, Courier New, monospace",
         //lineHeight: "40px",
         marginBottom: "-8px",
-      }}>image registration<br/>CANVAS</h1> 
-      
+      }}>image registration<br/>CANVAS</h1>    
 
       <div style={{
         display: "flex",
@@ -101,7 +89,6 @@ function App() {
         // input = box for values, with type=number to limit input to numbers
         // onChange gets called everytime the value changes, and calls the provided function (event)
         }
-
 
         <RegistrationCanvas fixed={fixedimage} moving={movingimage}         
         canvas_X={canvasX} 
@@ -115,7 +102,6 @@ function App() {
         opacity_Moving={opacity}         
         imageRef_Fixed = {imageRefFixed} setImageRef_Fixed = {setImageRefFixed} 
         imageRef_Moving = {imageRefMoving} setImageRef_Moving ={setImageRefMoving}/>
-
 
         <div style={{
           display:"flex",
