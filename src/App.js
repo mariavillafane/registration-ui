@@ -19,9 +19,10 @@ function RegistrationCanvas(props) {
   return (
 
     <div id="myMask" style={{
-      //position: "absolute", //220915 check with Gaetano
-      width: "400px",
-      height: "400px", 
+      marginLeft: "20px",
+      position: "absolute", //220915 check with Gaetano
+      width: "500px",
+      height: "500px", 
       overflow: "scroll"
     }}>
 
@@ -29,7 +30,7 @@ function RegistrationCanvas(props) {
         position: "absolute",
         width: props.canvas_X+"px",              //props.fixed.width * 0.15,  // dim canvas
         height:  props.canvas_Y+"px",           //"500px",                  // dim canvas
-        border: "1px solid grey",               //canvas
+        border: "1px solid red",               //canvas
         marginLeft: "20px"
       }}>
 
@@ -41,7 +42,8 @@ function RegistrationCanvas(props) {
               left: props.fixed_X +"px",           //x-position inside canvas,"20px"
               top: props.fixed_Y +"px",            //y-position inside canvas,"20px"
               //width: props.fixed.width * 0.1
-              width: props.imageRef_Fixed?.naturalWidth *0.1        
+              //width: props.imageRef_Fixed?.naturalWidth * 0.1        
+              width: props.imageRef_Fixed?.naturalWidth * props.world_Scale 
 
           }}/>
 
@@ -51,10 +53,10 @@ function RegistrationCanvas(props) {
               left: props.moving_X + "px", //"100px",
               top: props.moving_Y + "px", 
               //width: props.moving.width * props.moving_Scale*0.1 + "px", 
-              width: props.imageRef_Moving?.naturalWidth *0.1 * props.moving_Scale,
+              //width: props.imageRef_Moving?.naturalWidth *0.1 * props.moving_Scale,
+              width: props.imageRef_Moving?.naturalWidth * props.world_Scale * props.moving_Scale,
               opacity: props.opacity_Moving //0.5
           }}/>
-
 
         </div>
       </div>
@@ -65,6 +67,7 @@ function RegistrationCanvas(props) {
 function App() {
   const [canvasX, setCanvasX] = useState(500);
   const [canvasY, setCanvasY] = useState(500);
+  const [worldScale, setWorldScale] = useState(0.1); 
 
   const [fixedX, setFixedX] = useState(0);
   const [fixedY, setFixedY] = useState(0);
@@ -80,13 +83,13 @@ function App() {
   return (
     <div className="App">
       <h1 style={{
-        marginLeft: "20px", //"0em"
+        marginLeft: "40px", //"0em"
         color: "grey",
         fontSize: "40px",
         //fontFamily: "Lucida Console, Courier New, monospace",
         //lineHeight: "40px",
         marginBottom: "-8px",
-      }}>image registration<br/>CANVAS</h1>
+      }}>image registration<br/>CANVAS</h1> 
       
 
       <div style={{
@@ -99,21 +102,29 @@ function App() {
         // onChange gets called everytime the value changes, and calls the provided function (event)
         }
 
-        <RegistrationCanvas fixed={fixedimage} moving={movingimage} 
-        moving_X={movingX} moving_Y={movingY} moving_Scale={movingScale} opacity_Moving={opacity} 
-        fixed_X={fixedX} fixed_Y={fixedY}
-        canvas_X={canvasX} canvas_Y={canvasY} 
+
+        <RegistrationCanvas fixed={fixedimage} moving={movingimage}         
+        canvas_X={canvasX} 
+        canvas_Y={canvasY} 
+        world_Scale={worldScale}         
+        fixed_X={fixedX} 
+        fixed_Y={fixedY}        
+        moving_X={movingX} 
+        moving_Y={movingY} 
+        moving_Scale={movingScale} 
+        opacity_Moving={opacity}         
         imageRef_Fixed = {imageRefFixed} setImageRef_Fixed = {setImageRefFixed} 
         imageRef_Moving = {imageRefMoving} setImageRef_Moving ={setImageRefMoving}/>
 
-        
 
         <div style={{
           display:"flex",
-          flexDirection: "column" 
+          flexDirection: "column",
+          marginLeft: "20px" 
         }}>
           <div>
-          canvas (bigger than Fixed image)
+          <br/> <br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/><br/> <br/>          
+          virtual-canvas (bigger than "scaled" Fixed image)
           </div>
 
           <div>
@@ -124,6 +135,9 @@ function App() {
           size_y: <input value={canvasY} type="number" onChange={event=>setCanvasY(event.target.value)} />
           </div>
 
+          <div>
+          world-scale (affects both working images): <input value={worldScale} type="number" min={0.1} max={1.2} step={0.01} onChange={event=>setWorldScale(event.target.value)} />
+          </div>
 
           <div>
           <br/>
@@ -139,8 +153,9 @@ function App() {
           </div>
           <div>
             image dimensions (original): {imageRefFixed?.naturalWidth} x {imageRefFixed?.naturalHeight}{" "} 
+            <br/>
+            image dimensions (scaled by {worldScale}): {(imageRefFixed?.naturalWidth * worldScale).toFixed(0)} x {(imageRefFixed?.naturalHeight * worldScale).toFixed(0)}{" "} 
           </div>
-
 
           <div>
           <br/>
@@ -156,7 +171,7 @@ function App() {
           </div>         
 
           <div>
-            scaling: <input value={movingScale} type="number" min={0.8} max={1.2} step={0.01} onChange={event=>setMovingScale(event.target.value)} />
+            scaling (only affects moving image, as initial parameter): <input value={movingScale} type="number" min={0.8} max={1.2} step={0.01} onChange={event=>setMovingScale(event.target.value)} />
           </div>          
 
           <div>
@@ -166,15 +181,11 @@ function App() {
           <div>
             image dimensions (original): {imageRefMoving?.naturalWidth} x {imageRefMoving?.naturalHeight}{" "} 
             <br/>
-            image dimensions (scaled): {(imageRefMoving?.naturalWidth * movingScale).toFixed(0)} x {(imageRefMoving?.naturalHeight * movingScale).toFixed(0)}{" "} 
+            image dimensions (scaled by {worldScale}, and by {movingScale}): {(imageRefMoving?.naturalWidth * movingScale * worldScale).toFixed(0)} x {(imageRefMoving?.naturalHeight * movingScale * worldScale).toFixed(0)}{" "} 
           </div>
         </div>
       </div>
-      ^myMask
-      
     </div>
-    
-
   );
 }
 
