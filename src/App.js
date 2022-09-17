@@ -19,37 +19,33 @@ function RegistrationCanvas(props) {
     <div id="myMask" style={{
       //flexDirection: "row",
       marginLeft: "20px",
-      position: "absolute", //220915 check with Gaetano
-      width: "500px",
-      height: "500px", 
+     //position: "absolute", //220915 check with Gaetano
+      width: "400px",
+      height: "400px", 
       overflow: "scroll"
-    }}>
-      <div id="myCanvas" style={{
-        position: "absolute",
+      }}>
+      <svg id="myCanvas" style={{
         width: props.canvas_X+"px",              //props.fixed.width * 0.15,  // dim canvas
         height:  props.canvas_Y+"px",           //"500px",                  // dim canvas
         border: "1px solid red",               //canvas
         marginLeft: "20px"
       }}>
-        <div style={{position: "absolute"}}> 
-          <img id="myFixedImage" src={props.fixed.path} ref={props.setImageRef_Fixed}
+          <image id="myFixedImage" href={props.fixed.path} 
+            width = {props.fixed_width * props.world_Scale} 
+            height = {props.fixed_height * props.world_Scale} 
+            x = {props.fixed_X}           //x-position inside canvas,"20px"
+            y = {props.fixed_Y}            //y-position inside canvas,"20px"
+          />  
+          <image id="myMovingImage" href={props.moving.path} 
+            x = {props.moving_X} //"100px",
+            y = {props.moving_Y} 
+            width = {props.moving_width * props.world_Scale * props.moving_Scale}
+            height = {props.moving_height * props.world_Scale * props.moving_Scale}
             style={{
-              position: "absolute",   //FIXED IMAGE
-              left: props.fixed_X +"px",           //x-position inside canvas,"20px"
-              top: props.fixed_Y +"px",            //y-position inside canvas,"20px"
-              width: props.imageRef_Fixed?.naturalWidth * props.world_Scale 
-          }}/>
-          <img id="myMovingImage" src={props.moving.path} ref={props.setImageRef_Moving}
-            style={{
-              position: "absolute",       //MOVING IMAGE
-              left: props.moving_X + "px", //"100px",
-              top: props.moving_Y + "px", 
-              width: props.imageRef_Moving?.naturalWidth * props.world_Scale * props.moving_Scale,
               opacity: props.opacity_Moving //0.5
-          }}/>
-
-        </div>
-      </div>
+            }}
+          />
+      </svg>
     </div>
   )
 }
@@ -68,7 +64,7 @@ function App() {
 
   const [imageRefFixed, setImageRefFixed] = useState(null);
   const [imageRefMoving, setImageRefMoving] = useState(null);
-
+  
   return (
     <div className="App">
       <h1 style={{
@@ -90,18 +86,31 @@ function App() {
         // onChange gets called everytime the value changes, and calls the provided function (event)
         }
 
-        <RegistrationCanvas fixed={fixedimage} moving={movingimage}         
-        canvas_X={canvasX} 
-        canvas_Y={canvasY} 
-        world_Scale={worldScale}         
-        fixed_X={fixedX} 
-        fixed_Y={fixedY}        
-        moving_X={movingX} 
-        moving_Y={movingY} 
-        moving_Scale={movingScale} 
-        opacity_Moving={opacity}         
-        imageRef_Fixed = {imageRefFixed} setImageRef_Fixed = {setImageRefFixed} 
-        imageRef_Moving = {imageRefMoving} setImageRef_Moving ={setImageRefMoving}/>
+        <img src={fixedimage.path} onLoad={event=>setImageRefFixed(event.target)} style={{display:"none"}} />
+        <img src={movingimage.path} onLoad={event=>setImageRefMoving(event.target)} style={{display:"none"}}/>
+
+        <RegistrationCanvas 
+          fixed = {fixedimage}         
+          moving = {movingimage}
+
+          fixed_width = {imageRefFixed?.naturalWidth}
+          fixed_height = {imageRefFixed?.naturalHeight}
+
+          moving_width = {imageRefMoving?.naturalWidth}
+          moving_height = {imageRefMoving?.naturalHeight}
+          
+          canvas_X={canvasX} 
+          canvas_Y={canvasY} 
+          world_Scale={worldScale}         
+          fixed_X={fixedX} 
+          fixed_Y={fixedY}        
+          moving_X={movingX} 
+          moving_Y={movingY} 
+          moving_Scale={movingScale} 
+          opacity_Moving={opacity}         
+          imageRef_Fixed = {imageRefFixed} setImageRef_Fixed = {setImageRefFixed} 
+          imageRef_Moving = {imageRefMoving} setImageRef_Moving ={setImageRefMoving}
+        />
 
         <div style={{
           display:"flex",
@@ -109,7 +118,7 @@ function App() {
           marginLeft: "20px" 
         }}>
           <div>
-          <br/> <br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/><br/> <br/>          
+          {/*<br/> <br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/><br/> <br/> */}         
           virtual-canvas (bigger than "scaled" Fixed image)
           </div>
 
