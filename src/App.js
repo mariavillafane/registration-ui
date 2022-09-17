@@ -16,19 +16,10 @@ const movingimage = {
 function RegistrationCanvas(props) {
   console.log(props.moving_X);
   return (
-    <div id="myMask" style={{
-      //flexDirection: "row",
-      marginLeft: "20px",
-     //position: "absolute", //220915 check with Gaetano
-      width: "400px",
-      height: "400px", 
-      overflow: "scroll"
-      }}>
+    <div id="myMask">
       <svg id="myCanvas" style={{
         width: props.canvas_X+"px",              //props.fixed.width * 0.15,  // dim canvas
         height:  props.canvas_Y+"px",           //"500px",                  // dim canvas
-        border: "1px solid red",               //canvas
-        marginLeft: "20px"
       }}>
           <image id="myFixedImage" href={props.fixed.path} 
             width = {props.fixed_width * props.world_Scale} 
