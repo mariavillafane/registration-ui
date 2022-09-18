@@ -1,6 +1,6 @@
 import logo from "./logo.svg";
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRef } from "react";
 
 const fixedimage = {
@@ -31,8 +31,30 @@ function RegistrationCanvas(props) {
   );
 }
 
+//new
+function useImageSize(path) {
+  const [size, setSize] = useState({
+    height: 0,
+    width: 0,
+  });
+
+  useEffect(() => {
+    const image = new Image();
+    image.onload = () =>
+      setSize({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+
+    image.src = path;
+  }, [path]); //useEffect(()=>{ .. }); ..}, [path]); only runs if the path changes
+
+  return size;
+}
+
 //prepare images for canvas - for moving img, note that scale = worldScale*imageScale
-function useImage(href, ref, scale) {
+function useImage(href, scale) {
+  const img = useImageSize(href); // {width, height}
   const [dictionary, setDictionary] = useState({
     x: 0,
     y: 0,
@@ -43,8 +65,8 @@ function useImage(href, ref, scale) {
       href,
       x: dictionary.x,
       y: dictionary.y,
-      width: ref?.naturalWidth * scale,
-      height: ref?.naturalHeight * scale,
+      width: img.width * scale,
+      height: img.height * scale,
       opacity: dictionary.opacity,
     },
     setDictionary,
@@ -62,17 +84,12 @@ function App() {
   const [worldScale, setWorldScale] = useState(0.1);
   const [movingScale, setMovingScale] = useState(1); //0
 
-  const [imageRefFixed, setImageRefFixed] = useState(null);
-  const [imageRefMoving, setImageRefMoving] = useState(null);
+  const fixedImageSize = useImageSize(fixedimage.path);
+  const movingImageSize = useImageSize(movingimage.path);
 
-  const [imageFixed, setImageFixed] = useImage(
-    fixedimage.path,
-    imageRefFixed,
-    worldScale
-  );
+  const [imageFixed, setImageFixed] = useImage(fixedimage.path, worldScale);
   const [imageMoving, setImageMoving] = useImage(
     movingimage.path,
-    imageRefMoving,
     worldScale * movingScale
   );
 
@@ -99,23 +116,6 @@ function App() {
           flexDirection: "row",
         }}
       >
-        {
-          // RegistrationCanvas + PROPS (fixed, moving, moving_X, moving_Y)
-          // input = box for values, with type=number to limit input to numbers
-          // onChange gets called everytime the value changes, and calls the provided function (event)
-        }
-
-        <img
-          src={fixedimage.path}
-          onLoad={(event) => setImageRefFixed(event.target)}
-          style={{ display: "none" }}
-        />
-        <img
-          src={movingimage.path}
-          onLoad={(event) => setImageRefMoving(event.target)}
-          style={{ display: "none" }}
-        />
-
         <RegistrationCanvas
           canvas_X={canvasX}
           canvas_Y={canvasY}
@@ -174,7 +174,7 @@ function App() {
               type="number"
               onChange={(event) =>
                 setImageFixed({ ...imageFixed, x: event.target.value })
-              } //setFixedX(event.target.value)}
+              }
             />
           </div>
 
@@ -185,12 +185,12 @@ function App() {
               type="number"
               onChange={(event) =>
                 setImageFixed({ ...imageFixed, y: event.target.value })
-              } //setFixedY(event.target.value)}
+              }
             />
           </div>
           <div>
-            image dimensions (original wxh): {imageRefFixed?.naturalWidth} x{" "}
-            {imageRefFixed?.naturalHeight} <br />
+            image dimensions (original wxh): {fixedImageSize.width} x{" "}
+            {fixedImageSize.height} <br />
             image on canvas dimensions (scaled by {worldScale}):{" "}
             {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
           </div>
@@ -249,8 +249,8 @@ function App() {
           </div>
 
           <div>
-            image dimensions (original wxh): {imageRefMoving?.naturalWidth} x{" "}
-            {imageRefMoving?.naturalHeight} <br />
+            image dimensions (original wxh): {movingImageSize.width} x{" "}
+            {movingImageSize.height} <br />
             image on canvas dimensions (scaled by {worldScale}, and by{" "}
             {movingScale}): {(imageMoving?.width).toFixed(0)} x{" "}
             {(imageMoving?.height).toFixed(0)}{" "}
