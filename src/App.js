@@ -14,7 +14,7 @@ const movingimage = {
 };
 
 function RegistrationCanvas(props) {
-  console.log(props.moving_X);
+  //console.log(props.moving_X);
   return (
     <div id="myMask">
       <svg
@@ -24,44 +24,57 @@ function RegistrationCanvas(props) {
           height: props.canvas_Y + "px", //"500px",                  // dim canvas
         }}
       >
-        <image
-          id="myFixedImage"
-          href={props.fixed.path}
-          width={props.fixed_width * props.world_Scale}
-          height={props.fixed_height * props.world_Scale}
-          x={props.fixed_X} //x-position inside canvas,"20px"
-          y={props.fixed_Y} //y-position inside canvas,"20px"
-        />
-        <image
-          id="myMovingImage"
-          href={props.moving.path}
-          x={props.moving_X} //"100px",
-          y={props.moving_Y}
-          width={props.moving_width * props.world_Scale * props.moving_Scale}
-          height={props.moving_height * props.world_Scale * props.moving_Scale}
-          style={{
-            opacity: props.opacity_Moving, //0.5
-          }}
-        />
+        <image id="myFixedImage" {...props.fixed} />
+        <image id="myMovingImage" {...props.moving} />
       </svg>
     </div>
   );
 }
 
+//prepare images for canvas - for moving img, note that scale = worldScale*imageScale
+function useImage(href, ref, scale) {
+  const [dictionary, setDictionary] = useState({
+    x: 0,
+    y: 0,
+    opacity: 1,
+  });
+  return [
+    {
+      href,
+      x: dictionary.x,
+      y: dictionary.y,
+      width: ref?.naturalWidth * scale,
+      height: ref?.naturalHeight * scale,
+      opacity: dictionary.opacity,
+    },
+    setDictionary,
+  ];
+}
+
+// setDictionary({
+// ...dictionary,
+// opacity: dictionary.opacity
+//})
+
 function App() {
   const [canvasX, setCanvasX] = useState(500);
   const [canvasY, setCanvasY] = useState(500);
   const [worldScale, setWorldScale] = useState(0.1);
-
-  const [fixedX, setFixedX] = useState(0);
-  const [fixedY, setFixedY] = useState(0);
-  const [movingX, setMovingX] = useState(220); //0
-  const [movingY, setMovingY] = useState(143); //0
   const [movingScale, setMovingScale] = useState(1); //0
-  const [opacity, setOpacity] = useState(1);
 
   const [imageRefFixed, setImageRefFixed] = useState(null);
   const [imageRefMoving, setImageRefMoving] = useState(null);
+
+  const [imageFixed, setImageFixed] = useImage(
+    fixedimage.path,
+    imageRefFixed,
+    worldScale
+  );
+  const [imageMoving, setImageMoving] = useImage(
+    movingimage.path,
+    imageRefMoving,
+    worldScale * movingScale
+  );
 
   return (
     <div className="App">
@@ -104,25 +117,10 @@ function App() {
         />
 
         <RegistrationCanvas
-          fixed={fixedimage}
-          moving={movingimage}
-          fixed_width={imageRefFixed?.naturalWidth}
-          fixed_height={imageRefFixed?.naturalHeight}
-          moving_width={imageRefMoving?.naturalWidth}
-          moving_height={imageRefMoving?.naturalHeight}
           canvas_X={canvasX}
           canvas_Y={canvasY}
-          world_Scale={worldScale}
-          fixed_X={fixedX}
-          fixed_Y={fixedY}
-          moving_X={movingX}
-          moving_Y={movingY}
-          moving_Scale={movingScale}
-          opacity_Moving={opacity}
-          imageRef_Fixed={imageRefFixed}
-          setImageRef_Fixed={setImageRefFixed}
-          imageRef_Moving={imageRefMoving}
-          setImageRef_Moving={setImageRefMoving}
+          fixed={imageFixed}
+          moving={imageMoving}
         />
 
         <div
@@ -132,10 +130,7 @@ function App() {
             marginLeft: "20px",
           }}
         >
-          <div>
-            {/*<br/> <br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/> <br/><br/><br/> <br/> */}
-            virtual-canvas (bigger than "scaled" Fixed image)
-          </div>
+          <div>virtual-canvas (bigger than "scaled" Fixed image)</div>
 
           <div>
             size_x:{" "}
@@ -175,26 +170,29 @@ function App() {
           <div>
             coord_x:{" "}
             <input
-              value={fixedX}
+              value={imageFixed.x}
               type="number"
-              onChange={(event) => setFixedX(event.target.value)}
+              onChange={(event) =>
+                setImageFixed({ ...imageFixed, x: event.target.value })
+              } //setFixedX(event.target.value)}
             />
           </div>
 
           <div>
             coord_y:{" "}
             <input
-              value={fixedY}
+              value={imageFixed.y}
               type="number"
-              onChange={(event) => setFixedY(event.target.value)}
+              onChange={(event) =>
+                setImageFixed({ ...imageFixed, y: event.target.value })
+              } //setFixedY(event.target.value)}
             />
           </div>
           <div>
-            image dimensions (original): {imageRefFixed?.naturalWidth} x{" "}
+            image dimensions (original wxh): {imageRefFixed?.naturalWidth} x{" "}
             {imageRefFixed?.naturalHeight} <br />
-            image dimensions (scaled by {worldScale}):{" "}
-            {(imageRefFixed?.naturalWidth * worldScale).toFixed(0)} x{" "}
-            {(imageRefFixed?.naturalHeight * worldScale).toFixed(0)}{" "}
+            image on canvas dimensions (scaled by {worldScale}):{" "}
+            {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
           </div>
 
           <div>
@@ -205,18 +203,22 @@ function App() {
           <div>
             coord_x:{" "}
             <input
-              value={movingX}
+              value={imageMoving.x}
               type="number"
-              onChange={(event) => setMovingX(event.target.value)}
+              onChange={(event) =>
+                setImageMoving({ ...imageMoving, x: event.target.value })
+              }
             />
           </div>
 
           <div>
             coord_y:{" "}
             <input
-              value={movingY}
+              value={imageMoving.y}
               type="number"
-              onChange={(event) => setMovingY(event.target.value)}
+              onChange={(event) =>
+                setImageMoving({ ...imageMoving, y: event.target.value })
+              }
             />
           </div>
 
@@ -235,26 +237,23 @@ function App() {
           <div>
             opacity:{" "}
             <input
-              value={opacity}
+              value={imageMoving.opacity}
               type="range"
               min={0}
               max={1}
               step={0.1}
-              onChange={(event) => setOpacity(event.target.value)}
+              onChange={(event) =>
+                setImageMoving({ ...imageMoving, opacity: event.target.value })
+              }
             />
           </div>
 
           <div>
-            image dimensions (original): {imageRefMoving?.naturalWidth} x{" "}
+            image dimensions (original wxh): {imageRefMoving?.naturalWidth} x{" "}
             {imageRefMoving?.naturalHeight} <br />
-            image dimensions (scaled by {worldScale}, and by {movingScale}):{" "}
-            {(imageRefMoving?.naturalWidth * movingScale * worldScale).toFixed(
-              0
-            )}{" "}
-            x{" "}
-            {(imageRefMoving?.naturalHeight * movingScale * worldScale).toFixed(
-              0
-            )}{" "}
+            image on canvas dimensions (scaled by {worldScale}, and by{" "}
+            {movingScale}): {(imageMoving?.width).toFixed(0)} x{" "}
+            {(imageMoving?.height).toFixed(0)}{" "}
           </div>
         </div>
       </div>
