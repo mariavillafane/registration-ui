@@ -40,9 +40,27 @@ export function useImage(href, scale) {
   ];
 }
 
-//useSate creates a first object and a modifier for that first object
+//useSate creates a first object and a modifier for that first object, AND re-runs the function where it is located (its parent function)
 
 // setDictionary({
 // ...dictionary,
 // opacity: dictionary.opacity
 //})
+
+export function useImageReader(initialPath) {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imageAsDataURL, setImageAsDataURL] = useState(initialPath);
+
+  useEffect(() => {
+    if (!selectedFile) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      setImageAsDataURL(reader.result);
+    });
+    reader.readAsDataURL(selectedFile);
+  }, [selectedFile]);
+
+  return [imageAsDataURL, setSelectedFile];
+}

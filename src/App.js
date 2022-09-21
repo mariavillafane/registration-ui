@@ -1,7 +1,7 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import { RegistrationCanvas } from "./RegistrationCanvas";
-import { useImage, useImageSize } from "./ImageTools";
+import { useImage, useImageSize, useImageReader } from "./ImageTools";
 import { UserInput } from "./UserInput";
 
 const fixedimage = {
@@ -20,8 +20,8 @@ function App() {
   const [worldScale, setWorldScale] = useState(0.1);
   const [movingScale, setMovingScale] = useState(1);
 
-  const [imageMovingPath, setImageMovingPath] = useState(movingimage.path);
-  const [imageFixedPath, setImageFixedPath] = useState(fixedimage.path);
+  const [imageMovingPath, setMovingFile] = useImageReader(movingimage.path);
+  const [imageFixedPath, setFixedFile] = useImageReader(fixedimage.path);
 
   const [imageFixed, setImageFixed] = useImage(imageFixedPath, worldScale);
 
@@ -29,33 +29,6 @@ function App() {
     imageMovingPath,
     worldScale * movingScale
   );
-
-  const [selectedFile, setSelectedFile] = useState(null);
-  console.log("m = ", selectedFile);
-
-  const [selectedFile_1, setSelectedFile_1] = useState(null);
-
-  useEffect(() => {
-    if (!selectedFile) {
-      return;
-    }
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      setImageMovingPath(reader.result);
-    });
-    reader.readAsDataURL(selectedFile);
-  }, [selectedFile]);
-
-  useEffect(() => {
-    if (!selectedFile_1) {
-      return;
-    }
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      setImageFixedPath(reader.result);
-    });
-    reader.readAsDataURL(selectedFile_1);
-  }, [selectedFile_1]);
 
   return (
     <div className="App">
@@ -68,13 +41,13 @@ function App() {
       <input
         type="file"
         id="button_image_input"
-        onChange={(event) => setSelectedFile(event.target.files[0])}
+        onChange={(event) => setMovingFile(event.target.files[0])}
       />
 
       <input
         type="file"
         id="button_image_fixed"
-        onChange={(event) => setSelectedFile_1(event.target.files[0])}
+        onChange={(event) => setFixedFile(event.target.files[0])}
       />
 
       <div
