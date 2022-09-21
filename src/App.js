@@ -21,8 +21,9 @@ function App() {
   const [movingScale, setMovingScale] = useState(1);
 
   const [imageMovingPath, setImageMovingPath] = useState(movingimage.path);
+  const [imageFixedPath, setImageFixedPath] = useState(fixedimage.path);
 
-  const [imageFixed, setImageFixed] = useImage(fixedimage.path, worldScale);
+  const [imageFixed, setImageFixed] = useImage(imageFixedPath, worldScale);
 
   const [imageMoving, setImageMoving] = useImage(
     imageMovingPath,
@@ -31,6 +32,8 @@ function App() {
 
   const [selectedFile, setSelectedFile] = useState(null);
   console.log("m = ", selectedFile);
+
+  const [selectedFile_1, setSelectedFile_1] = useState(null);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -43,6 +46,17 @@ function App() {
     reader.readAsDataURL(selectedFile);
   }, [selectedFile]);
 
+  useEffect(() => {
+    if (!selectedFile_1) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      setImageFixedPath(reader.result);
+    });
+    reader.readAsDataURL(selectedFile_1);
+  }, [selectedFile_1]);
+
   return (
     <div className="App">
       <h1 id="titleMain">
@@ -54,11 +68,14 @@ function App() {
       <input
         type="file"
         id="button_image_input"
-        //value ={}
-
         onChange={(event) => setSelectedFile(event.target.files[0])}
-      ></input>
-      <div id="display_image"></div>
+      />
+
+      <input
+        type="file"
+        id="button_image_fixed"
+        onChange={(event) => setSelectedFile_1(event.target.files[0])}
+      />
 
       <div
         style={{
