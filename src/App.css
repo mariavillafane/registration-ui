@@ -24,7 +24,8 @@ input:hover {
 }
 
 /*220921*/
-#display_image{
+#display_image {
   width: 375px;
+  height: 375px;
   background-position: center;
 }
