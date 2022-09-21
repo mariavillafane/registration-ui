@@ -20,28 +20,28 @@ function App() {
   const [worldScale, setWorldScale] = useState(0.1);
   const [movingScale, setMovingScale] = useState(1);
 
+  const [imageMovingPath, setImageMovingPath] = useState(movingimage.path);
+
   const [imageFixed, setImageFixed] = useImage(fixedimage.path, worldScale);
+
   const [imageMoving, setImageMoving] = useImage(
-    movingimage.path,
+    imageMovingPath,
     worldScale * movingScale
   );
 
-  //css selector that finds the DOM(or html) element with the id "button_image_input" (# = id)
-  const button_image_input = document.querySelector("#button_image_input");
+  const [selectedFile, setSelectedFile] = useState(null);
+  console.log("m = ", selectedFile);
 
-  //if something changes (i.e. user chooses the file), execute the function..
-  button_image_input?.addEventListener("change", function () {
-    //console.log(image_input.value);
+  useEffect(() => {
+    if (!selectedFile) {
+      return;
+    }
     const reader = new FileReader();
     reader.addEventListener("load", () => {
-      //console.log(reader.result)
-      var uploaded_image = reader.result;
-      document.querySelector(
-        "#display_image"
-      ).style.backgroundImage = `url(${uploaded_image})`;
+      setImageMovingPath(reader.result);
     });
-    reader.readAsDataURL(this.files[0]); //this. = button_image_input.
-  });
+    reader.readAsDataURL(selectedFile);
+  }, [selectedFile]);
 
   return (
     <div className="App">
@@ -51,7 +51,13 @@ function App() {
         CANVAS
       </h1>
 
-      <input type="file" id="button_image_input"></input>
+      <input
+        type="file"
+        id="button_image_input"
+        //value ={}
+
+        onChange={(event) => setSelectedFile(event.target.files[0])}
+      ></input>
       <div id="display_image"></div>
 
       <div
