@@ -22,3 +22,9 @@ input:hover {
   lineHeight: "40px",*/
   margin-bottom: -8px;
 }
+
+/*220921*/
+#display_image{
+  width: 375px;
+  background-position: center;
+}

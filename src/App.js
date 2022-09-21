@@ -21,10 +21,23 @@ function App() {
   const [movingScale, setMovingScale] = useState(1);
 
   const [imageFixed, setImageFixed] = useImage(fixedimage.path, worldScale);
-  const [imageMoving, setImageMoving] = useImage(
-    movingimage.path,
-    worldScale * movingScale
-  );
+  const [imageMoving, setImageMoving] = useImage(movingimage.path, worldScale*movingScale);
+
+  //220921
+  const image_input = document.querySelector("#image_input");
+  //var uploaded_image = "";
+  
+  //220921 - not sure if this needs to go in a separate function?
+  image_input?.addEventListener("change", function(){
+    console.log(image_input.value);
+    const reader = new FileReader();
+    reader.addEventListener("load",()=>{
+     var uploaded_image = reader.result;
+     document.querySelector("#display_image").style.backgroundImage = `url(${uploaded_image})`;
+     reader.readAsDataURL(this.files[0]);
+    })
+   })
+
 
   return (
     <div className="App">
@@ -34,12 +47,16 @@ function App() {
         CANVAS
       </h1>
 
+      <input type="file" id="image_input"></input> 
+      <div id="display_image"></div>
+      
       <div
         style={{
           display: "flex",
           flexDirection: "row",
         }}
       >
+        
         <RegistrationCanvas
           canvas_X={canvasX}
           canvas_Y={canvasY}
