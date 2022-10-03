@@ -48,7 +48,7 @@ export function UserInput({
       <div>virtual-canvas (bigger than "scaled" Fixed image)</div>
 
       <div>
-        size_x:{" "}
+        width (pixels along x):{" "}
         <input
           value={canvasX}
           type="number"
@@ -57,7 +57,7 @@ export function UserInput({
       </div>
 
       <div>
-        size_y:{" "}
+        height (pixels along y):{" "}
         <input
           value={canvasY}
           type="number"
@@ -66,6 +66,9 @@ export function UserInput({
       </div>
 
       <div>
+        <br />
+        FIXED AND MOVING IMAGES
+        <br />
         world-scale (affects both working images):{" "}
         <input
           value={worldScale}
