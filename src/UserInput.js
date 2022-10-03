@@ -37,6 +37,14 @@ export function UserInput({
   const fixedImageSize = useImageSize(imageFixed.href);
   const movingImageSize = useImageSize(imageMoving.href);
 
+  const settingsJson = JSON.stringify({ canvasX, canvasY }, null, 2);
+  console.log(settingsJson);
+  const settings = window.URL.createObjectURL(
+    new Blob(["SETTINGS, for example movingScale= " + movingScale], {
+      type: "text/plain",
+    })
+  );
+
   return (
     <div
       style={{
@@ -173,12 +181,14 @@ export function UserInput({
         ): {(imageMoving?.width).toFixed(0)} x{" "}
         {(imageMoving?.height).toFixed(0)}{" "}
       </div>
-     
-      <input
-        type="button"
-        onClick={(event) => saveSettingsSoFar()}
-      />
-   
+
+      <a href={settings} download="settings1.txt">
+        <button>Save Settings</button>
+      </a>
+
+      <button onClick={(event) => saveSettingsSoFar(movingScale)}>
+        saveSettingsSoFar
+      </button>
     </div>
   );
 }
