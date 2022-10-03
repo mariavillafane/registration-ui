@@ -18,7 +18,7 @@ export function UserInput(props) {
   const fixedImageSize ..
 */
 
-import { useImageSize } from "./ImageTools";
+import { useImageSize, saveSettingsSoFar } from "./ImageTools";
 
 export function UserInput({
   canvasX,
@@ -173,6 +173,12 @@ export function UserInput({
         ): {(imageMoving?.width).toFixed(0)} x{" "}
         {(imageMoving?.height).toFixed(0)}{" "}
       </div>
+     
+      <input
+        type="button"
+        onClick={(event) => saveSettingsSoFar()}
+      />
+   
     </div>
   );
 }

@@ -64,3 +64,10 @@ export function useImageReader(initialPath) {
 
   return [imageAsDataURL, setSelectedFile];
 }
+
+export function saveSettingsSoFar(){
+  var a = document.createElement("a");
+  a.href = window.URL.createObjectURL(new Blob(["SETTINGS, for example movingScale= " + useImage.scale], {type: "text/plain"}));
+  a.download = "settingsSoFar.txt";
+  a.click();
+}
