@@ -25,10 +25,7 @@ function App() {
 
   const [imageFixed, setImageFixed] = useImage(imageFixedPath, worldScale);
 
-  const [imageMoving, setImageMoving] = useImage(
-    imageMovingPath,
-    worldScale * movingScale
-  );
+  const [imageMoving, setImageMoving] = useImage(imageMovingPath, worldScale * movingScale);
 
   return (
     <div className="App">
@@ -46,6 +43,7 @@ function App() {
 
       <input
         type="file"
+        label="Fixed Image"
         id="button_image_fixed"
         onChange={(event) => setFixedFile(event.target.files[0])}
       />
@@ -85,9 +83,11 @@ function App() {
 
 export default App;
 
-//var a = document.createElement("a");
-//a.href = window.URL.createObjectURL(new Blob(["CONTENT , for example movingScale= " + {movingScale}], {type: "text/plain"}));
-//a.download = "demo.txt";
-//a.click();
+/*
+var a = document.createElement("a");
+a.href = window.URL.createObjectURL(new Blob(["CONTENT , for example movingScale= " + App.movingScale], {type: "text/plain"}));
+a.download = "demo.txt";
+a.click();
+*/
 
 //https://code-boxx.com/create-save-files-javascript/#:~:text=The%20possible%20ways%20to%20create,offer%20a%20%E2%80%9Csave%20as%E2%80%9D.
