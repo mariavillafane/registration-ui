@@ -37,13 +37,11 @@ export function UserInput({
   const fixedImageSize = useImageSize(imageFixed.href);
   const movingImageSize = useImageSize(imageMoving.href);
 
-  const settingsJson = JSON.stringify({ canvasX, canvasY }, null, 2);
-  console.log(settingsJson);
-  const settings = window.URL.createObjectURL(
-    new Blob(["SETTINGS, for example movingScale= " + movingScale], {
-      type: "text/plain",
-    })
-  );
+
+  const settingsJson = JSON.stringify({ canvasX, canvasY, worldScale, movingScale, imageFixed, imageMoving}, null, 2);
+  //console.log(settingsJson);
+
+  const settings = window.URL.createObjectURL(new Blob([settingsJson], {type: "text/plain"}));
 
   return (
     <div
@@ -52,8 +50,13 @@ export function UserInput({
         flexDirection: "column",
         marginLeft: "20px",
       }}
-    >
-      <div>virtual-canvas (bigger than "scaled" Fixed image)</div>
+    >      
+      <a href={settings} download="settings2.txt">
+        <button>Upload (known) Settings!! => probably everything but the images themselves</button>
+      </a>
+      <br />
+      
+      <div>Virtual-canvas (bigger than "scaled" Fixed image)</div>
 
       <div>
         width (pixels along x):{" "}
@@ -75,7 +78,7 @@ export function UserInput({
 
       <div>
         <br />
-        FIXED AND MOVING IMAGES
+        WORKING IMAGES
         <br />
         world-scale (affects both working images):{" "}
         <input
@@ -90,7 +93,7 @@ export function UserInput({
 
       <div>
         <br />
-        fixed-image
+        Fixed-image (position on canvas)
       </div>
 
       <div>
@@ -123,7 +126,7 @@ export function UserInput({
 
       <div>
         <br />
-        moving-image
+        Moving-image (position on canvas)
       </div>
 
       <div>
@@ -182,13 +185,11 @@ export function UserInput({
         {(imageMoving?.height).toFixed(0)}{" "}
       </div>
 
+      <br />
       <a href={settings} download="settings1.txt">
         <button>Save Settings</button>
       </a>
 
-      <button onClick={(event) => saveSettingsSoFar(movingScale)}>
-        saveSettingsSoFar
-      </button>
     </div>
   );
 }

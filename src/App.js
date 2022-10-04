@@ -17,14 +17,15 @@ const movingimage = {
 function App() {
   const [canvasX, setCanvasX] = useState(500);
   const [canvasY, setCanvasY] = useState(500);
+
   const [worldScale, setWorldScale] = useState(0.1);
+
   const [movingScale, setMovingScale] = useState(1);
 
   const [imageMovingPath, setMovingFile] = useImageReader(movingimage.path);
   const [imageFixedPath, setFixedFile] = useImageReader(fixedimage.path);
 
   const [imageFixed, setImageFixed] = useImage(imageFixedPath, worldScale);
-
   const [imageMoving, setImageMoving] = useImage(imageMovingPath, worldScale * movingScale);
 
   return (
@@ -34,19 +35,26 @@ function App() {
         <br />
         CANVAS
       </h1>
-
-      <input
-        type="file"
-        id="button_image_input"
-        onChange={(event) => setMovingFile(event.target.files[0])}
-      />
-
+      
+      
+      <br />
+      Fixed Image => 
       <input
         type="file"
         label="Fixed Image"
         id="button_image_fixed"
         onChange={(event) => setFixedFile(event.target.files[0])}
       />
+
+      <br />  
+      Moving Image =>
+      <input
+        type="file"
+        id="button_image_input"
+        onChange={(event) => setMovingFile(event.target.files[0])}
+      />
+
+
 
       <div
         style={{
