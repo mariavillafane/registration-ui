@@ -47,7 +47,7 @@ export function useImage(href, scale) {
 // opacity: dictionary.opacity
 //})
 
-export function useImageReader(initialPath) {
+export function useImageReader(initialPath, method = "readAsDataURL") {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageAsDataURL, setImageAsDataURL] = useState(initialPath);
 
@@ -59,19 +59,8 @@ export function useImageReader(initialPath) {
     reader.addEventListener("load", () => {
       setImageAsDataURL(reader.result);
     });
-    reader.readAsDataURL(selectedFile);
+    reader[method](selectedFile); //reader.readAsDataURL(selectedFile);
   }, [selectedFile]);
 
   return [imageAsDataURL, setSelectedFile];
-}
-
-export function saveSettingsSoFar(movingScale) {
-  var a = document.createElement("a");
-  a.href = window.URL.createObjectURL(
-    new Blob(["SETTINGS, for example movingScale= " + movingScale], {
-      type: "text/plain",
-    })
-  );
-  a.download = "settingsSoFar.txt";
-  a.click();
 }

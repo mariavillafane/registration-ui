@@ -18,7 +18,8 @@ export function UserInput(props) {
   const fixedImageSize ..
 */
 
-import { useImageSize, saveSettingsSoFar } from "./ImageTools";
+import { useEffect } from "react";
+import { useImageSize, useImageReader } from "./ImageTools";
 
 export function UserInput({
   canvasX,
@@ -37,11 +38,35 @@ export function UserInput({
   const fixedImageSize = useImageSize(imageFixed.href);
   const movingImageSize = useImageSize(imageMoving.href);
 
+  const [settingsUploadedByUser, setSelectedSettings] = useImageReader(
+    null,
+    "readAsText"
+  );
+  //console.log(settingsUploadedByUser);
 
-  const settingsJson = JSON.stringify({ canvasX, canvasY, worldScale, movingScale, imageFixed, imageMoving}, null, 2);
-  //console.log(settingsJson);
+  //console.log(parsedSettings);
 
-  const settings = window.URL.createObjectURL(new Blob([settingsJson], {type: "text/plain"}));
+  useEffect(() => {
+    if (settingsUploadedByUser == null) return;
+
+    const parsedSettings = JSON.parse(settingsUploadedByUser);
+    setCanvasX(parsedSettings.canvasX);
+    setCanvasY(parsedSettings.canvasY);
+    setWorldScale(parsedSettings.worldScale);
+    setMovingScale(parsedSettings.movingScale);
+    setImageFixed(parsedSettings.imageFixed);
+    setImageMoving(parsedSettings.imageMoving);
+  }, [settingsUploadedByUser]);
+
+  const settingsJson = JSON.stringify(
+    { canvasX, canvasY, worldScale, movingScale, imageFixed, imageMoving },
+    null,
+    2
+  );
+
+  const settings = window.URL.createObjectURL(
+    new Blob([settingsJson], { type: "text/plain" })
+  );
 
   return (
     <div
@@ -50,14 +75,14 @@ export function UserInput({
         flexDirection: "column",
         marginLeft: "20px",
       }}
-    >      
-      <a href={settings} download="settings2.txt">
-        <button>Upload (known) Settings!! => probably everything but the images themselves</button>
-      </a>
+    >
+      Upload (known) Settings!! =>
+      <input
+        type="file"
+        onChange={(event) => setSelectedSettings(event.target.files[0])}
+      />
       <br />
-      
       <div>Virtual-canvas (bigger than "scaled" Fixed image)</div>
-
       <div>
         width (pixels along x):{" "}
         <input
@@ -66,7 +91,6 @@ export function UserInput({
           onChange={(event) => setCanvasX(event.target.value)}
         />
       </div>
-
       <div>
         height (pixels along y):{" "}
         <input
@@ -75,7 +99,6 @@ export function UserInput({
           onChange={(event) => setCanvasY(event.target.value)}
         />
       </div>
-
       <div>
         <br />
         WORKING IMAGES
@@ -90,12 +113,10 @@ export function UserInput({
           onChange={(event) => setWorldScale(event.target.value)}
         />
       </div>
-
       <div>
         <br />
         Fixed-image (position on canvas)
       </div>
-
       <div>
         coord_x:{" "}
         <input
@@ -106,7 +127,6 @@ export function UserInput({
           }
         />
       </div>
-
       <div>
         coord_y:{" "}
         <input
@@ -123,12 +143,10 @@ export function UserInput({
         image on canvas dimensions (scaled by {worldScale}):{" "}
         {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
       </div>
-
       <div>
         <br />
         Moving-image (position on canvas)
       </div>
-
       <div>
         coord_x:{" "}
         <input
@@ -139,7 +157,6 @@ export function UserInput({
           }
         />
       </div>
-
       <div>
         coord_y:{" "}
         <input
@@ -150,7 +167,6 @@ export function UserInput({
           }
         />
       </div>
-
       <div>
         scaling (only affects moving image, as initial parameter):{" "}
         <input
@@ -162,7 +178,6 @@ export function UserInput({
           onChange={(event) => setMovingScale(event.target.value)}
         />
       </div>
-
       <div>
         opacity:{" "}
         <input
@@ -176,7 +191,6 @@ export function UserInput({
           }
         />
       </div>
-
       <div>
         image original dimensions (wxh): {movingImageSize.width} x{" "}
         {movingImageSize.height} <br />
@@ -184,12 +198,10 @@ export function UserInput({
         ): {(imageMoving?.width).toFixed(0)} x{" "}
         {(imageMoving?.height).toFixed(0)}{" "}
       </div>
-
       <br />
       <a href={settings} download="settings1.txt">
         <button>Save Settings</button>
       </a>
-
     </div>
   );
 }
