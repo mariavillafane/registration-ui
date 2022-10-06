@@ -26,10 +26,7 @@ function App() {
   const [imageFixedPath, setFixedFile] = useImageReader(fixedimage.path);
 
   const [imageFixed, setImageFixed] = useImage(imageFixedPath, worldScale);
-  const [imageMoving, setImageMoving] = useImage(
-    imageMovingPath,
-    worldScale * movingScale
-  );
+  const [imageMoving, setImageMoving] = useImage(imageMovingPath, worldScale * movingScale);
 
   return (
     <div className="App">
@@ -38,21 +35,24 @@ function App() {
         <br />
         CANVAS
       </h1>
+      
       <br />
-      Fixed Image =>
+      Fixed Image::  
       <input
         type="file"
         label="Fixed Image"
         id="button_image_fixed"
         onChange={(event) => setFixedFile(event.target.files[0])}
       />
-      <br />
-      Moving Image =>
+
+      <br />  
+      Moving Image:: 
       <input
         type="file"
         id="button_image_input"
         onChange={(event) => setMovingFile(event.target.files[0])}
       />
+
       <div
         style={{
           display: "flex",
@@ -88,5 +88,9 @@ function App() {
 
 export default App;
 
-//references
+
+
+
+
+//useful links
 //https://code-boxx.com/create-save-files-javascript/#:~:text=The%20possible%20ways%20to%20create,offer%20a%20%E2%80%9Csave%20as%E2%80%9D.

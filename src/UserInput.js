@@ -76,7 +76,7 @@ export function UserInput({
         marginLeft: "20px",
       }}
     >
-      Upload (known) Settings!! =>
+      Upload (known) Image Settings:
       <input
         type="file"
         onChange={(event) => setSelectedSettings(event.target.files[0])}

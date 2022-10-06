@@ -1,32 +1,52 @@
 import { useState } from "react";
 
 function calculateViewBoxChange(event, viewBox) {
-  console.log(event);
-  console.log(event.target.getBoundingClientRect());
+  //console.log(event);
+  //console.log(event.target.getBoundingClientRect());
 
   const mouseX = -event.target.getBoundingClientRect().x + event.clientX;
   console.log(mouseX);
 
   const mouseY = -event.target.getBoundingClientRect().y + event.clientY;
-  console.log(mouseY);
+  //console.log(mouseY);
+
+  const canvasWidth = event.target.getBoundingClientRect().width
+  const canvasHeight = event.target.getBoundingClientRect().height
+  console.log(canvasWidth, canvasHeight);
+  console.log(mouseX/canvasWidth);
+
+
 
   const mouseScroll = event.deltaY > 0 ? 1 : -1; //if event bigger than 0, then 1, else -1
   console.log(mouseScroll);
-
+ 
   const newViewBox = [
-    0,
-    0,
-    viewBox[2] + 1 * mouseScroll,
-    viewBox[3] + 1 * mouseScroll,
+    viewBox[0] - (1 * mouseScroll),
+    viewBox[1] - (1 * mouseScroll),
+    viewBox[2] + (2 * mouseScroll),
+    viewBox[3] + (2 * mouseScroll),
   ];
+
+  //PROBLEMS (221006 => the client seems to be the image at the back of the mouse (either the moving, the fixed or the canvas,))
+  // hence the canvasWidth and canvasHeight changes depending on where the mouse is located 
+  //also, re-sizing the canvas (red-square) seems to disarrange the 
+  // fixed & moving images (they dont stay at the (0,0) cords of red-square)
+
+  /*
+  const newViewBox = [
+    viewBox[0] - (1 * mouseScroll)*(mouseX/canvasWidth),
+    viewBox[1] - (1 * mouseScroll)*(mouseY/canvasHeight),
+    viewBox[2] + (2 * mouseScroll)*(mouseX/canvasWidth),
+    viewBox[3] + (2 * mouseScroll)*(mouseY/canvasHeight),
+  ];
+  */
+  //  const newViewBox = [0, 0, viewBox[2] + 1 * mouseScroll, viewBox[3] + 1 * mouseScroll ];
 
   return newViewBox;
 }
 
+
 export function RegistrationCanvas(props) {
-  //console.log(props.moving_X);
-  const offsetX = 100;
-  const offsetY = 40;
 
   const [viewBox, setViewBox] = useState([
     0,
@@ -41,7 +61,6 @@ export function RegistrationCanvas(props) {
         id="myCanvas"
         onWheel={(event) => setViewBox(calculateViewBoxChange(event, viewBox))}
         viewBox={viewBox.join(" ")}
-        //viewBox={`${offsetX} ${offsetY} ${props.canvas_X-offsetX} ${props.canvas_Y-offsetY}`}
         //viewBox={`20 20 ${props.canvas_X} ${props.canvas_Y}`}
         //viewBox={`0 0 200 200`}
         style={{
