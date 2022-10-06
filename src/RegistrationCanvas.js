@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
-function calculateViewBoxChange(event, viewBox) {
+function calculateViewBoxChange(event, viewBox, ref) {
   //console.log(event);
   //console.log(event.target.getBoundingClientRect());
 
@@ -10,44 +10,43 @@ function calculateViewBoxChange(event, viewBox) {
   const mouseY = -event.target.getBoundingClientRect().y + event.clientY;
   //console.log(mouseY);
 
-  const canvasWidth = event.target.getBoundingClientRect().width
-  const canvasHeight = event.target.getBoundingClientRect().height
+  const canvasWidth = +ref.current.clientWidth;
+  const canvasHeight = +ref.current.clientHeight;
+  // const canvasWidth = event.target.getBoundingClientRect().width
+  // const canvasHeight = event.target.getBoundingClientRect().height
+  console.log(ref.current);
   console.log(canvasWidth, canvasHeight);
-  console.log(mouseX/canvasWidth);
-
-
+  console.log(mouseX / canvasWidth);
 
   const mouseScroll = event.deltaY > 0 ? 1 : -1; //if event bigger than 0, then 1, else -1
   console.log(mouseScroll);
- 
+  /*
   const newViewBox = [
     viewBox[0] - (1 * mouseScroll),
     viewBox[1] - (1 * mouseScroll),
     viewBox[2] + (2 * mouseScroll),
     viewBox[3] + (2 * mouseScroll),
   ];
-
+*/
   //PROBLEMS (221006 => the client seems to be the image at the back of the mouse (either the moving, the fixed or the canvas,))
-  // hence the canvasWidth and canvasHeight changes depending on where the mouse is located 
-  //also, re-sizing the canvas (red-square) seems to disarrange the 
+  // hence the canvasWidth and canvasHeight changes depending on where the mouse is located
+  //also, re-sizing the canvas (red-square) seems to disarrange the
   // fixed & moving images (they dont stay at the (0,0) cords of red-square)
 
-  /*
   const newViewBox = [
-    viewBox[0] - (1 * mouseScroll)*(mouseX/canvasWidth),
-    viewBox[1] - (1 * mouseScroll)*(mouseY/canvasHeight),
-    viewBox[2] + (2 * mouseScroll)*(mouseX/canvasWidth),
-    viewBox[3] + (2 * mouseScroll)*(mouseY/canvasHeight),
+    viewBox[0] - 1 * mouseScroll * (mouseX / canvasWidth),
+    viewBox[1] - 1 * mouseScroll * (mouseY / canvasHeight),
+    viewBox[2] + 2 * mouseScroll * (mouseX / canvasWidth),
+    viewBox[3] + 2 * mouseScroll * (mouseY / canvasHeight),
   ];
-  */
+
   //  const newViewBox = [0, 0, viewBox[2] + 1 * mouseScroll, viewBox[3] + 1 * mouseScroll ];
 
   return newViewBox;
 }
 
-
 export function RegistrationCanvas(props) {
-
+  const ref = useRef();
   const [viewBox, setViewBox] = useState([
     0,
     0,
@@ -58,13 +57,16 @@ export function RegistrationCanvas(props) {
   return (
     <div id="myMask">
       <svg
+        ref={ref}
         id="myCanvas"
-        onWheel={(event) => setViewBox(calculateViewBoxChange(event, viewBox))}
+        onWheel={(event) =>
+          setViewBox(calculateViewBoxChange(event, viewBox, ref))
+        }
         viewBox={viewBox.join(" ")}
         //viewBox={`20 20 ${props.canvas_X} ${props.canvas_Y}`}
         //viewBox={`0 0 200 200`}
         style={{
-          width: props.canvas_X + "px", //props.fixed.width * 0.15,  // dim canvas
+          width: props.canvas_X + "px", //props.fixed.width * 0.15,  // dim canvas //LOOK HERE 221007
           height: props.canvas_Y + "px", //"500px",                  // dim canvas
         }}
       >
