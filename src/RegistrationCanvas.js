@@ -36,11 +36,12 @@ function calculateViewBoxChange(event, viewBox, ref) {
   const newViewBox = [
     viewBox[0] - 1 * mouseScroll * (mouseX / canvasWidth),
     viewBox[1] - 1 * mouseScroll * (mouseY / canvasHeight),
-    viewBox[2] + 2 * mouseScroll * (mouseX / canvasWidth),
-    viewBox[3] + 2 * mouseScroll * (mouseY / canvasHeight),
+    viewBox[2] + 2 * mouseScroll * ((-mouseX+canvasWidth) / canvasWidth),
+    viewBox[3] + 2 * mouseScroll * ((-mouseY+canvasHeight) / canvasHeight),
   ];
 
   //  const newViewBox = [0, 0, viewBox[2] + 1 * mouseScroll, viewBox[3] + 1 * mouseScroll ];
+  // problem is that viewBox size changes when zoom takes place (mouseScroll), but not refreshing values when changing the canvas size from screen/web 
 
   return newViewBox;
 }
@@ -59,19 +60,26 @@ export function RegistrationCanvas(props) {
       <svg
         ref={ref}
         id="myCanvas"
+        //xmlns="http://www.w3.org/2000/svg"
+
         onWheel={(event) =>
           setViewBox(calculateViewBoxChange(event, viewBox, ref))
         }
         viewBox={viewBox.join(" ")}
-        //viewBox={`20 20 ${props.canvas_X} ${props.canvas_Y}`}
-        //viewBox={`0 0 200 200`}
+        //viewBox={`0 0 200 200`}   //ZOOM
+        preserveAspectRatio="xMinYMin meet"    //"none"//xMinYMin slice" //https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
+
         style={{
           width: props.canvas_X + "px", //props.fixed.width * 0.15,  // dim canvas //LOOK HERE 221007
           height: props.canvas_Y + "px", //"500px",                  // dim canvas
         }}
+        
+        //width= {props.canvas_X}
+        //height= {props.canvas_Y} 
       >
-        <image id="myFixedImage" {...props.fixed} />
-        <image id="myMovingImage" {...props.moving} />
+        <image id="myFixedImage" {...props.fixed}/>
+        <image id="myMovingImage" {...props.moving}/>
+      
       </svg>
     </div>
   );

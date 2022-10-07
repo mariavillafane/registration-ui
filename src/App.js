@@ -15,8 +15,8 @@ const movingimage = {
 };
 
 function App() {
-  const [canvasX, setCanvasX] = useState(500);
-  const [canvasY, setCanvasY] = useState(500);
+  const [canvasX, setCanvasX] = useState(450);
+  const [canvasY, setCanvasY] = useState(450);
 
   const [worldScale, setWorldScale] = useState(0.1);
 
@@ -40,8 +40,8 @@ function App() {
       Fixed Image::  
       <input
         type="file"
-        label="Fixed Image"
-        id="button_image_fixed"
+        //label="Fixed Image"
+        //id="button_image_fixed"
         onChange={(event) => setFixedFile(event.target.files[0])}
       />
 
@@ -49,7 +49,7 @@ function App() {
       Moving Image:: 
       <input
         type="file"
-        id="button_image_input"
+        //id="button_image_input"
         onChange={(event) => setMovingFile(event.target.files[0])}
       />
 
