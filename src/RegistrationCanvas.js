@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 
+//ZOOM
 function calculateViewBoxChange(event, viewBox, ref) {
   //console.log(event);  //console.log(event.target.getBoundingClientRect());
   console.log(ref.current.getBoundingClientRect()); //the svg
@@ -43,6 +44,7 @@ export function RegistrationCanvas(props) {
     props.canvas_X,
     props.canvas_Y,
   ]);
+  const [mousePosition, setMousePosition] = useState(null);
 
   return (
     //<div id="myMask">
@@ -52,6 +54,33 @@ export function RegistrationCanvas(props) {
       onWheel={(event) =>
         setViewBox(calculateViewBoxChange(event, viewBox, ref))
       }
+      //DRAG
+      onMouseDown={(event) =>
+        setMousePosition({
+          x: event.clientX,
+          y: event.clientY,
+          viewBox,
+        })
+      }
+      onMouseUp={() => setMousePosition(null)}
+      onMouseMove={(event) => {
+        if (!mousePosition) return;
+        const movement = {
+          x: event.clientX - mousePosition.x,
+          y: event.clientY - mousePosition.y,
+        };
+        console.log(movement);
+
+        const canvasWidth = +ref.current.clientWidth;
+        const canvasHeight = +ref.current.clientHeight;
+
+        setViewBox([
+          mousePosition.viewBox[0] - (movement.x / canvasWidth) * viewBox[2],
+          mousePosition.viewBox[1] - (movement.y / canvasHeight) * viewBox[3],
+          viewBox[2],
+          viewBox[3],
+        ]);
+      }}
       viewBox={viewBox.join(" ")}
       //viewBox={`0 0 200 200`}   //ZOOM
       //preserveAspectRatio="xMinYMin meet" //"none"//xMinYMin slice" //https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
@@ -62,7 +91,7 @@ export function RegistrationCanvas(props) {
     >
       <image id="myFixedImage" {...props.fixed} />
       <image id="myMovingImage" {...props.moving} />
-      <rect
+      <rect //https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
         id="myWorkSpace"
         x={0}
         y={0}
