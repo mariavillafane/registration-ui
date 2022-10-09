@@ -45,26 +45,33 @@ export function RegistrationCanvas(props) {
   ]);
 
   return (
-    <div id="myMask">
-      <svg
-        ref={ref}
-        id="myCanvas"
-        //xmlns="http://www.w3.org/2000/svg"
-
-        onWheel={(event) =>
-          setViewBox(calculateViewBoxChange(event, viewBox, ref))
-        }
-        viewBox={viewBox.join(" ")}
-        //viewBox={`0 0 200 200`}   //ZOOM
-        preserveAspectRatio="xMinYMin meet" //"none"//xMinYMin slice" //https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
-        style={{
-          width: props.canvas_X + "px", // dim canvas //LOOK HERE 221007
-          height: props.canvas_Y + "px", // dim canvas
-        }}
-      >
-        <image id="myFixedImage" {...props.fixed} />
-        <image id="myMovingImage" {...props.moving} />
-      </svg>
-    </div>
+    //<div id="myMask">
+    <svg
+      ref={ref}
+      id="myCanvas"
+      onWheel={(event) =>
+        setViewBox(calculateViewBoxChange(event, viewBox, ref))
+      }
+      viewBox={viewBox.join(" ")}
+      //viewBox={`0 0 200 200`}   //ZOOM
+      //preserveAspectRatio="xMinYMin meet" //"none"//xMinYMin slice" //https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
+      style={{
+        width: "600px",
+        height: "600px", // pixels on the screen
+      }}
+    >
+      <image id="myFixedImage" {...props.fixed} />
+      <image id="myMovingImage" {...props.moving} />
+      <rect
+        id="myWorkSpace"
+        x={0}
+        y={0}
+        width={props.canvas_X}
+        height={props.canvas_Y}
+        fill="none"
+        stroke="green"
+      />
+    </svg>
+    //</div>
   );
 }
