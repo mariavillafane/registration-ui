@@ -36,6 +36,42 @@ function calculateViewBoxChange(event, viewBox, ref) {
   return newViewBox;
 }
 
+function handleDrag(ref, mousePosition, setMousePosition, setViewBox, viewBox) {
+  //DRAG
+  const onMouseDown = (event) =>
+    setMousePosition({
+      x: event.clientX,
+      y: event.clientY,
+      viewBox,
+    });
+
+  const onMouseUp = () => setMousePosition(null);
+
+  const onMouseMove = (event) => {
+    if (!mousePosition) return;
+    const movement = {
+      x: event.clientX - mousePosition.x,
+      y: event.clientY - mousePosition.y,
+    };
+    console.log(movement);
+
+    const canvasWidth = +ref.current.clientWidth;
+    const canvasHeight = +ref.current.clientHeight;
+
+    setViewBox([
+      mousePosition.viewBox[0] - (movement.x / canvasWidth) * viewBox[2],
+      mousePosition.viewBox[1] - (movement.y / canvasHeight) * viewBox[3],
+      viewBox[2],
+      viewBox[3],
+    ]);
+  };
+  return {
+    onMouseDown,
+    onMouseUp,
+    onMouseMove,
+  };
+}
+
 export function RegistrationCanvas(props) {
   const ref = useRef();
   const [viewBox, setViewBox] = useState([
@@ -54,33 +90,7 @@ export function RegistrationCanvas(props) {
       onWheel={(event) =>
         setViewBox(calculateViewBoxChange(event, viewBox, ref))
       }
-      //DRAG
-      onMouseDown={(event) =>
-        setMousePosition({
-          x: event.clientX,
-          y: event.clientY,
-          viewBox,
-        })
-      }
-      onMouseUp={() => setMousePosition(null)}
-      onMouseMove={(event) => {
-        if (!mousePosition) return;
-        const movement = {
-          x: event.clientX - mousePosition.x,
-          y: event.clientY - mousePosition.y,
-        };
-        console.log(movement);
-
-        const canvasWidth = +ref.current.clientWidth;
-        const canvasHeight = +ref.current.clientHeight;
-
-        setViewBox([
-          mousePosition.viewBox[0] - (movement.x / canvasWidth) * viewBox[2],
-          mousePosition.viewBox[1] - (movement.y / canvasHeight) * viewBox[3],
-          viewBox[2],
-          viewBox[3],
-        ]);
-      }}
+      {...handleDrag(ref, mousePosition, setMousePosition, setViewBox, viewBox)}
       viewBox={viewBox.join(" ")}
       //viewBox={`0 0 200 200`}   //ZOOM
       //preserveAspectRatio="xMinYMin meet" //"none"//xMinYMin slice" //https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
