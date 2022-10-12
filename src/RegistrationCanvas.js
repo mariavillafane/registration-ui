@@ -72,18 +72,9 @@ function handleDrag(ref, mousePosition, setMousePosition, setViewBox, viewBox) {
   };
 }
 
-// //<p id="demo"></p>
-// function numbersOnGrid(){
-//   //let text = "";
-//   for (let i = 0; i < 3; i=i+100) {
-//     <text x={-2+i} y={-2} font-size="25em" fill="blck">
-//     {" "}
-//     (i,0){" "}
-//   </text>
-//   }
-// }
-
-// //document.getElementsBId("demo").innerHTML = text  //GAETANO 221012
+function count(n) {
+  return Array.from({ length: n }, (_, i) => i);
+}
 
 export function RegistrationCanvas(props) {
   const ref = useRef();
@@ -133,7 +124,7 @@ export function RegistrationCanvas(props) {
       >
         <image id="myFixedImage" {...props.fixed} />
         <image id="myMovingImage" {...props.moving} />
-        <rect                                              //https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
+        <rect //https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
           id="myWorkSpace"
           x={0}
           y={0}
@@ -143,7 +134,7 @@ export function RegistrationCanvas(props) {
           stroke="green"
         />
 
-
+        {/* 
         <text x={-2} y={-2} font-size="0.25em" fill="blck">
           {" "}
           (0,0){" "}
@@ -177,12 +168,15 @@ export function RegistrationCanvas(props) {
         <text x={-15} y={-0+300} font-size="0.25em" fill="blck">
           {" "}
           (0,300){" "}
-        </text>
+        </text> */}
 
+        {count(3).map((i) => (
+          <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
+            {" "}
+            (0, {i * 100}){" "}
+          </text>
+        ))}
 
-        {/* <text {...numbersOnGrid()}></text>     //GAETANO 221012 */ } 
-
-        
         <rect width="450" height="450" x={0} y={0} fill="url(#grid)"></rect>
 
         <defs>

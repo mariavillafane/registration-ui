@@ -38,9 +38,12 @@ export function UserInput({
   const fixedImageSize = useImageSize(imageFixed.href);
   const movingImageSize = useImageSize(imageMoving.href);
 
-  const [settingsUploadedByUser, setSelectedSettings] = useImageReader(null, "readAsText");
+  const [settingsUploadedByUser, setSelectedSettings] = useImageReader(
+    null,
+    "readAsText"
+  );
   //console.log(settingsUploadedByUser);
- 
+
   useEffect(() => {
     if (settingsUploadedByUser == null) return;
 
@@ -54,10 +57,13 @@ export function UserInput({
   }, [settingsUploadedByUser]);
 
   const settingsJson = JSON.stringify(
-    { canvasX, canvasY, worldScale, movingScale, imageFixed, imageMoving }, null,2);
+    { canvasX, canvasY, worldScale, movingScale, imageFixed, imageMoving },
+    null,
+    2
+  );
 
   const settings = window.URL.createObjectURL(
-    new Blob([settingsJson], { type: "text/plain" })
+    new Blob([settingsJson], { type: "application/json" })
   );
 
   return (
@@ -191,11 +197,10 @@ export function UserInput({
         {(imageMoving?.height).toFixed(0)}{" "}
       </div>
       <br />
-      <a href={settings} download="settings1.txt">         
-
-      {/* <a href="settings?file=path/<?=$row['file_name']?>" {...settings} download>    //GAETANO 221012 */}
-      {/* <a ref="settings?file=path/<?=$row['file_name']?>" href={settings} download ="a.txt" >  */}
-      {/* https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js */}
+      <a href={settings} download="settings.json">
+        {/* <a href="settings?file=path/<?=$row['file_name']?>" {...settings} download>    //GAETANO 221012 */}
+        {/* <a ref="settings?file=path/<?=$row['file_name']?>" href={settings} download ="a.txt" >  */}
+        {/* https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js */}
 
         <button>Save Settings</button>
       </a>
