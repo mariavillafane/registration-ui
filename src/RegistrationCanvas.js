@@ -72,6 +72,19 @@ function handleDrag(ref, mousePosition, setMousePosition, setViewBox, viewBox) {
   };
 }
 
+// //<p id="demo"></p>
+// function numbersOnGrid(){
+//   //let text = "";
+//   for (let i = 0; i < 3; i=i+100) {
+//     <text x={-2+i} y={-2} font-size="25em" fill="blck">
+//     {" "}
+//     (i,0){" "}
+//   </text>
+//   }
+// }
+
+// //document.getElementsBId("demo").innerHTML = text  //GAETANO 221012
+
 export function RegistrationCanvas(props) {
   const ref = useRef();
   const [viewBox, setViewBox] = useState([
@@ -112,7 +125,6 @@ export function RegistrationCanvas(props) {
         )}
         viewBox={viewBox.join(" ")}
         //viewBox={`0 0 200 200`}   //ZOOM
-        //preserveAspectRatio="xMinYMin meet" //"none"//xMinYMin slice" //https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
 
         style={{
           width: "600px",
@@ -121,7 +133,7 @@ export function RegistrationCanvas(props) {
       >
         <image id="myFixedImage" {...props.fixed} />
         <image id="myMovingImage" {...props.moving} />
-        <rect //https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
+        <rect                                              //https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
           id="myWorkSpace"
           x={0}
           y={0}
@@ -130,11 +142,47 @@ export function RegistrationCanvas(props) {
           fill="none"
           stroke="green"
         />
+
+
         <text x={-2} y={-2} font-size="0.25em" fill="blck">
           {" "}
           (0,0){" "}
         </text>
+        <text x={-2+100} y={-2} font-size="0.25em" fill="blck">
+          {" "}
+          (100,0){" "}
+        </text>
+        <text x={-2+200} y={-2} font-size="0.25em" fill="blck">
+          {" "}
+          (200,0){" "}
+        </text>
+        <text x={-2+300} y={-2} font-size="0.25em" fill="blck">
+          {" "}
+          (300,0){" "}
+        </text>
 
+
+        <text x={-2} y={-2} font-size="0.25em" fill="blck">
+          {" "}
+          (0,0){" "}
+        </text>
+        <text x={-15} y={-0+100} font-size="0.25em" fill="blck">
+          {" "}
+          (0,100){" "}
+        </text>
+        <text x={-15} y={-0+200} font-size="0.25em" fill="blck">
+          {" "}
+          (0,200){" "}
+        </text>
+        <text x={-15} y={-0+300} font-size="0.25em" fill="blck">
+          {" "}
+          (0,300){" "}
+        </text>
+
+
+        {/* <text {...numbersOnGrid()}></text>     //GAETANO 221012 */ } 
+
+        
         <rect width="450" height="450" x={0} y={0} fill="url(#grid)"></rect>
 
         <defs>
