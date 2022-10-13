@@ -134,46 +134,20 @@ export function RegistrationCanvas(props) {
           stroke="green"
         />
 
-        {/* 
-        <text x={-2} y={-2} font-size="0.25em" fill="blck">
-          {" "}
-          (0,0){" "}
-        </text>
-        <text x={-2+100} y={-2} font-size="0.25em" fill="blck">
-          {" "}
-          (100,0){" "}
-        </text>
-        <text x={-2+200} y={-2} font-size="0.25em" fill="blck">
-          {" "}
-          (200,0){" "}
-        </text>
-        <text x={-2+300} y={-2} font-size="0.25em" fill="blck">
-          {" "}
-          (300,0){" "}
-        </text>
+        {
+          //grid of numbers
+          count(4).map((i) => (
+            <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
+              {" "}
+              (0,{i * 100}){" "}
+            </text>
+          ))
+        }
 
-
-        <text x={-2} y={-2} font-size="0.25em" fill="blck">
-          {" "}
-          (0,0){" "}
-        </text>
-        <text x={-15} y={-0+100} font-size="0.25em" fill="blck">
-          {" "}
-          (0,100){" "}
-        </text>
-        <text x={-15} y={-0+200} font-size="0.25em" fill="blck">
-          {" "}
-          (0,200){" "}
-        </text>
-        <text x={-15} y={-0+300} font-size="0.25em" fill="blck">
-          {" "}
-          (0,300){" "}
-        </text> */}
-
-        {count(3).map((i) => (
-          <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
+        {count(4).map((i) => (
+          <text key={i} x={i * 100} y={-2} fontSize="0.25em" fill="blck">
             {" "}
-            (0, {i * 100}){" "}
+            ({i * 100},0){" "}
           </text>
         ))}
 
@@ -193,8 +167,8 @@ export function RegistrationCanvas(props) {
               x2="0"
               y2="10"
               stroke="black"
-              stroke-opacity="0.67"
-              stroke-width="0.5"
+              strokeOpacity="0.67"
+              strokeWidth="0.5"
             />
             <line
               x1="0"
@@ -202,12 +176,11 @@ export function RegistrationCanvas(props) {
               x2="10"
               y2="0"
               stroke="grey"
-              stroke-opacity="0.5"
-              stroke-width="0.5"
+              strokeOpacity="0.5"
+              strokeWidth="0.5"
             />
           </pattern>
         </defs>
-
       </svg>
     </div>
   );
