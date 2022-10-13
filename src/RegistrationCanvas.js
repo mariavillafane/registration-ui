@@ -205,47 +205,9 @@ export function RegistrationCanvas(props) {
               stroke-opacity="0.5"
               stroke-width="0.5"
             />
-            {/* <polygon points="0,0 2,5 0,10 5,8 10,10 8,5 10,0 5,2" /> */}
           </pattern>
         </defs>
 
-        {/*}
-    <g transform="scale(1) rotate(0) translate(0 0) skewX(0) skewY(0)" transform-origin="711 400">
-      <rect width="2844" height="1600" x="-711" y="-400" fill="url(#rrreplicate-pattern1)"/>
-      <rect width="2844" height="1600" x="-711" y="-400" fill="url(#rrreplicate-pattern2)"/>
-      <rect width="2844" height="1600" x="-711" y="-400" fill="url(#rrreplicate-pattern3)"/></g>
-      
-      <defs xmlns="http://www.w3.org/2000/svg"><pattern id="rrreplicate-pattern1" width="260" height="260" patternUnits="userSpaceOnUse" patternTransform="rotate(30)" stroke-width="4" fill="none" stroke="#7c8cce" stroke-opacity="0.48">
-      <line x1="18.571428571428573" y1="0" x2="18.571428571428573" y2="260"/><line x1="55.71428571428572" y1="0" x2="55.71428571428572" y2="260"/><line x1="92.85714285714286" y1="0" x2="92.85714285714286" y2="260"/><line x1="130.00000000000003" y1="0" x2="130.00000000000003" y2="260"/><line x1="167.14285714285717" y1="0" x2="167.14285714285717" y2="260"/><line x1="204.2857142857143" y1="0" x2="204.2857142857143" y2="260"/><line x1="241.42857142857147" y1="0" x2="241.42857142857147" y2="260"/>
-      </pattern><pattern id="rrreplicate-pattern2" width="260" height="260" patternUnits="userSpaceOnUse" patternTransform="rotate(30)" stroke-opacity="0.67" stroke-width="2.2" fill="none" stroke="#238968">
-      <line x1="65" y1="0" x2="65" y2="260"/><line x1="195" y1="0" x2="195" y2="260"/>
-      </pattern><pattern id="rrreplicate-pattern3" width="260" height="260" patternUnits="userSpaceOnUse" patternTransform="rotate(115)" stroke-opacity="1" stroke-width="1.2" fill="none" stroke="#ffcb00">
-      <line x1="32.5" y1="0" x2="32.5" y2="260"/><line x1="97.5" y1="0" x2="97.5" y2="260"/><line x1="162.5" y1="0" x2="162.5" y2="260"/><line x1="227.5" y1="0" x2="227.5" y2="260"/>
-      </pattern></defs>
-      */}
-
-        {/*  
-      <clipPath id="myClip" >
-        <rect //https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
-          id="myWorkSpace"
-          x={0}
-          y={0}
-          width={props.canvas_X}
-          height={props.canvas_Y}
-          fill="none"
-          stroke="green"
-        />
-      </clipPath>
-      
-      <image id="myFixedImage" {...props.fixed} clip-path="url(#myClip)" />
-      <image id="myMovingImage" {...props.moving} clip-path="url(#myClip)" />
-
-    
-      https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path
-      https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/clip-path
-      https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
-
-*/}
       </svg>
     </div>
   );

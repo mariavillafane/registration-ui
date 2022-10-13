@@ -15,11 +15,11 @@ export function UserInput(props) {
     setMovingScale,
   } = props;
   
-  const fixedImageSize ..
 */
 
 import { useEffect } from "react";
 import { useImageSize, useImageReader } from "./ImageTools";
+import { useImage} from "./ImageTools";
 
 export function UserInput({
   canvasX,
@@ -34,7 +34,10 @@ export function UserInput({
   setImageMoving,
   movingScale,
   setMovingScale,
+  setMovingFile,
+  setFixedFile,
 }) {
+
   const fixedImageSize = useImageSize(imageFixed.href);
   const movingImageSize = useImageSize(imageMoving.href);
 
@@ -111,6 +114,14 @@ export function UserInput({
           onChange={(event) => setWorldScale(event.target.value)}
         />
       </div>
+
+      <br />
+      Fixed Image::
+      <input
+        type="file"
+        onChange={(event) => setFixedFile(event.target.files[0])}
+      />
+
       <div>
         <br />
         Fixed-image (position on canvas)
@@ -141,6 +152,14 @@ export function UserInput({
         image on canvas dimensions (scaled by {worldScale}):{" "}
         {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
       </div>
+
+      <br />
+      Moving Image::
+      <input
+        type="file"
+        onChange={(event) => setMovingFile(event.target.files[0])}
+      />
+
       <div>
         <br />
         Moving-image (position on canvas)

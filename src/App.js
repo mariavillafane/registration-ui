@@ -39,20 +39,6 @@ function App() {
         CANVAS
       </h1>
       <br />
-      Fixed Image::
-      <input
-        type="file"
-        //label="Fixed Image"
-        //id="button_image_fixed"
-        onChange={(event) => setFixedFile(event.target.files[0])}
-      />
-      <br />
-      Moving Image::
-      <input
-        type="file"
-        //id="button_image_input"
-        onChange={(event) => setMovingFile(event.target.files[0])}
-      />
       <div
         style={{
           display: "flex",
@@ -79,6 +65,8 @@ function App() {
             setImageMoving,
             movingScale,
             setMovingScale,
+            setMovingFile,
+            setFixedFile,
           }}
         />
       </div>
