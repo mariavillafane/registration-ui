@@ -34,7 +34,6 @@ function App() {
 
   return (
     <div className="App">
-      <Button variant="contained">Contained</Button>
       <h1 id="titleMain">
         image registration
         <br />

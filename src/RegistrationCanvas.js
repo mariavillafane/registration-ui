@@ -1,6 +1,22 @@
 import { useState, useRef } from "react";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import { Button } from "@mui/material";
+import { Box } from "@mui/system";
+
+//zoom speed marks
+const marks = [
+  {
+    fontSize: "0.01em", //GAETANO 221014
+    value: 0.1,
+    label: "slowZoom",
+  },
+  {
+    value: 0.9,
+    label: "fastZoom",
+  },
+];
 
 //ZOOM
 function calculateViewBoxChange(event, viewBox, ref, zoomPower) {
@@ -31,7 +47,7 @@ function calculateViewBoxChange(event, viewBox, ref, zoomPower) {
   const newViewBox = [
     viewBox[0] + offsetX,
     viewBox[1] + offsetY,
-    newViewBoxWidth, //the smaller this value, the bigger the image
+    newViewBoxWidth, //the smaller this value, the bigger the image (ZOOM)
     newViewBoxHeight,
   ];
 
@@ -91,19 +107,25 @@ export function RegistrationCanvas(props) {
 
   return (
     <div>
-      <div style={{ paddingLeft: "40px", width: "200px" }}>
+      <div
+        style={{ paddingBottom: "20px", paddingLeft: "40px", width: "300px" }}
+      >
         <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-          <span>zoomPower: </span>
-          {
-            /* zoomPower:{" "} */
-            //https://mui.com/material-ui/react-slider/
-          }
+          <span>zoomSpeed </span>
+          <span>
+            <ZoomInIcon />
+          </span>
           <Slider
+            size="small"
             value={zoomPower}
+            startIcon={<ZoomInIcon />}
             type="range"
-            min={0}
-            max={1}
+            min={0.1}
+            max={0.9}
             step={0.1}
+            valueLabelDisplay="auto"
+            //style={{fontSize: "0.01em"}}
+            marks={marks}
             onChange={(event) => setZoomPower(event.target.value)}
           />
         </Stack>
