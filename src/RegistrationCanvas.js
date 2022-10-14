@@ -1,4 +1,6 @@
 import { useState, useRef } from "react";
+import Slider from "@mui/material/Slider";
+import Stack from "@mui/material/Stack";
 
 //ZOOM
 function calculateViewBoxChange(event, viewBox, ref, zoomPower) {
@@ -89,16 +91,22 @@ export function RegistrationCanvas(props) {
 
   return (
     <div>
-      <div>
-        zoomPower:{" "}
-        <input
-          value={zoomPower}
-          type="range"
-          min={0}
-          max={1}
-          step={0.1}
-          onChange={(event) => setZoomPower(event.target.value)}
-        />
+      <div style={{ paddingLeft: "40px", width: "200px" }}>
+        <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+          <span>zoomPower: </span>
+          {
+            /* zoomPower:{" "} */
+            //https://mui.com/material-ui/react-slider/
+          }
+          <Slider
+            value={zoomPower}
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            onChange={(event) => setZoomPower(event.target.value)}
+          />
+        </Stack>
       </div>
 
       <svg
