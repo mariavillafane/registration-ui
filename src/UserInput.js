@@ -158,7 +158,7 @@ export function UserInput({
       >
         Upload Fixed Image
         <input
-          hidden
+          // hidden
           type="file"
           onChange={(event) => setFixedFile(event.target.files[0])}
         />
@@ -204,7 +204,7 @@ export function UserInput({
       >
         Upload Moving Image
         <input
-          hidden
+          //hidden
           type="file"
           onChange={(event) => setMovingFile(event.target.files[0])}
         />

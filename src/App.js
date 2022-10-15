@@ -4,6 +4,7 @@ import { RegistrationCanvas } from "./RegistrationCanvas";
 import { useImage, useImageSize, useImageReader } from "./ImageTools";
 import { UserInput } from "./UserInput";
 import Button from "@mui/material/Button";
+import { ImageUploader } from "./ImageUploader";
 
 const fixedimage = {
   path: "/fixed-image.jpg",
@@ -53,6 +54,8 @@ function App() {
           fixed={imageFixed}
           moving={imageMoving}
         />
+        <ImageUploader setMovingFile={setMovingFile} />
+
         <UserInput
           {...{
             canvasX,
