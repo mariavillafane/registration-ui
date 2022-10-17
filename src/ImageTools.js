@@ -47,6 +47,7 @@ export function useImage(href, scale) {
 // opacity: dictionary.opacity
 //})
 
+//useImageReader = not only for images, but for all type of data
 export function useImageReader(initialPath, method = "readAsDataURL") {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageAsDataURL, setImageAsDataURL] = useState(initialPath);
@@ -63,4 +64,13 @@ export function useImageReader(initialPath, method = "readAsDataURL") {
   }, [selectedFile]);
 
   return [imageAsDataURL, setSelectedFile];
+}
+
+//readImage = only for images, calls function "onComplete" with images when complete
+export function readImage(file, onComplete, method = "readAsDataURL") {
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    onComplete(reader.result);
+  });
+  reader[method](file); //reader.readAsDataURL(selectedFile);
 }

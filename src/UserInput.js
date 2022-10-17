@@ -110,7 +110,7 @@ export function UserInput({
       >
         Upload (known) Image Settings
         <input
-          hidden
+          //hidden
           type="file"
           onChange={(event) => setSelectedSettings(event.target.files[0])}
         />
@@ -291,7 +291,7 @@ export function UserInput({
       }
 
       <br />
-      <a href={settings}>
+      {/* <a href={settings}>
         <Button
           variant="outlined"
           style={{ width: "300px" }}
@@ -300,7 +300,7 @@ export function UserInput({
         >
           Add Moving Image
         </Button>
-      </a>
+      </a> */}
     </div>
   );
 }
