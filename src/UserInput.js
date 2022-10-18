@@ -17,7 +17,7 @@ export function UserInput(props) {
   
 */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useImageSize, useImageReader } from "./ImageTools";
 import { useImage } from "./ImageTools";
 import Slider from "@mui/material/Slider";
@@ -28,6 +28,115 @@ import SendIcon from "@mui/icons-material/Send";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+
+//opacity marks
+const marks = [
+  {
+    fontSize: "0.01em", //GAETANO 221014
+    value: 0.0,
+    label: "transparent",
+  },
+  {
+    value: 1.0,
+    label: "solid",
+  },
+];
+
+/////////////
+function paramsMovingImage(
+  canvasX,
+  setCanvasX,
+  canvasY,
+  setCanvasY,
+  worldScale,
+  setWorldScale,
+  imageFixed,
+  setImageFixed,
+  imageMoving,
+  setImageMoving,
+  movingScale,
+  setMovingScale,
+  setMovingFile,
+  setFixedFile,
+  movingImageSize,
+  fixedImageSize
+) {
+  const [params, setParams] = useState(null);
+  return (
+    <div>
+      <div>
+        <br />
+        Moving-image (position on canvas)
+      </div>
+      <div>
+        coord_x:{" "}
+        <input
+          value={imageMoving.x}
+          type="number"
+          onChange={(event) =>
+            setImageMoving({ ...imageMoving, x: event.target.value })
+          }
+        />
+      </div>
+      <div>
+        coord_y:{" "}
+        <input
+          value={imageMoving.y}
+          type="number"
+          onChange={(event) =>
+            setImageMoving({ ...imageMoving, y: event.target.value })
+          }
+        />
+      </div>
+      <div>
+        scaling (only affects moving image, as initial parameter):{" "}
+        <input
+          value={movingScale}
+          type="number"
+          min={0.8}
+          max={1.2}
+          step={0.01}
+          onChange={(event) => setMovingScale(event.target.value)}
+        />
+      </div>
+      <div>
+        image original dimensions (wxh): {movingImageSize.width} x{" "}
+        {movingImageSize.height} <br />
+        image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
+        ): {(imageMoving?.width).toFixed(0)} x{" "}
+        {(imageMoving?.height).toFixed(0)}{" "}
+      </div>
+
+      <div
+        style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
+      >
+        <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+          <span>opacity: </span>
+          <Slider
+            size="small"
+            variant="contained"
+            value={imageMoving.opacity}
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            marks={marks}
+            valueLabelDisplay="auto"
+            onChange={(event) =>
+              setImageMoving({ ...imageMoving, opacity: event.target.value })
+            }
+          />
+        </Stack>
+      </div>
+    </div>
+  );
+}
+
+const showParams = () => {
+  params;
+};
+/////////////https://www.w3schools.com/react/showreact.asp?filename=demo2_react_usestate4
+////////////https://www.w3schools.com/react/showreact.asp?filename=demo2_react_usestate_update
 
 export function UserInput({
   canvasX,
@@ -97,16 +206,10 @@ export function UserInput({
         marginLeft: "20px",
       }}
     >
-      {/* Upload (known) Image Settings:
-      <input
-        type="file"
-        onChange={(event) => setSelectedSettings(event.target.files[0])}
-      /> */}
-
       <Button
         variant="contained"
         style={{ width: "350px" }}
-        startIcon={<FileUploadIcon />}
+        starticon={<FileUploadIcon />}
       >
         Upload (known) Image Settings
         <input
@@ -200,80 +303,85 @@ export function UserInput({
       <Button
         variant="outlined"
         style={{ width: "300px" }}
-        startIcon={<FileUploadIcon />}
+        starticon={<FileUploadIcon />}
       >
         Upload Moving Image
         <input
           //hidden
           type="file"
-          onChange={(event) => setMovingFile(event.target.files[0])}
+          onChange={(event) => [
+            setMovingFile(event.target.files[0]),
+            console.log("hello world II"),
+          ]}
         />
       </Button>
 
-      <div>
-        <br />
-        Moving-image (position on canvas)
-      </div>
-      <div>
-        coord_x:{" "}
-        <input
-          value={imageMoving.x}
-          type="number"
-          onChange={(event) =>
-            setImageMoving({ ...imageMoving, x: event.target.value })
-          }
-        />
-      </div>
-      <div>
-        coord_y:{" "}
-        <input
-          value={imageMoving.y}
-          type="number"
-          onChange={(event) =>
-            setImageMoving({ ...imageMoving, y: event.target.value })
-          }
-        />
-      </div>
-      <div>
-        scaling (only affects moving image, as initial parameter):{" "}
-        <input
-          value={movingScale}
-          type="number"
-          min={0.8}
-          max={1.2}
-          step={0.01}
-          onChange={(event) => setMovingScale(event.target.value)}
-        />
-      </div>
-      <div>
-        image original dimensions (wxh): {movingImageSize.width} x{" "}
-        {movingImageSize.height} <br />
-        image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
-        ): {(imageMoving?.width).toFixed(0)} x{" "}
-        {(imageMoving?.height).toFixed(0)}{" "}
-      </div>
-
-      <div
-        style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
-      >
-        <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-          <span>opacity: </span>
-          <Slider
-            size="small"
-            variant="contained"
-            value={imageMoving.opacity}
-            type="range"
-            min={0}
-            max={1}
-            step={0.1}
-            marks={marks}
-            valueLabelDisplay="auto"
+      {/* 
+        <div>
+          <br />
+          Moving-image (position on canvas)
+        </div>
+        <div>
+          coord_x:{" "}
+          <input
+            value={imageMoving.x}
+            type="number"
             onChange={(event) =>
-              setImageMoving({ ...imageMoving, opacity: event.target.value })
+              setImageMoving({ ...imageMoving, x: event.target.value })
             }
           />
-        </Stack>
-      </div>
+        </div>      
+        <div>
+          coord_y:{" "}
+          <input
+            value={imageMoving.y}
+            type="number"
+            onChange={(event) =>
+              setImageMoving({ ...imageMoving, y: event.target.value })
+            }
+          />
+        </div>
+        <div>
+          scaling (only affects moving image, as initial parameter):{" "}
+          <input
+            value={movingScale}
+            type="number"
+            min={0.8}
+            max={1.2}
+            step={0.01}
+            onChange={(event) => setMovingScale(event.target.value)}
+          />
+        </div>
+        <div>
+          image original dimensions (wxh): {movingImageSize.width} x{" "}
+          {movingImageSize.height} <br />
+          image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
+          ): {(imageMoving?.width).toFixed(0)} x{" "}
+          {(imageMoving?.height).toFixed(0)}{" "}
+        </div>
+
+        <div
+          style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
+        >
+          <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+            <span>opacity: </span>
+            <Slider
+              size="small"
+              variant="contained"
+              value={imageMoving.opacity}
+              type="range"
+              min={0}
+              max={1}
+              step={0.1}
+              marks={marks}
+              valueLabelDisplay="auto"
+              onChange={(event) =>
+                setImageMoving({ ...imageMoving, opacity: event.target.value })
+              }
+            />
+          </Stack>
+        </div>
+ */}
 
       <br />
       <a href={settings} download="settings.json">
@@ -285,22 +393,6 @@ export function UserInput({
           Save Moving Image Settings
         </Button>
       </a>
-
-      {
-        //here need to display all setting to add a second movign image
-      }
-
-      <br />
-      {/* <a href={settings}>
-        <Button
-          variant="outlined"
-          style={{ width: "300px" }}
-          color="success"
-          startIcon={<FileUploadIcon />}
-        >
-          Add Moving Image
-        </Button>
-      </a> */}
     </div>
   );
 }
