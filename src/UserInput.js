@@ -43,6 +43,34 @@ const marks = [
 ];
 
 /////////////
+function paramsImages() {
+  const [dictionaryParams, setDictionaryParams] = useState({
+    title: null,
+    model: "Mustang",
+    year: "1964",
+    color: "red",
+  });
+
+  const updateParams = () => {
+    setDictionaryParams((previousState) => {
+      return { ...previousState, title: "Moving-image (position on canvas)" };
+    });
+  };
+
+  return (
+    <>
+      <h1>{paramsImages.title}</h1>
+      <p>
+        It is a {paramsImages.color} {paramsImages.model} from{" "}
+        {paramsImages.year}.
+      </p>
+      <button type="button" onClick={updateParams}>
+        Blue
+      </button>
+    </>
+  );
+}
+
 function paramsMovingImage(
   canvasX,
   setCanvasX,
@@ -219,87 +247,91 @@ export function UserInput({
         />
       </Button>
 
-      <br />
-      <div>Virtual-canvas (bigger than "scaled" Fixed image)</div>
-      <div>
-        width (pixels along x):{" "}
-        <input
-          value={canvasX}
-          type="number"
-          onChange={(event) => setCanvasX(event.target.value)}
-        />
-      </div>
-      <div>
-        height (pixels along y):{" "}
-        <input
-          value={canvasY}
-          type="number"
-          onChange={(event) => setCanvasY(event.target.value)}
-        />
-      </div>
       <div>
         <br />
-        WORKING IMAGES
-        <br />
-        world-scale (affects both working images):{" "}
-        <input
-          value={worldScale}
-          type="number"
-          min={0.1}
-          max={1.2}
-          step={0.01}
-          onChange={(event) => setWorldScale(event.target.value)}
-        />
+        <div>Virtual-canvas (bigger than "scaled" Fixed image)</div>
+        <div>
+          width (pixels along x):{" "}
+          <input
+            value={canvasX}
+            type="number"
+            onChange={(event) => setCanvasX(event.target.value)}
+          />
+        </div>
+        <div>
+          height (pixels along y):{" "}
+          <input
+            value={canvasY}
+            type="number"
+            onChange={(event) => setCanvasY(event.target.value)}
+          />
+        </div>
+        <div>
+          <br />
+          WORKING IMAGES
+          <br />
+          world-scale (affects both working images):{" "}
+          <input
+            value={worldScale}
+            type="number"
+            min={0.1}
+            max={1.2}
+            step={0.01}
+            onChange={(event) => setWorldScale(event.target.value)}
+          />
+        </div>
       </div>
-
-      <br />
-      <br />
-      <Button
-        variant="outlined"
-        style={{ width: "300px" }}
-        startIcon={<FileUploadIcon />}
-      >
-        Upload Fixed Image
-        <input
-          // hidden
-          type="file"
-          onChange={(event) => setFixedFile(event.target.files[0])}
-        />
-      </Button>
 
       <div>
         <br />
-        Fixed-image (position on canvas)
-      </div>
-      <div>
-        coord_x:{" "}
-        <input
-          value={imageFixed.x}
-          type="number"
-          onChange={(event) =>
-            setImageFixed({ ...imageFixed, x: event.target.value })
-          }
-        />
-      </div>
-      <div>
-        coord_y:{" "}
-        <input
-          value={imageFixed.y}
-          type="number"
-          onChange={(event) =>
-            setImageFixed({ ...imageFixed, y: event.target.value })
-          }
-        />
-      </div>
-      <div>
-        image original dimensions (wxh): {fixedImageSize.width} x{" "}
-        {fixedImageSize.height} <br />
-        image on canvas dimensions (scaled by {worldScale}):{" "}
-        {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
+        <br />
+        <Button
+          variant="outlined"
+          style={{ width: "300px" }}
+          startIcon={<FileUploadIcon />}
+        >
+          Upload Fixed Image
+          <input
+            // hidden
+            type="file"
+            onChange={(event) => setFixedFile(event.target.files[0])}
+          />
+        </Button>
+
+        <div>
+          <br />
+          Fixed-image (position on canvas)
+        </div>
+        <div>
+          coord_x:{" "}
+          <input
+            value={imageFixed.x}
+            type="number"
+            onChange={(event) =>
+              setImageFixed({ ...imageFixed, x: event.target.value })
+            }
+          />
+        </div>
+        <div>
+          coord_y:{" "}
+          <input
+            value={imageFixed.y}
+            type="number"
+            onChange={(event) =>
+              setImageFixed({ ...imageFixed, y: event.target.value })
+            }
+          />
+        </div>
+        <div>
+          image original dimensions (wxh): {fixedImageSize.width} x{" "}
+          {fixedImageSize.height} <br />
+          image on canvas dimensions (scaled by {worldScale}):{" "}
+          {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
+        </div>
+        <br />
+        <br />
       </div>
 
-      <br />
-      <br />
       <Button
         variant="outlined"
         style={{ width: "300px" }}
@@ -312,6 +344,7 @@ export function UserInput({
           onChange={(event) => [
             setMovingFile(event.target.files[0]),
             console.log("hello world II"),
+            paramsImages(),
           ]}
         />
       </Button>
