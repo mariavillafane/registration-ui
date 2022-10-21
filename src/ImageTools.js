@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
 
+export function getImageSize(imageUrl, onComplete) {
+  const image = new Image();
+  image.onload = () =>
+    //future loaded image
+    onComplete({
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+    });
+  image.src = imageUrl; //start loading the image, after it has been stated to get natural width and height of the (future) loaded image
+}
+
 export function useImageSize(path) {
   const [size, setSize] = useState({
     height: 0,
@@ -66,7 +77,7 @@ export function useImageReader(initialPath, method = "readAsDataURL") {
   return [imageAsDataURL, setSelectedFile];
 }
 
-//readImage = only for images, calls function "onComplete" with images when complete
+//readImage = only for images, calls function "onComplete (as placeholder for lambda or anyotherfunction" with images when complete
 export function readImage(file, onComplete, method = "readAsDataURL") {
   const reader = new FileReader();
   reader.addEventListener("load", () => {

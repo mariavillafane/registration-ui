@@ -42,127 +42,127 @@ const marks = [
   },
 ];
 
-/////////////
-function paramsImages() {
-  const [dictionaryParams, setDictionaryParams] = useState({
-    title: null,
-    model: "Mustang",
-    year: "1964",
-    color: "red",
-  });
+// /////////////
+// function paramsImages() {
+//   const [dictionaryParams, setDictionaryParams] = useState({
+//     title: null,
+//     model: "Mustang",
+//     year: "1964",
+//     color: "red",
+//   });
 
-  const updateParams = () => {
-    setDictionaryParams((previousState) => {
-      return { ...previousState, title: "Moving-image (position on canvas)" };
-    });
-  };
+//   const updateParams = () => {
+//     setDictionaryParams((previousState) => {
+//       return { ...previousState, title: "Moving-image (position on canvas)" };
+//     });
+//   };
 
-  return (
-    <>
-      <h1>{paramsImages.title}</h1>
-      <p>
-        It is a {paramsImages.color} {paramsImages.model} from{" "}
-        {paramsImages.year}.
-      </p>
-      <button type="button" onClick={updateParams}>
-        Blue
-      </button>
-    </>
-  );
-}
+//   return (
+//     <>
+//       <h1>{paramsImages.title}</h1>
+//       <p>
+//         It is a {paramsImages.color} {paramsImages.model} from{" "}
+//         {paramsImages.year}.
+//       </p>
+//       <button type="button" onClick={updateParams}>
+//         Blue
+//       </button>
+//     </>
+//   );
+// }
 
-function paramsMovingImage(
-  canvasX,
-  setCanvasX,
-  canvasY,
-  setCanvasY,
-  worldScale,
-  setWorldScale,
-  imageFixed,
-  setImageFixed,
-  imageMoving,
-  setImageMoving,
-  movingScale,
-  setMovingScale,
-  setMovingFile,
-  setFixedFile,
-  movingImageSize,
-  fixedImageSize
-) {
-  const [params, setParams] = useState(null);
-  return (
-    <div>
-      <div>
-        <br />
-        Moving-image (position on canvas)
-      </div>
-      <div>
-        coord_x:{" "}
-        <input
-          value={imageMoving.x}
-          type="number"
-          onChange={(event) =>
-            setImageMoving({ ...imageMoving, x: event.target.value })
-          }
-        />
-      </div>
-      <div>
-        coord_y:{" "}
-        <input
-          value={imageMoving.y}
-          type="number"
-          onChange={(event) =>
-            setImageMoving({ ...imageMoving, y: event.target.value })
-          }
-        />
-      </div>
-      <div>
-        scaling (only affects moving image, as initial parameter):{" "}
-        <input
-          value={movingScale}
-          type="number"
-          min={0.8}
-          max={1.2}
-          step={0.01}
-          onChange={(event) => setMovingScale(event.target.value)}
-        />
-      </div>
-      <div>
-        image original dimensions (wxh): {movingImageSize.width} x{" "}
-        {movingImageSize.height} <br />
-        image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
-        ): {(imageMoving?.width).toFixed(0)} x{" "}
-        {(imageMoving?.height).toFixed(0)}{" "}
-      </div>
+// function paramsMovingImage(
+//   canvasX,
+//   setCanvasX,
+//   canvasY,
+//   setCanvasY,
+//   worldScale,
+//   setWorldScale,
+//   imageFixed,
+//   setImageFixed,
+//   imageMoving,
+//   setImageMoving,
+//   movingScale,
+//   setMovingScale,
+//   setMovingFile,
+//   setFixedFile,
+//   movingImageSize,
+//   fixedImageSize
+// ) {
+//   const [params, setParams] = useState(null);
+//   return (
+//     <div>
+//       <div>
+//         <br />
+//         Moving-image (position on canvas)
+//       </div>
+//       <div>
+//         coord_x:{" "}
+//         <input
+//           value={imageMoving.x}
+//           type="number"
+//           onChange={(event) =>
+//             setImageMoving({ ...imageMoving, x: event.target.value })
+//           }
+//         />
+//       </div>
+//       <div>
+//         coord_y:{" "}
+//         <input
+//           value={imageMoving.y}
+//           type="number"
+//           onChange={(event) =>
+//             setImageMoving({ ...imageMoving, y: event.target.value })
+//           }
+//         />
+//       </div>
+//       <div>
+//         scaling (only affects moving image, as initial parameter):{" "}
+//         <input
+//           value={movingScale}
+//           type="number"
+//           min={0.8}
+//           max={1.2}
+//           step={0.01}
+//           onChange={(event) => setMovingScale(event.target.value)}
+//         />
+//       </div>
+//       <div>
+//         image original dimensions (wxh): {movingImageSize.width} x{" "}
+//         {movingImageSize.height} <br />
+//         image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
+//         ): {(imageMoving?.width).toFixed(0)} x{" "}
+//         {(imageMoving?.height).toFixed(0)}{" "}
+//       </div>
 
-      <div
-        style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
-      >
-        <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-          <span>opacity: </span>
-          <Slider
-            size="small"
-            variant="contained"
-            value={imageMoving.opacity}
-            type="range"
-            min={0}
-            max={1}
-            step={0.1}
-            marks={marks}
-            valueLabelDisplay="auto"
-            onChange={(event) =>
-              setImageMoving({ ...imageMoving, opacity: event.target.value })
-            }
-          />
-        </Stack>
-      </div>
-    </div>
-  );
-}
+//       <div
+//         style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
+//       >
+//         <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+//           <span>opacity: </span>
+//           <Slider
+//             size="small"
+//             variant="contained"
+//             value={imageMoving.opacity}
+//             type="range"
+//             min={0}
+//             max={1}
+//             step={0.1}
+//             marks={marks}
+//             valueLabelDisplay="auto"
+//             onChange={(event) =>
+//               setImageMoving({ ...imageMoving, opacity: event.target.value })
+//             }
+//           />
+//         </Stack>
+//       </div>
+//     </div>
+//   );
+// }
 
-const showParams = () => {
-  params;
-};
+// const showParams = () => {
+//   params;
+// };
 /////////////https://www.w3schools.com/react/showreact.asp?filename=demo2_react_usestate4
 ////////////https://www.w3schools.com/react/showreact.asp?filename=demo2_react_usestate_update
 
@@ -343,78 +343,75 @@ export function UserInput({
           type="file"
           onChange={(event) => [
             setMovingFile(event.target.files[0]),
-            console.log("hello world II"),
-            paramsImages(),
+            console.log("hello world"),
           ]}
         />
       </Button>
 
-      {/* 
-        <div>
-          <br />
-          Moving-image (position on canvas)
-        </div>
-        <div>
-          coord_x:{" "}
-          <input
-            value={imageMoving.x}
-            type="number"
-            onChange={(event) =>
-              setImageMoving({ ...imageMoving, x: event.target.value })
-            }
-          />
-        </div>      
-        <div>
-          coord_y:{" "}
-          <input
-            value={imageMoving.y}
-            type="number"
-            onChange={(event) =>
-              setImageMoving({ ...imageMoving, y: event.target.value })
-            }
-          />
-        </div>
-        <div>
-          scaling (only affects moving image, as initial parameter):{" "}
-          <input
-            value={movingScale}
-            type="number"
-            min={0.8}
-            max={1.2}
-            step={0.01}
-            onChange={(event) => setMovingScale(event.target.value)}
-          />
-        </div>
-        <div>
-          image original dimensions (wxh): {movingImageSize.width} x{" "}
-          {movingImageSize.height} <br />
-          image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
-          ): {(imageMoving?.width).toFixed(0)} x{" "}
-          {(imageMoving?.height).toFixed(0)}{" "}
-        </div>
+      <div>
+        <br />
+        Moving-image (position on canvas)
+      </div>
+      <div>
+        coord_x:{" "}
+        <input
+          value={imageMoving.x}
+          type="number"
+          onChange={(event) =>
+            setImageMoving({ ...imageMoving, x: event.target.value })
+          }
+        />
+      </div>
+      <div>
+        coord_y:{" "}
+        <input
+          value={imageMoving.y}
+          type="number"
+          onChange={(event) =>
+            setImageMoving({ ...imageMoving, y: event.target.value })
+          }
+        />
+      </div>
+      <div>
+        scaling (only affects moving image, as initial parameter):{" "}
+        <input
+          value={movingScale}
+          type="number"
+          min={0.8}
+          max={1.2}
+          step={0.01}
+          onChange={(event) => setMovingScale(event.target.value)}
+        />
+      </div>
+      <div>
+        image original dimensions (wxh): {movingImageSize.width} x{" "}
+        {movingImageSize.height} <br />
+        image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
+        ): {(imageMoving?.width).toFixed(0)} x{" "}
+        {(imageMoving?.height).toFixed(0)}{" "}
+      </div>
 
-        <div
-          style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
-        >
-          <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-            <span>opacity: </span>
-            <Slider
-              size="small"
-              variant="contained"
-              value={imageMoving.opacity}
-              type="range"
-              min={0}
-              max={1}
-              step={0.1}
-              marks={marks}
-              valueLabelDisplay="auto"
-              onChange={(event) =>
-                setImageMoving({ ...imageMoving, opacity: event.target.value })
-              }
-            />
-          </Stack>
-        </div>
- */}
+      <div
+        style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
+      >
+        <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+          <span>opacity: </span>
+          <Slider
+            size="small"
+            variant="contained"
+            value={imageMoving.opacity}
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            marks={marks}
+            valueLabelDisplay="auto"
+            onChange={(event) =>
+              setImageMoving({ ...imageMoving, opacity: event.target.value })
+            }
+          />
+        </Stack>
+      </div>
 
       <br />
       <a href={settings} download="settings.json">
