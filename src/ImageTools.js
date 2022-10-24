@@ -77,6 +77,7 @@ export function useImageReader(initialPath, method = "readAsDataURL") {
   return [imageAsDataURL, setSelectedFile];
 }
 
+//readImage = takes a file and a function,
 //readImage = only for images, calls function "onComplete (as placeholder for lambda or anyotherfunction" with images when complete
 export function readImage(file, onComplete, method = "readAsDataURL") {
   const reader = new FileReader();

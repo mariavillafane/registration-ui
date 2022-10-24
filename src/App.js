@@ -16,6 +16,9 @@ const movingimage = {
   //width: 941
 };
 
+//https://www.geeksforgeeks.org/lodash-_-omit-method/
+//https://react-dnd.github.io/react-dnd/examples/sortable/simple
+
 function App() {
   const [canvasX, setCanvasX] = useState(450);
   const [canvasY, setCanvasY] = useState(450);
@@ -32,6 +35,9 @@ function App() {
     imageMovingPath,
     worldScale * movingScale
   );
+
+  const [images, setImages] = useState([]);
+  const [selectedImageId, setSelectedImageId] = useState(0);
 
   return (
     <div className="App">
@@ -51,12 +57,33 @@ function App() {
         <RegistrationCanvas
           canvas_X={canvasX}
           canvas_Y={canvasY}
-          fixed={imageFixed}
-          moving={imageMoving}
+          // fixed={imageFixed}
+          // moving={imageMoving}
+          images={images}
         />
-        <ImageUploader setMovingFile={setMovingFile} />
+        <ImageUploader
+          images={images}
+          setImages={setImages}
+          selectedImageId={selectedImageId}
+          setSelectedImageId={setSelectedImageId}
+        />
 
         <UserInput
+          imageFixed={images[0]}
+          // setImageFixed takes a function that receives the lastest imageFixed
+          setImageFixed={(newImageFixed) => {
+            setImages([newImageFixed, ...images.slice(1)]);
+          }}
+          imageMoving={images.find((image) => selectedImageId == image.id)}
+          setImageMoving={(newImageMoving) => {
+            console.log(newImageMoving);
+            const x = images.findIndex((image) => selectedImageId == image.id);
+            setImages([
+              ...images.slice(0, x),
+              newImageMoving,
+              ...images.slice(x + 1),
+            ]);
+          }}
           {...{
             canvasX,
             setCanvasX,
@@ -64,10 +91,10 @@ function App() {
             setCanvasY,
             worldScale,
             setWorldScale,
-            imageFixed,
-            setImageFixed,
-            imageMoving,
-            setImageMoving,
+            // imageFixed,
+            // setImageFixed,
+            // imageMoving,
+            // setImageMoving,
             movingScale,
             setMovingScale,
             setMovingFile,

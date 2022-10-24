@@ -152,9 +152,18 @@ export function RegistrationCanvas(props) {
           height: "600px", // pixels on the screen
         }}
       >
-        <image id="myFixedImage" {...props.fixed} />
-        <image id="myMovingImage" {...props.moving} />
-        <rect //https://developer.mozilla.org/en-US/docs/Web/SVG/Element/clipPath
+        {/* <image id="myFixedImage" {...props.fixed} />
+        <image id="myMovingImage" {...props.moving} /> */}
+
+        {props.images.map((imageUploaded) => (
+          <image
+            key={imageUploaded.id}
+            {...imageUploaded}
+            width={imageUploaded.width * imageUploaded.scaling}
+            height={imageUploaded.height * imageUploaded.scaling}
+          />
+        ))}
+        <rect
           id="myWorkSpace"
           x={0}
           y={0}

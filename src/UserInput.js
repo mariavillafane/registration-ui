@@ -42,130 +42,6 @@ const marks = [
   },
 ];
 
-// /////////////
-// function paramsImages() {
-//   const [dictionaryParams, setDictionaryParams] = useState({
-//     title: null,
-//     model: "Mustang",
-//     year: "1964",
-//     color: "red",
-//   });
-
-//   const updateParams = () => {
-//     setDictionaryParams((previousState) => {
-//       return { ...previousState, title: "Moving-image (position on canvas)" };
-//     });
-//   };
-
-//   return (
-//     <>
-//       <h1>{paramsImages.title}</h1>
-//       <p>
-//         It is a {paramsImages.color} {paramsImages.model} from{" "}
-//         {paramsImages.year}.
-//       </p>
-//       <button type="button" onClick={updateParams}>
-//         Blue
-//       </button>
-//     </>
-//   );
-// }
-
-// function paramsMovingImage(
-//   canvasX,
-//   setCanvasX,
-//   canvasY,
-//   setCanvasY,
-//   worldScale,
-//   setWorldScale,
-//   imageFixed,
-//   setImageFixed,
-//   imageMoving,
-//   setImageMoving,
-//   movingScale,
-//   setMovingScale,
-//   setMovingFile,
-//   setFixedFile,
-//   movingImageSize,
-//   fixedImageSize
-// ) {
-//   const [params, setParams] = useState(null);
-//   return (
-//     <div>
-//       <div>
-//         <br />
-//         Moving-image (position on canvas)
-//       </div>
-//       <div>
-//         coord_x:{" "}
-//         <input
-//           value={imageMoving.x}
-//           type="number"
-//           onChange={(event) =>
-//             setImageMoving({ ...imageMoving, x: event.target.value })
-//           }
-//         />
-//       </div>
-//       <div>
-//         coord_y:{" "}
-//         <input
-//           value={imageMoving.y}
-//           type="number"
-//           onChange={(event) =>
-//             setImageMoving({ ...imageMoving, y: event.target.value })
-//           }
-//         />
-//       </div>
-//       <div>
-//         scaling (only affects moving image, as initial parameter):{" "}
-//         <input
-//           value={movingScale}
-//           type="number"
-//           min={0.8}
-//           max={1.2}
-//           step={0.01}
-//           onChange={(event) => setMovingScale(event.target.value)}
-//         />
-//       </div>
-//       <div>
-//         image original dimensions (wxh): {movingImageSize.width} x{" "}
-//         {movingImageSize.height} <br />
-//         image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
-//         ): {(imageMoving?.width).toFixed(0)} x{" "}
-//         {(imageMoving?.height).toFixed(0)}{" "}
-//       </div>
-
-//       <div
-//         style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
-//       >
-//         <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-//           <span>opacity: </span>
-//           <Slider
-//             size="small"
-//             variant="contained"
-//             value={imageMoving.opacity}
-//             type="range"
-//             min={0}
-//             max={1}
-//             step={0.1}
-//             marks={marks}
-//             valueLabelDisplay="auto"
-//             onChange={(event) =>
-//               setImageMoving({ ...imageMoving, opacity: event.target.value })
-//             }
-//           />
-//         </Stack>
-//       </div>
-//     </div>
-//   );
-// }
-
-// const showParams = () => {
-//   params;
-// };
-/////////////https://www.w3schools.com/react/showreact.asp?filename=demo2_react_usestate4
-////////////https://www.w3schools.com/react/showreact.asp?filename=demo2_react_usestate_update
-
 export function UserInput({
   canvasX,
   setCanvasX,
@@ -177,14 +53,7 @@ export function UserInput({
   setImageFixed,
   imageMoving,
   setImageMoving,
-  movingScale,
-  setMovingScale,
-  setMovingFile,
-  setFixedFile,
 }) {
-  const fixedImageSize = useImageSize(imageFixed.href);
-  const movingImageSize = useImageSize(imageMoving.href);
-
   const [settingsUploadedByUser, setSelectedSettings] = useImageReader(
     null,
     "readAsText"
@@ -211,13 +80,13 @@ export function UserInput({
     setCanvasX(parsedSettings.canvasX);
     setCanvasY(parsedSettings.canvasY);
     setWorldScale(parsedSettings.worldScale);
-    setMovingScale(parsedSettings.movingScale);
+    // setMovingScale(parsedSettings.movingScale);
     setImageFixed(parsedSettings.imageFixed);
     setImageMoving(parsedSettings.imageMoving);
   }, [settingsUploadedByUser]);
 
   const settingsJson = JSON.stringify(
-    { canvasX, canvasY, worldScale, movingScale, imageFixed, imageMoving },
+    { canvasX, canvasY, worldScale, imageFixed, imageMoving },
     null,
     2
   );
@@ -225,6 +94,10 @@ export function UserInput({
   const settings = window.URL.createObjectURL(
     new Blob([settingsJson], { type: "application/json" })
   );
+
+  if (!imageFixed) {
+    return null;
+  }
 
   return (
     <div
@@ -285,18 +158,6 @@ export function UserInput({
       <div>
         <br />
         <br />
-        <Button
-          variant="outlined"
-          style={{ width: "300px" }}
-          startIcon={<FileUploadIcon />}
-        >
-          Upload Fixed Image
-          <input
-            // hidden
-            type="file"
-            onChange={(event) => setFixedFile(event.target.files[0])}
-          />
-        </Button>
 
         <div>
           <br />
@@ -308,7 +169,7 @@ export function UserInput({
             value={imageFixed.x}
             type="number"
             onChange={(event) =>
-              setImageFixed({ ...imageFixed, x: event.target.value })
+              setImageFixed({ ...imageFixed, x: +event.target.value })
             }
           />
         </div>
@@ -318,35 +179,19 @@ export function UserInput({
             value={imageFixed.y}
             type="number"
             onChange={(event) =>
-              setImageFixed({ ...imageFixed, y: event.target.value })
+              setImageFixed({ ...imageFixed, y: +event.target.value })
             }
           />
         </div>
         <div>
-          image original dimensions (wxh): {fixedImageSize.width} x{" "}
-          {fixedImageSize.height} <br />
+          image original dimensions (wxh): {imageFixed.width} x{" "}
+          {imageFixed.height} <br />
           image on canvas dimensions (scaled by {worldScale}):{" "}
           {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
         </div>
         <br />
         <br />
       </div>
-
-      <Button
-        variant="outlined"
-        style={{ width: "300px" }}
-        starticon={<FileUploadIcon />}
-      >
-        Upload Moving Image
-        <input
-          //hidden
-          type="file"
-          onChange={(event) => [
-            setMovingFile(event.target.files[0]),
-            console.log("hello world"),
-          ]}
-        />
-      </Button>
 
       <div>
         <br />
@@ -358,7 +203,7 @@ export function UserInput({
           value={imageMoving.x}
           type="number"
           onChange={(event) =>
-            setImageMoving({ ...imageMoving, x: event.target.value })
+            setImageMoving({ ...imageMoving, x: +event.target.value })
           }
         />
       </div>
@@ -368,27 +213,30 @@ export function UserInput({
           value={imageMoving.y}
           type="number"
           onChange={(event) =>
-            setImageMoving({ ...imageMoving, y: event.target.value })
+            setImageMoving({ ...imageMoving, y: +event.target.value })
           }
         />
       </div>
       <div>
         scaling (only affects moving image, as initial parameter):{" "}
         <input
-          value={movingScale}
+          value={imageMoving.scaling}
           type="number"
           min={0.8}
           max={1.2}
           step={0.01}
-          onChange={(event) => setMovingScale(event.target.value)}
+          onChange={(event) =>
+            setImageMoving({ ...imageMoving, scaling: +event.target.value })
+          }
         />
       </div>
       <div>
-        image original dimensions (wxh): {movingImageSize.width} x{" "}
-        {movingImageSize.height} <br />
-        image on canvas dimensions (scaled by {worldScale}, and by {movingScale}
-        ): {(imageMoving?.width).toFixed(0)} x{" "}
-        {(imageMoving?.height).toFixed(0)}{" "}
+        image original dimensions (wxh): {imageMoving?.width} x{" "}
+        {imageMoving?.height} <br />
+        image on canvas dimensions (scaled by {worldScale}, and by{" "}
+        {imageMoving.scaling}
+        ): {imageMoving ? (imageMoving?.width).toFixed(0) : 0} x{" "}
+        {imageMoving ? (imageMoving?.height).toFixed(0) : 0}{" "}
       </div>
 
       <div
@@ -407,7 +255,7 @@ export function UserInput({
             marks={marks}
             valueLabelDisplay="auto"
             onChange={(event) =>
-              setImageMoving({ ...imageMoving, opacity: event.target.value })
+              setImageMoving({ ...imageMoving, opacity: +event.target.value })
             }
           />
         </Stack>

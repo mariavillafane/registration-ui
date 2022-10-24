@@ -25,10 +25,15 @@ function toImageEntry(imageUrl, w, h) {
   };
 }
 
-export function ImageUploader({ setMovingFile }) {
+export function ImageUploader({
+  images,
+  setImages,
+  selectedImageId,
+  setSelectedImageId,
+}) {
   //images, setImages
-  const [images, setImages] = useState([]);
-  console.log("rerender", images.length);
+  //const [images, setImages] = useState([]);
+  console.log("rerender", images.length, selectedImageId);
 
   return (
     <Card sx={{ minWidth: 275 }}>
@@ -62,7 +67,7 @@ export function ImageUploader({ setMovingFile }) {
                   color="text.secondary"
                   gutterBottom
                 >
-                  Upload Moving Images
+                  Upload Working Images
                 </Typography>
               </div>
             )}
@@ -72,7 +77,16 @@ export function ImageUploader({ setMovingFile }) {
               image // we can't rely in index since it will refer to the wrong entry as soon as one deletes an entry
             ) => (
               <Card key={image.id}>
-                <img src={image.href} style={{ width: 140 }} />
+                <img
+                  src={image.href}
+                  style={{
+                    width: 140,
+                    // border: "solid 1px coral"
+                    border:
+                      selectedImageId == image.id ? "solid 1px blue" : "none",
+                  }}
+                  onClick={() => setSelectedImageId(image.id)}
+                />
                 <ClearIcon
                   onClick={() => {
                     setImages((uploadedImages) => {
