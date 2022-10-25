@@ -110,7 +110,6 @@ export function UserInput({
     setCanvasY(parsedSettings.canvasY);
     setWorldScale(parsedSettings.worldScale);
     setImageFixed(parsedSettings.imageFixed);
-    //setImageMoving(parsedSettings.imageMoving); //GAETANO 25/10/2022 => how to set "setWorkingImages" (instead of only 1 movingImage, so to give attributes to all moving images!)
     setWorkingImages(parsedSettings.workingImages);
   }, [settingsUploadedByUser]);
 
