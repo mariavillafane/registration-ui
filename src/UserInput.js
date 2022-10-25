@@ -53,6 +53,8 @@ export function UserInput({
   setImageFixed,
   imageMoving,
   setImageMoving,
+  workingImages,
+  setWorkingImages,
 }) {
   const [settingsUploadedByUser, setSelectedSettings] = useImageReader(
     null,
@@ -73,6 +75,33 @@ export function UserInput({
     },
   ];
 
+  /////////////////
+
+  // useEffect(() => {
+  //   if (settingsUploadedByUser == null) return;
+
+  //   const parsedSettings = JSON.parse(settingsUploadedByUser);
+  //   setCanvasX(parsedSettings.canvasX);
+  //   setCanvasY(parsedSettings.canvasY);
+  //   setWorldScale(parsedSettings.worldScale);
+  //   setImageFixed(parsedSettings.imageFixed);
+  //   setImageMoving(parsedSettings.imageMoving);
+  // }, [settingsUploadedByUser]);
+
+  // //delete imageFixed['href']
+
+  // const settingsJson = JSON.stringify(
+  //   { canvasX, canvasY, worldScale, imageFixed, imageMoving },
+  //   null,
+  //   2
+  // );
+
+  // const settings = window.URL.createObjectURL(
+  //   new Blob([settingsJson], { type: "application/json" })
+  // );
+
+  /////////////////
+
   useEffect(() => {
     if (settingsUploadedByUser == null) return;
 
@@ -80,13 +109,13 @@ export function UserInput({
     setCanvasX(parsedSettings.canvasX);
     setCanvasY(parsedSettings.canvasY);
     setWorldScale(parsedSettings.worldScale);
-    // setMovingScale(parsedSettings.movingScale);
     setImageFixed(parsedSettings.imageFixed);
-    setImageMoving(parsedSettings.imageMoving);
+    //setImageMoving(parsedSettings.imageMoving); //GAETANO 25/10/2022 => how to set "setWorkingImages" (instead of only 1 movingImage, so to give attributes to all moving images!)
+    setWorkingImages(parsedSettings.workingImages);
   }, [settingsUploadedByUser]);
 
   const settingsJson = JSON.stringify(
-    { canvasX, canvasY, worldScale, imageFixed, imageMoving },
+    { canvasX, canvasY, worldScale, imageFixed, workingImages }, //workingImages (instead of imageMoving)
     null,
     2
   );
@@ -94,6 +123,8 @@ export function UserInput({
   const settings = window.URL.createObjectURL(
     new Blob([settingsJson], { type: "application/json" })
   );
+
+  /////////////////
 
   if (!imageFixed) {
     return null;
@@ -114,7 +145,6 @@ export function UserInput({
       >
         Upload (known) Image Settings
         <input
-          //hidden
           type="file"
           onChange={(event) => setSelectedSettings(event.target.files[0])}
         />
@@ -161,7 +191,7 @@ export function UserInput({
 
         <div>
           <br />
-          Fixed-image (position on canvas)
+          Fixed-image ID={imageFixed.id} (position on canvas)
         </div>
         <div>
           coord_x:{" "}
@@ -184,10 +214,46 @@ export function UserInput({
           />
         </div>
         <div>
+          scaling (affects fixed image only):{" "}
+          <input
+            value={imageFixed.scaling}
+            type="number"
+            min={0.8}
+            max={1.2}
+            step={0.01}
+            onChange={(event) =>
+              setImageFixed({ ...imageFixed, scaling: +event.target.value })
+            }
+          />
+        </div>
+        <div>
           image original dimensions (wxh): {imageFixed.width} x{" "}
           {imageFixed.height} <br />
-          image on canvas dimensions (scaled by {worldScale}):{" "}
-          {(imageFixed?.width).toFixed(0)} x {(imageFixed?.height).toFixed(0)}{" "}
+          image on canvas dimensions (scaled by {worldScale}, and by{" "}
+          {imageFixed.scaling}): {(imageFixed?.width).toFixed(0)} x{" "}
+          {(imageFixed?.height).toFixed(0)}{" "}
+        </div>
+
+        <div
+          style={{ paddingBottom: "20px", paddingLeft: "0px", width: "200px" }}
+        >
+          <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
+            <span>opacity: </span>
+            <Slider
+              size="small"
+              variant="contained"
+              value={imageFixed.opacity}
+              type="range"
+              min={0}
+              max={1}
+              step={0.1}
+              marks={marks}
+              valueLabelDisplay="auto"
+              onChange={(event) =>
+                setImageFixed({ ...imageFixed, opacity: +event.target.value })
+              }
+            />
+          </Stack>
         </div>
         <br />
         <br />
@@ -195,7 +261,7 @@ export function UserInput({
 
       <div>
         <br />
-        Moving-image (position on canvas)
+        Moving-image ID={imageMoving.id} (position on canvas)
       </div>
       <div>
         coord_x:{" "}
@@ -218,7 +284,7 @@ export function UserInput({
         />
       </div>
       <div>
-        scaling (only affects moving image, as initial parameter):{" "}
+        scaling (affects moving image only):{" "}
         <input
           value={imageMoving.scaling}
           type="number"

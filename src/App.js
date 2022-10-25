@@ -38,6 +38,7 @@ function App() {
 
   const [images, setImages] = useState([]);
   const [selectedImageId, setSelectedImageId] = useState(0);
+  const [workingImages, setWorkingImages] = useState([]);
 
   return (
     <div className="App">
@@ -69,6 +70,8 @@ function App() {
         />
 
         <UserInput
+          workingImages={[...images.slice(1)]} //{images}
+          setWorkingImages={images}
           imageFixed={images[0]}
           // setImageFixed takes a function that receives the lastest imageFixed
           setImageFixed={(newImageFixed) => {
@@ -76,14 +79,25 @@ function App() {
           }}
           imageMoving={images.find((image) => selectedImageId == image.id)}
           setImageMoving={(newImageMoving) => {
-            console.log(newImageMoving);
+            // console.log("newImageMoving ID = " + newImageMoving.id);
             const x = images.findIndex((image) => selectedImageId == image.id);
             setImages([
-              ...images.slice(0, x),
+              ...images.slice(0, x), // (0, x)
               newImageMoving,
               ...images.slice(x + 1),
             ]);
           }}
+          //GAETANO 25/10/2022 => how to set "setWorkingImages" (instead of only 1 movingImage, so to give attributes to all moving images!)
+
+          // setWorkingImages={(newImageMoving) => {
+          //   const x = images.findIndex((image) => selectedImageId == image.id);
+          //   setImages([
+          //     ...images.slice(0, x), // (0, x)
+          //     newImageMoving,
+          //     ...images.slice(x + 1),
+          //   ]);
+          // }}
+
           {...{
             canvasX,
             setCanvasX,
@@ -91,14 +105,10 @@ function App() {
             setCanvasY,
             worldScale,
             setWorldScale,
-            // imageFixed,
-            // setImageFixed,
-            // imageMoving,
-            // setImageMoving,
-            movingScale,
-            setMovingScale,
-            setMovingFile,
-            setFixedFile,
+            // movingScale,
+            // setMovingScale,
+            // setMovingFile,
+            // setFixedFile,
           }}
         />
       </div>

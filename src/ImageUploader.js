@@ -65,6 +65,7 @@ export function ImageUploader({
                 <Typography
                   sx={{ fontSize: 14 }}
                   color="text.secondary"
+                  backgroundColor="#eeeeee"
                   gutterBottom
                 >
                   Upload Working Images
@@ -81,12 +82,24 @@ export function ImageUploader({
                   src={image.href}
                   style={{
                     width: 140,
-                    // border: "solid 1px coral"
                     border:
-                      selectedImageId == image.id ? "solid 1px blue" : "none",
+                      selectedImageId == image.id && image.id !== 0
+                        ? "solid 10px coral"
+                        : selectedImageId == image.id && image.id == 0
+                        ? "solid 10px #321ab0"
+                        : "none", // OK!!
+                    //selectedImageId == image.id && image.id !== 0? "solid 10px coral" : "none",
                   }}
                   onClick={() => setSelectedImageId(image.id)}
                 />
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                  }}
+                ></div>
+                image ID = {image.id}
+                {image.id == 0 ? " (fixed)" : " (moving)"}
                 <ClearIcon
                   onClick={() => {
                     setImages((uploadedImages) => {
@@ -97,6 +110,8 @@ export function ImageUploader({
                     });
                   }}
                 />
+                <br />
+                <br />
               </Card>
             )
           )}
