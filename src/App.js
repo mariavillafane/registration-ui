@@ -23,7 +23,7 @@ function App() {
   const [canvasX, setCanvasX] = useState(450);
   const [canvasY, setCanvasY] = useState(450);
 
-  const [worldScale, setWorldScale] = useState(0.1);
+  const [worldScale, setWorldScale] = useState(1.0);
 
   const [movingScale, setMovingScale] = useState(1);
 

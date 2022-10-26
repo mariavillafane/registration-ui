@@ -217,20 +217,23 @@ export function UserInput({
           <input
             value={imageFixed.scaling}
             type="number"
-            min={0.8}
-            max={1.2}
+            min={0.1}
+            max={10.0}
             step={0.01}
             onChange={(event) =>
               setImageFixed({ ...imageFixed, scaling: +event.target.value })
             }
           />
         </div>
+
         <div>
+          {/* {const coef = (worldScale)*(imageFixed.scaling)} */}
           image original dimensions (wxh): {imageFixed.width} x{" "}
           {imageFixed.height} <br />
           image on canvas dimensions (scaled by {worldScale}, and by{" "}
-          {imageFixed.scaling}): {(imageFixed?.width).toFixed(0)} x{" "}
-          {(imageFixed?.height).toFixed(0)}{" "}
+          {imageFixed.scaling}):{" "}
+          {(imageFixed?.width * worldScale * imageFixed.scaling).toFixed(0)} x{" "}
+          {(imageFixed?.height * worldScale * imageFixed.scaling).toFixed(0)}{" "}
         </div>
 
         <div
@@ -298,10 +301,20 @@ export function UserInput({
       <div>
         image original dimensions (wxh): {imageMoving?.width} x{" "}
         {imageMoving?.height} <br />
-        image on canvas dimensions (scaled by {worldScale}, and by{" "}
+        {/* image on canvas dimensions (scaled by {worldScale}, and by{" "}
         {imageMoving.scaling}
         ): {imageMoving ? (imageMoving?.width).toFixed(0) : 0} x{" "}
-        {imageMoving ? (imageMoving?.height).toFixed(0) : 0}{" "}
+        {imageMoving ? (imageMoving?.height).toFixed(0) : 0}{" "} */}
+        image on canvas dimensions (scaled by {worldScale}, and by{" "}
+        {imageMoving.scaling}
+        ):{" "}
+        {imageMoving
+          ? (imageMoving?.width * worldScale * imageMoving.scaling).toFixed(0)
+          : 0}{" "}
+        x{" "}
+        {imageMoving
+          ? (imageMoving?.height * worldScale * imageMoving.scaling).toFixed(0)
+          : 0}{" "}
       </div>
 
       <div
