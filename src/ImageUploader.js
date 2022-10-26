@@ -31,8 +31,6 @@ export function ImageUploader({
   selectedImageId,
   setSelectedImageId,
 }) {
-  //images, setImages
-  //const [images, setImages] = useState([]);
   console.log("rerender", images.length, selectedImageId);
 
   return (
@@ -87,7 +85,7 @@ export function ImageUploader({
                         ? "solid 10px coral"
                         : selectedImageId == image.id && image.id == 0
                         ? "solid 10px #321ab0"
-                        : "none", // OK!!
+                        : "none",
                     //selectedImageId == image.id && image.id !== 0? "solid 10px coral" : "none",
                   }}
                   onClick={() => setSelectedImageId(image.id)}

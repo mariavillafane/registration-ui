@@ -75,33 +75,6 @@ export function UserInput({
     },
   ];
 
-  /////////////////
-
-  // useEffect(() => {
-  //   if (settingsUploadedByUser == null) return;
-
-  //   const parsedSettings = JSON.parse(settingsUploadedByUser);
-  //   setCanvasX(parsedSettings.canvasX);
-  //   setCanvasY(parsedSettings.canvasY);
-  //   setWorldScale(parsedSettings.worldScale);
-  //   setImageFixed(parsedSettings.imageFixed);
-  //   setImageMoving(parsedSettings.imageMoving);
-  // }, [settingsUploadedByUser]);
-
-  // //delete imageFixed['href']
-
-  // const settingsJson = JSON.stringify(
-  //   { canvasX, canvasY, worldScale, imageFixed, imageMoving },
-  //   null,
-  //   2
-  // );
-
-  // const settings = window.URL.createObjectURL(
-  //   new Blob([settingsJson], { type: "application/json" })
-  // );
-
-  /////////////////
-
   useEffect(() => {
     if (settingsUploadedByUser == null) return;
 
@@ -122,8 +95,6 @@ export function UserInput({
   const settings = window.URL.createObjectURL(
     new Blob([settingsJson], { type: "application/json" })
   );
-
-  /////////////////
 
   if (!imageFixed) {
     return null;
@@ -185,10 +156,9 @@ export function UserInput({
       </div>
 
       <div>
-        <br />
-        <br />
-
         <div>
+          <br />
+          <br />
           <br />
           Fixed-image ID={imageFixed.id} (position on canvas)
         </div>
@@ -221,13 +191,13 @@ export function UserInput({
             max={10.0}
             step={0.01}
             onChange={(event) =>
+              //setImageFixed({ ...imageFixed, scaling: ((+event.target.value)*worldScale) })  //Gaetano 26/10/2022
               setImageFixed({ ...imageFixed, scaling: +event.target.value })
             }
           />
         </div>
 
         <div>
-          {/* {const coef = (worldScale)*(imageFixed.scaling)} */}
           image original dimensions (wxh): {imageFixed.width} x{" "}
           {imageFixed.height} <br />
           image on canvas dimensions (scaled by {worldScale}, and by{" "}
@@ -290,8 +260,8 @@ export function UserInput({
         <input
           value={imageMoving.scaling}
           type="number"
-          min={0.8}
-          max={1.2}
+          min={0.1}
+          max={10.0}
           step={0.01}
           onChange={(event) =>
             setImageMoving({ ...imageMoving, scaling: +event.target.value })
@@ -301,10 +271,6 @@ export function UserInput({
       <div>
         image original dimensions (wxh): {imageMoving?.width} x{" "}
         {imageMoving?.height} <br />
-        {/* image on canvas dimensions (scaled by {worldScale}, and by{" "}
-        {imageMoving.scaling}
-        ): {imageMoving ? (imageMoving?.width).toFixed(0) : 0} x{" "}
-        {imageMoving ? (imageMoving?.height).toFixed(0) : 0}{" "} */}
         image on canvas dimensions (scaled by {worldScale}, and by{" "}
         {imageMoving.scaling}
         ):{" "}

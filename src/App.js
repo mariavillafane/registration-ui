@@ -30,12 +30,6 @@ function App() {
   const [imageMovingPath, setMovingFile] = useImageReader(movingimage.path);
   const [imageFixedPath, setFixedFile] = useImageReader(fixedimage.path);
 
-  const [imageFixed, setImageFixed] = useImage(imageFixedPath, worldScale);
-  const [imageMoving, setImageMoving] = useImage(
-    imageMovingPath,
-    worldScale * movingScale
-  );
-
   const [images, setImages] = useState([]);
   const [selectedImageId, setSelectedImageId] = useState(0);
 
@@ -57,9 +51,8 @@ function App() {
         <RegistrationCanvas
           canvas_X={canvasX}
           canvas_Y={canvasY}
-          // fixed={imageFixed}
-          // moving={imageMoving}
           images={images}
+          worldScale={worldScale}
         />
         <ImageUploader
           images={images}
@@ -78,13 +71,12 @@ function App() {
           imageMoving={images.find((image) => selectedImageId == image.id)}
           setImageMoving={(newImageMoving) => {
             // console.log("newImageMoving ID = " + newImageMoving.id);
-
             setImages((allImages) => {
               const x = allImages.findIndex(
                 (image) => selectedImageId == image.id
               );
               return [
-                ...allImages.slice(0, x), // (0, x)
+                ...allImages.slice(0, x),
                 newImageMoving,
                 ...allImages.slice(x + 1),
               ];
@@ -93,17 +85,6 @@ function App() {
           setWorkingImages={(newWorkingImages) => {
             setImages((allImages) => [allImages[0], ...newWorkingImages]);
           }}
-          //GAETANO 25/10/2022 => how to set "setWorkingImages" (instead of only 1 movingImage, so to give attributes to all moving images!)
-
-          // setWorkingImages={(newImageMoving) => {
-          //   const x = images.findIndex((image) => selectedImageId == image.id);
-          //   setImages([
-          //     ...images.slice(0, x), // (0, x)
-          //     newImageMoving,
-          //     ...images.slice(x + 1),
-          //   ]);
-          // }}
-
           {...{
             canvasX,
             setCanvasX,
@@ -111,10 +92,6 @@ function App() {
             setCanvasY,
             worldScale,
             setWorldScale,
-            // movingScale,
-            // setMovingScale,
-            // setMovingFile,
-            // setFixedFile,
           }}
         />
       </div>

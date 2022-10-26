@@ -30,26 +30,29 @@ export function useImageSize(path) {
   return size;
 }
 
-//prepare images for canvas - for moving img, note that scale = worldScale*imageScale
-export function useImage(href, scale) {
-  const img = useImageSize(href); // {width, height}
-  const [dictionary, setDictionary] = useState({
-    x: 0,
-    y: 0,
-    opacity: 1,
-  });
-  return [
-    {
-      href,
-      x: dictionary.x,
-      y: dictionary.y,
-      width: img.width * scale,
-      height: img.height * scale,
-      opacity: dictionary.opacity,
-    },
-    setDictionary,
-  ];
-}
+//////////////not used anymore? 26/10/2022
+
+// //prepare images for canvas - for moving img, note that scale = worldScale*imageScale
+// export function useImage(href, scale) {
+//   const img = useImageSize(href); // {width, height}
+//   const [dictionary, setDictionary] = useState({
+//     x: 0,
+//     y: 0,
+//     opacity: 1,
+//   });
+//   return [
+//     {
+//       href,
+//       x: dictionary.x,
+//       y: dictionary.y,
+//       width: img.width * scale,
+//       height: img.height * scale,
+//       opacity: dictionary.opacity,
+//     },
+//     setDictionary,
+//   ];
+// }
+//////////////
 
 //useSate creates a first object and a modifier for that first object, AND re-runs the function where it is located (its parent function)
 

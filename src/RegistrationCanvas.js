@@ -105,6 +105,8 @@ export function RegistrationCanvas(props) {
   const [mousePosition, setMousePosition] = useState(null);
   const [zoomPower, setZoomPower] = useState(0.01);
 
+  //console.log("worldScale =", props.worldScale) //GAETANO 26/10/2022
+
   return (
     <div>
       <div
@@ -152,17 +154,17 @@ export function RegistrationCanvas(props) {
           height: "600px", // pixels on the screen
         }}
       >
-        {/* <image id="myFixedImage" {...props.fixed} />
-        <image id="myMovingImage" {...props.moving} /> */}
-
         {props.images.map((imageUploaded) => (
           <image
             key={imageUploaded.id}
             {...imageUploaded}
-            width={imageUploaded.width * imageUploaded.scaling}
+            width={imageUploaded.width * imageUploaded.scaling} //GAETANO 26/10/2022
             height={imageUploaded.height * imageUploaded.scaling}
+            // width={imageUploaded.width * imageUploaded.scaling * props.worldScale}
+            // height={imageUploaded.height * imageUploaded.scaling * props.worldScale}
           />
         ))}
+
         <rect
           id="myWorkSpace"
           x={0}
