@@ -22,6 +22,7 @@ function toImageEntry(imageUrl, w, h) {
     height: h,
     opacity: 1,
     scaling: 1,
+    rotation: 0,
   };
 }
 

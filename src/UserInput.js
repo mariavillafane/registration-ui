@@ -183,13 +183,27 @@ export function UserInput({
           />
         </div>
         <div>
+          rotation:{" "}
+          <input
+            value={imageFixed.rotation}
+            type="number"
+            min={-180}
+            max={180}
+            step={0.01}
+            onChange={(event) =>
+              setImageFixed({ ...imageFixed, rotation: +event.target.value })
+            }
+          />
+        </div>
+
+        <div>
           scaling (affects fixed image only):{" "}
           <input
             value={imageFixed.scaling}
             type="number"
             min={0.1}
             max={10.0}
-            step={0.01}
+            step={0.001}
             onChange={(event) =>
               //setImageFixed({ ...imageFixed, scaling: ((+event.target.value)*worldScale) })  //Gaetano 26/10/2022
               setImageFixed({ ...imageFixed, scaling: +event.target.value })
@@ -256,13 +270,26 @@ export function UserInput({
         />
       </div>
       <div>
+        rotation:{" "}
+        <input
+          value={imageMoving.rotation}
+          type="number"
+          min={-180}
+          max={180}
+          step={0.01}
+          onChange={(event) =>
+            setImageMoving({ ...imageMoving, rotation: +event.target.value })
+          }
+        />
+      </div>
+      <div>
         scaling (affects moving image only):{" "}
         <input
           value={imageMoving.scaling}
           type="number"
           min={0.1}
           max={10.0}
-          step={0.01}
+          step={0.001}
           onChange={(event) =>
             setImageMoving({ ...imageMoving, scaling: +event.target.value })
           }

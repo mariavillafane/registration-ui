@@ -106,7 +106,7 @@ export function RegistrationCanvas(props) {
   const [zoomPower, setZoomPower] = useState(0.01);
 
   //console.log("worldScale =", props.worldScale) //GAETANO 26/10/2022
-
+  console.log(props.images);
   return (
     <div>
       <div
@@ -160,8 +160,9 @@ export function RegistrationCanvas(props) {
             {...imageUploaded}
             width={imageUploaded.width * imageUploaded.scaling} //GAETANO 26/10/2022
             height={imageUploaded.height * imageUploaded.scaling}
-            // width={imageUploaded.width * imageUploaded.scaling * props.worldScale}
-            // height={imageUploaded.height * imageUploaded.scaling * props.worldScale}
+            style={{
+              transform: `rotate(${imageUploaded.rotation}deg)`,
+            }}
           />
         ))}
 
