@@ -47,7 +47,7 @@ export function ImageUploader({
   console.log("rerender", images.length, selectedImageId);
 
   return (
-    <Card sx={{ minWidth: 275 }}>
+    <Card sx={{ minWidth: 250, maxHeight: 700, overflowY: "scroll" }}>
       <CardContent>
         {/* <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)}> */}
 
