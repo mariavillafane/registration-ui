@@ -11,10 +11,11 @@ import ClearIcon from "@mui/icons-material/Clear";
 
 // we use this to generate an unique id, so we can find images by id
 // using href only works if you never upload the same image
-let id = 0;
-function toImageEntry(imageUrl, w, h) {
+//let id = 0;
+
+function toImageEntry(id, imageUrl, w, h) {
   return {
-    id: id++,
+    id,
     href: imageUrl,
     x: 0,
     y: 0,
@@ -24,6 +25,17 @@ function toImageEntry(imageUrl, w, h) {
     scaling: 1,
     rotation: 0,
   };
+}
+
+function computeNextId(uploadedImages) {
+  // if (uploadedImages.length == 0){
+  //   return 0
+  // } else{
+  //   return uploadedImages.map(x => x.id).sort().reverse()[0]+1
+  // }
+  return uploadedImages
+    .map((x) => x.id + 1)
+    .reduce((a, b) => (a > b ? a : b), 0);
 }
 
 export function ImageUploader({
@@ -51,7 +63,12 @@ export function ImageUploader({
                     ) =>
                       setImages((uploadedImages) => [
                         ...uploadedImages,
-                        toImageEntry(imageUrl, width, height),
+                        toImageEntry(
+                          computeNextId(uploadedImages),
+                          imageUrl,
+                          width,
+                          height
+                        ),
                       ])
                   )
                 )
