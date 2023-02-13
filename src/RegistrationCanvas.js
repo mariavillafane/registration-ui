@@ -160,9 +160,7 @@ export function RegistrationCanvas(props) {
             {...imageUploaded}
             width={imageUploaded.width * imageUploaded.scaling} //GAETANO 26/10/2022
             height={imageUploaded.height * imageUploaded.scaling}
-            style={{
-              transform: `rotate(${imageUploaded.rotation}deg)`,
-            }}
+            transform={`rotate(${imageUploaded.rotation},${imageUploaded.x},${imageUploaded.y})`}
           />
         ))}
 
