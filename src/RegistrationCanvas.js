@@ -150,8 +150,8 @@ export function RegistrationCanvas(props) {
         //viewBox={`0 0 200 200`}   //ZOOM
 
         style={{
-          width: "600px",
-          height: "600px", // pixels on the screen
+          width: "1000px",
+          height: "800px", // pixels on the screen
         }}
       >
         {props.images.map((imageUploaded) => (
