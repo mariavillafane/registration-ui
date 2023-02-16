@@ -100,6 +100,13 @@ export function UserInput({
     return null;
   }
 
+  const svgAsString = document.querySelector("#myCanvas").outerHTML; //this is a string representative of myCanvas
+  const preface = '<?xml version="1.0" standalone="no"?>\r\n';
+  const svgBlob = new Blob([preface, svgAsString], {
+    type: "image/svg+xml;charset=utf-8",
+  });
+  const svgUrl = URL.createObjectURL(svgBlob);
+
   return (
     <div
       style={{
@@ -340,6 +347,16 @@ export function UserInput({
           startIcon={<DownloadIcon />}
         >
           Save Moving Image Settings
+        </Button>
+      </a>
+      <br />
+      <a href={svgUrl} download="canvas.svg">
+        <Button
+          variant="contained"
+          style={{ width: "300px" }}
+          startIcon={<DownloadIcon />}
+        >
+          Save Canvas (working images as per settings)
         </Button>
       </a>
     </div>
