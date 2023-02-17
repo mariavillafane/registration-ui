@@ -105,13 +105,35 @@ export function RegistrationCanvas(props) {
   const [mousePosition, setMousePosition] = useState(null);
   const [zoomPower, setZoomPower] = useState(0.01);
 
+  //new 230217
+  const [outercanvasX, setOutercanvasX] = useState(1000);
+  const [outercanvasY, setOutercanvasY] = useState(950);
+
   //console.log("worldScale =", props.worldScale) //GAETANO 26/10/2022
   console.log(props.images);
   return (
     <div>
       <div
-        style={{ paddingBottom: "20px", paddingLeft: "40px", width: "300px" }}
+        style={{ paddingBottom: "20px", paddingLeft: "40px", width: "350px" }}
       >
+        <div>
+          canvas width:{" "}
+          <input
+            value={outercanvasX}
+            type="number"
+            style={{ width: "50px" }}
+            onChange={(event) => setOutercanvasX(event.target.value)}
+          />{" "}
+          x height:{" "}
+          <input
+            value={outercanvasY}
+            type="number"
+            style={{ width: "50px" }}
+            onChange={(event) => setOutercanvasY(event.target.value)}
+          />{" "}
+          (pixels)
+        </div>
+
         <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
           <span>zoomSpeed </span>
           <span>
@@ -151,8 +173,8 @@ export function RegistrationCanvas(props) {
         //viewBox={`0 0 200 200`}   //ZOOM
 
         style={{
-          width: "1000px",
-          height: "800px", // pixels on the screen
+          width: outercanvasX, //"1000px",
+          height: outercanvasY, //"800px", // pixels on the screen
         }}
       >
         {props.images.map((imageUploaded) => (
