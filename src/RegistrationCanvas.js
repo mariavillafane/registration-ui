@@ -111,13 +111,28 @@ export function RegistrationCanvas(props) {
 
   //console.log("worldScale =", props.worldScale) //GAETANO 26/10/2022
   console.log(props.images);
+
+  //get size of inner (green) canvas
+  const inner_canvas_width = props.images
+    .map((image) => image.width * image.scaling + image.x)
+    .reduce((a, b) => (a > b ? a : b), 0); //is a bigger thank? if yes keep a, else keep b, and start with 0
+
+  const inner_canvas_height = props.images
+    .map((image) => image.height * image.scaling + image.y)
+    .reduce((a, b) => (a > b ? a : b), 0); //is a bigger thank? if yes keep a, else keep b, and start with 0
+
+  const inner_grid_start = props.images.reduce(
+    ([x, y], b) => [x < b.x ? x : b.x, y < b.y ? y : b.y],
+    [0, 0]
+  );
+
   return (
     <div>
       <div
-        style={{ paddingBottom: "20px", paddingLeft: "40px", width: "350px" }}
+        style={{ paddingBottom: "20px", paddingLeft: "40px", width: "450px" }}
       >
         <div>
-          canvas width:{" "}
+          outer canvas (red) width:{" "}
           <input
             value={outercanvasX}
             type="number"
@@ -186,36 +201,75 @@ export function RegistrationCanvas(props) {
             transform={`rotate(${imageUploaded.rotation},${imageUploaded.x},${imageUploaded.y})`}
           />
         ))}
-
+        {/* 
         <rect
           id="myWorkSpace"
           x={0}
           y={0}
-          width={props.canvas_X}
-          height={props.canvas_Y}
+          width={inner_canvas_width} //{props.canvas_X}
+          height={inner_canvas_height} //{props.canvas_Y}
           fill="none"
-          stroke="green"
+          stroke="grey"
+        /> */}
+
+        <line
+          id="myWorkSpace_axis_x"
+          x1={inner_grid_start[0]}
+          y1={0}
+          x2={inner_canvas_width}
+          y2={0}
+          stroke="grey"
+          strokeOpacity="0.67"
+          strokeWidth="1.0"
+        />
+        <line
+          id="myWorkSpace_axis_y"
+          x1={0}
+          y1={inner_grid_start[1]}
+          x2={0}
+          y2={inner_canvas_height}
+          stroke="grey"
+          strokeOpacity="0.67"
+          strokeWidth="1.0"
         />
 
-        {
-          //grid of numbers
-          count(4).map((i) => (
+        {/* GRID of numbers */}
+        {/* {count(Math.ceil(inner_canvas_height/100)).map((i) => (
             <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
               {" "}
               (0,{i * 100}){" "}
             </text>
-          ))
-        }
+        ))} */}
+        {count(
+          Math.ceil((inner_canvas_height + Math.abs(inner_grid_start[1])) / 100)
+        )
+          .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[1] / 100)))
+          .map((i) => (
+            <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
+              {" "}
+              (0,{i * 100}){" "}
+            </text>
+          ))}
+        {count(
+          Math.ceil((inner_canvas_width + Math.abs(inner_grid_start[0])) / 100)
+        )
+          .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[0] / 100)))
+          .map((i) => (
+            <text key={i} x={i * 100} y={-2} fontSize="0.25em" fill="blck">
+              {" "}
+              ({i * 100}, 0){" "}
+            </text>
+          ))}
 
-        {count(4).map((i) => (
-          <text key={i} x={i * 100} y={-2} fontSize="0.25em" fill="blck">
-            {" "}
-            ({i * 100},0){" "}
-          </text>
-        ))}
-
-        <rect width="450" height="450" x={0} y={0} fill="url(#grid)"></rect>
-
+        {/* GRID */}
+        {/* <rect width="850" height="450" x={0} y={0} fill="url(#grid)"></rect> */}
+        <rect
+          width={inner_canvas_width + Math.abs(inner_grid_start[0])}
+          height={inner_canvas_height + Math.abs(inner_grid_start[1])}
+          x={inner_grid_start[0]}
+          y={inner_grid_start[1]}
+          fill="url(#grid)"
+        ></rect>
         <defs>
           <pattern
             id="grid"

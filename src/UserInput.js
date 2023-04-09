@@ -128,7 +128,7 @@ export function UserInput({
       </Button>
 
       <div>
-        <br />
+        {/* <br />
         <div>Virtual-canvas (bigger than "scaled" Fixed image)</div>
         <div>
           width (pixels along x):{" "}
@@ -145,7 +145,7 @@ export function UserInput({
             type="number"
             onChange={(event) => setCanvasY(event.target.value)}
           />
-        </div>
+        </div> */}
         <div>
           <br />
           WORKING IMAGES
@@ -164,8 +164,6 @@ export function UserInput({
 
       <div>
         <div>
-          <br />
-          <br />
           <br />
           Fixed-image ID={imageFixed.id} (position on canvas)
         </div>
@@ -248,8 +246,6 @@ export function UserInput({
             />
           </Stack>
         </div>
-        <br />
-        <br />
       </div>
 
       <div>
