@@ -49,8 +49,8 @@ function App() {
         }}
       >
         <RegistrationCanvas
-          canvas_X={canvasX}
-          canvas_Y={canvasY}
+          // canvas_X={canvasX}
+          // canvas_Y={canvasY}
           images={images}
           worldScale={worldScale}
         />
@@ -86,10 +86,10 @@ function App() {
             setImages((allImages) => [allImages[0], ...newWorkingImages]);
           }}
           {...{
-            canvasX,
-            setCanvasX,
-            canvasY,
-            setCanvasY,
+            // canvasX,
+            // setCanvasX,
+            // canvasY,
+            // setCanvasY,
             worldScale,
             setWorldScale,
           }}

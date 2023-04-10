@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
@@ -94,6 +94,115 @@ function count(n) {
   return Array.from({ length: n }, (_, i) => i);
 }
 
+function arePropsEqual(oldProps, newProps) {
+  return (
+    oldProps.x === newProps.x &&
+    oldProps.y === newProps.y &&
+    oldProps.width === newProps.width &&
+    oldProps.height === newProps.height &&
+    oldProps.scaling === newProps.scaling &&
+    oldProps.rotation === newProps.rotation &&
+    oldProps.opacity === newProps.opacity &&
+    oldProps.id === newProps.id
+  );
+}
+
+const CanvasImage = memo(
+  (props) => (
+    <image
+      {...props}
+      width={props.width * props.scaling}
+      height={props.height * props.scaling}
+      transform={`rotate(${props.rotation},${props.x},${props.y})`}
+    />
+  ),
+  arePropsEqual
+);
+
+const CanvasGrid = ({
+  inner_canvas_width,
+  inner_canvas_height,
+  inner_grid_start,
+}) => (
+  <>
+    <rect
+      width={inner_canvas_width + Math.abs(inner_grid_start[0])}
+      height={inner_canvas_height + Math.abs(inner_grid_start[1])}
+      x={inner_grid_start[0]}
+      y={inner_grid_start[1]}
+      fill="url(#grid)"
+    ></rect>
+    <defs>
+      <pattern
+        id="grid"
+        // viewBox = "0,0,10,10"
+        width="10"
+        height="10"
+        patternUnits="userSpaceOnUse"
+      >
+        <line
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="10"
+          stroke="black"
+          strokeOpacity="0.67"
+          strokeWidth="0.5"
+        />
+        <line
+          x1="0"
+          y1="0"
+          x2="10"
+          y2="0"
+          stroke="grey"
+          strokeOpacity="0.5"
+          strokeWidth="0.5"
+        />
+      </pattern>
+    </defs>
+    <line
+      id="myWorkSpace_axis_x"
+      x1={inner_grid_start[0]}
+      y1={0}
+      x2={inner_canvas_width}
+      y2={0}
+      stroke="grey"
+      strokeOpacity="0.67"
+      strokeWidth="1.0"
+    />
+    <line
+      id="myWorkSpace_axis_y"
+      x1={0}
+      y1={inner_grid_start[1]}
+      x2={0}
+      y2={inner_canvas_height}
+      stroke="grey"
+      strokeOpacity="0.67"
+      strokeWidth="1.0"
+    />
+    {count(
+      Math.ceil((inner_canvas_height + Math.abs(inner_grid_start[1])) / 100)
+    )
+      .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[1] / 100)))
+      .map((i) => (
+        <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
+          {" "}
+          (0,{i * 100}){" "}
+        </text>
+      ))}
+    {count(
+      Math.ceil((inner_canvas_width + Math.abs(inner_grid_start[0])) / 100)
+    )
+      .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[0] / 100)))
+      .map((i) => (
+        <text key={i} x={i * 100} y={-2} fontSize="0.25em" fill="blck">
+          {" "}
+          ({i * 100}, 0){" "}
+        </text>
+      ))}
+  </>
+);
+
 export function RegistrationCanvas(props) {
   const ref = useRef();
   const [viewBox, setViewBox] = useState([
@@ -110,7 +219,7 @@ export function RegistrationCanvas(props) {
   const [outercanvasY, setOutercanvasY] = useState(950);
 
   //console.log("worldScale =", props.worldScale) //GAETANO 26/10/2022
-  console.log(props.images);
+  //console.log(props.images);
 
   //get size of inner (green) canvas
   const inner_canvas_width = props.images
@@ -193,111 +302,14 @@ export function RegistrationCanvas(props) {
         }}
       >
         {props.images.map((imageUploaded) => (
-          <image
-            key={imageUploaded.id}
-            {...imageUploaded}
-            width={imageUploaded.width * imageUploaded.scaling} //GAETANO 26/10/2022
-            height={imageUploaded.height * imageUploaded.scaling}
-            transform={`rotate(${imageUploaded.rotation},${imageUploaded.x},${imageUploaded.y})`}
-          />
+          <CanvasImage key={imageUploaded.id} {...imageUploaded} />
         ))}
-        {/* 
-        <rect
-          id="myWorkSpace"
-          x={0}
-          y={0}
-          width={inner_canvas_width} //{props.canvas_X}
-          height={inner_canvas_height} //{props.canvas_Y}
-          fill="none"
-          stroke="grey"
-        /> */}
 
-        <line
-          id="myWorkSpace_axis_x"
-          x1={inner_grid_start[0]}
-          y1={0}
-          x2={inner_canvas_width}
-          y2={0}
-          stroke="grey"
-          strokeOpacity="0.67"
-          strokeWidth="1.0"
+        <CanvasGrid
+          inner_canvas_width={inner_canvas_width}
+          inner_canvas_height={inner_canvas_height}
+          inner_grid_start={inner_grid_start}
         />
-        <line
-          id="myWorkSpace_axis_y"
-          x1={0}
-          y1={inner_grid_start[1]}
-          x2={0}
-          y2={inner_canvas_height}
-          stroke="grey"
-          strokeOpacity="0.67"
-          strokeWidth="1.0"
-        />
-
-        {/* GRID of numbers */}
-        {/* {count(Math.ceil(inner_canvas_height/100)).map((i) => (
-            <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
-              {" "}
-              (0,{i * 100}){" "}
-            </text>
-        ))} */}
-        {count(
-          Math.ceil((inner_canvas_height + Math.abs(inner_grid_start[1])) / 100)
-        )
-          .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[1] / 100)))
-          .map((i) => (
-            <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
-              {" "}
-              (0,{i * 100}){" "}
-            </text>
-          ))}
-        {count(
-          Math.ceil((inner_canvas_width + Math.abs(inner_grid_start[0])) / 100)
-        )
-          .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[0] / 100)))
-          .map((i) => (
-            <text key={i} x={i * 100} y={-2} fontSize="0.25em" fill="blck">
-              {" "}
-              ({i * 100}, 0){" "}
-            </text>
-          ))}
-
-        {/* GRID */}
-        {/* <rect width="850" height="450" x={0} y={0} fill="url(#grid)"></rect> */}
-        <rect
-          width={inner_canvas_width + Math.abs(inner_grid_start[0])}
-          height={inner_canvas_height + Math.abs(inner_grid_start[1])}
-          x={inner_grid_start[0]}
-          y={inner_grid_start[1]}
-          fill="url(#grid)"
-        ></rect>
-        <defs>
-          <pattern
-            id="grid"
-            // viewBox = "0,0,10,10"
-            width="10"
-            height="10"
-            patternUnits="userSpaceOnUse"
-          >
-            <line
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="10"
-              stroke="black"
-              strokeOpacity="0.67"
-              strokeWidth="0.5"
-            />
-            <line
-              x1="0"
-              y1="0"
-              x2="10"
-              y2="0"
-              stroke="grey"
-              strokeOpacity="0.5"
-              strokeWidth="0.5"
-            />
-          </pattern>
-        </defs>
       </svg>
     </div>
   );
