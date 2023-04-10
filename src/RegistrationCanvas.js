@@ -208,8 +208,8 @@ export function RegistrationCanvas(props) {
   const [viewBox, setViewBox] = useState([
     0,
     0,
-    props.canvas_X,
-    props.canvas_Y,
+    500, //props.canvas_X
+    500, //props.canvas_Y
   ]);
   const [mousePosition, setMousePosition] = useState(null);
   const [zoomPower, setZoomPower] = useState(0.01);
