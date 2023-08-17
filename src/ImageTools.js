@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { decodeTiff, encodeJpg } from "image-in-browser";
 
 export function getImageSize(imageUrl, onComplete) {
   const image = new Image();
@@ -84,6 +85,21 @@ export function useImageReader(initialPath, method = "readAsDataURL") {
 //readImage = only for images, calls function "onComplete (as placeholder for lambda or anyotherfunction" with images when complete
 export function readImage(file, onComplete, method = "readAsDataURL") {
   const reader = new FileReader();
+
+  console.log(file.type);
+  if (file.type == "image/tiff") {
+    reader.addEventListener("load", () => {
+      const imageAsArray = new Uint8Array(reader.result); //Uint8Array
+      const memoryImage = decodeTiff({ data: imageAsArray });
+      const jpgImageForBrowser = encodeJpg({ image: memoryImage });
+      const blob = new Blob([jpgImageForBrowser], { type: "image/jpg" });
+      var url = URL.createObjectURL(blob);
+      onComplete(url);
+    });
+    reader.readAsArrayBuffer(file);
+    return;
+  }
+
   reader.addEventListener("load", () => {
     onComplete(reader.result);
   });
