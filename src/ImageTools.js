@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { decodeTiff, encodeJpg } from "image-in-browser";
+import {
+  ChannelOrder,
+  decodeTiff,
+  encodeJpg,
+  encodePng,
+} from "image-in-browser";
 
 export function getImageSize(imageUrl, onComplete) {
   const image = new Image();
@@ -91,8 +96,22 @@ export function readImage(file, onComplete, method = "readAsDataURL") {
     reader.addEventListener("load", () => {
       const imageAsArray = new Uint8Array(reader.result); //Uint8Array
       const memoryImage = decodeTiff({ data: imageAsArray });
-      const jpgImageForBrowser = encodeJpg({ image: memoryImage });
-      const blob = new Blob([jpgImageForBrowser], { type: "image/jpg" });
+
+      console.log(memoryImage.numChannels);
+      if (memoryImage.numChannels == 1) {
+        console.log("hola");
+        memoryImage.remapChannels(ChannelOrder.grayAlpha); //(ChannelOrder.bgr) //(ChannelOrder.red)
+        console.log(memoryImage.numChannels);
+      }
+
+      window.memoryImage = memoryImage;
+
+      //const jpgImageForBrowser = encodeJpg({ image: memoryImage });
+      //const blob = new Blob([jpgImageForBrowser], { type: "image/jpg" }); // this gives red image in browser 230818
+
+      const pngImageForBrowser = encodePng({ image: memoryImage });
+      const blob = new Blob([pngImageForBrowser], { type: "image/png" });
+
       var url = URL.createObjectURL(blob);
       onComplete(url);
     });
