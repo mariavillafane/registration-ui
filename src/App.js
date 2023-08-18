@@ -38,7 +38,15 @@ function App() {
       <h1 id="titleMain">
         image registration
         <br />
-        CANVAS
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "10px",
+          }}
+        >
+          <span> CANVAS </span> <h2> v.230819 </h2>
+        </div>
       </h1>
 
       <br />

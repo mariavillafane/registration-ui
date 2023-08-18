@@ -28,6 +28,7 @@ import SendIcon from "@mui/icons-material/Send";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 //opacity marks
 const marks = [
@@ -335,6 +336,17 @@ export function UserInput({
         </Stack>
       </div>
 
+      <a href={settings} download="settings.json">
+        <Button
+          variant="contained"
+          style={{ width: "300px" }}
+          color="inherit"
+          startIcon={<AddCircleOutlineIcon />}
+        >
+          Add image to image stack (Moving Image ID={imageMoving.id})
+        </Button>
+      </a>
+
       <br />
       <a href={settings} download="settings.json">
         <Button
@@ -342,7 +354,7 @@ export function UserInput({
           style={{ width: "300px" }}
           startIcon={<DownloadIcon />}
         >
-          Save Moving Image Settings
+          Save Settings (Fixed and Moving Images)
         </Button>
       </a>
       <br />
