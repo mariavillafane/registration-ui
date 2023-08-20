@@ -1,35 +1,14 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import { RegistrationCanvas } from "./RegistrationCanvas";
-import { useImage, useImageSize, useImageReader } from "./ImageTools";
 import { UserInput } from "./UserInput";
-import Button from "@mui/material/Button";
 import { ImageUploader } from "./ImageUploader";
-
-const fixedimage = {
-  path: "/fixed-image.jpg",
-  //width: 3521
-};
-
-const movingimage = {
-  path: "/moving-image-d02.jpg",
-  //width: 941
-};
 
 //https://www.geeksforgeeks.org/lodash-_-omit-method/
 //https://react-dnd.github.io/react-dnd/examples/sortable/simple
 
 function App() {
-  const [canvasX, setCanvasX] = useState(450);
-  const [canvasY, setCanvasY] = useState(450);
-
   const [worldScale, setWorldScale] = useState(1.0);
-
-  const [movingScale, setMovingScale] = useState(1);
-
-  const [imageMovingPath, setMovingFile] = useImageReader(movingimage.path);
-  const [imageFixedPath, setFixedFile] = useImageReader(fixedimage.path);
-
   const [images, setImages] = useState([]);
   const [selectedImageId, setSelectedImageId] = useState(0);
 
@@ -56,12 +35,7 @@ function App() {
           flexDirection: "row",
         }}
       >
-        <RegistrationCanvas
-          // canvas_X={canvasX}
-          // canvas_Y={canvasY}
-          images={images}
-          worldScale={worldScale}
-        />
+        <RegistrationCanvas images={images} worldScale={worldScale} />
         <ImageUploader
           images={images}
           setImages={setImages}
@@ -70,15 +44,9 @@ function App() {
         />
 
         <UserInput
-          workingImages={images.slice(1)}
-          imageFixed={images[0]}
-          // setImageFixed takes a function that receives the lastest imageFixed
-          setImageFixed={(newImageFixed) => {
-            setImages((allImages) => [newImageFixed, ...allImages.slice(1)]);
-          }}
+          workingImages={images}
           imageMoving={images.find((image) => selectedImageId == image.id)}
           setImageMoving={(newImageMoving) => {
-            // console.log("newImageMoving ID = " + newImageMoving.id);
             setImages((allImages) => {
               const x = allImages.findIndex(
                 (image) => selectedImageId == image.id
@@ -94,10 +62,6 @@ function App() {
             setImages((allImages) => [allImages[0], ...newWorkingImages]);
           }}
           {...{
-            // canvasX,
-            // setCanvasX,
-            // canvasY,
-            // setCanvasY,
             worldScale,
             setWorldScale,
           }}
