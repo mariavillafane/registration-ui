@@ -110,7 +110,10 @@ function arePropsEqual(oldProps, newProps) {
 const CanvasImage = memo(
   (props) => (
     <image
-      {...props}
+      x={props.x}
+      y={props.y}
+      opacity={props.opacity}
+      href={props.imageEntries[0].imageUrl}
       width={props.width * props.scaling}
       height={props.height * props.scaling}
       transform={`rotate(${props.rotation},${props.x},${props.y})`}
@@ -222,15 +225,15 @@ export function RegistrationCanvas(props) {
   //console.log(props.images);
 
   //get size of inner (green) canvas
-  const inner_canvas_width = props.images
-    .map((image) => image.width * image.scaling + image.x)
+  const inner_canvas_width = props.stacks
+    .map((stack) => stack.width * stack.scaling + stack.x)
     .reduce((a, b) => (a > b ? a : b), 0); //is a bigger thank? if yes keep a, else keep b, and start with 0
 
-  const inner_canvas_height = props.images
-    .map((image) => image.height * image.scaling + image.y)
+  const inner_canvas_height = props.stacks
+    .map((stack) => stack.height * stack.scaling + stack.y)
     .reduce((a, b) => (a > b ? a : b), 0); //is a bigger thank? if yes keep a, else keep b, and start with 0
 
-  const inner_grid_start = props.images.reduce(
+  const inner_grid_start = props.stacks.reduce(
     ([x, y], b) => [x < b.x ? x : b.x, y < b.y ? y : b.y],
     [0, 0]
   );
@@ -301,8 +304,8 @@ export function RegistrationCanvas(props) {
           height: outercanvasY, //"800px", // pixels on the screen
         }}
       >
-        {props.images.map((imageUploaded) => (
-          <CanvasImage key={imageUploaded.id} {...imageUploaded} />
+        {props.stacks.map((stack) => (
+          <CanvasImage key={stack.id} {...stack} />
         ))}
 
         <CanvasGrid

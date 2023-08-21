@@ -27,7 +27,6 @@ export function UserInput({
   setCanvasY,
   worldScale,
   setWorldScale,
-  setImageFixed,
   imageMoving,
   setImageMoving,
   workingImages,
@@ -59,7 +58,6 @@ export function UserInput({
     setCanvasX(parsedSettings.canvasX);
     setCanvasY(parsedSettings.canvasY);
     setWorldScale(parsedSettings.worldScale);
-    setImageFixed(parsedSettings.imageFixed);
     setWorkingImages(parsedSettings.workingImages);
   }, [settingsUploadedByUser]);
 
@@ -90,7 +88,7 @@ export function UserInput({
   });
   const svgUrl = URL.createObjectURL(svgBlob);
 
-  const imageType = imageMoving.id == 0 ? "Fixed-image" : "Moving-image";
+  const imageType = imageMoving.id == 0 ? "Fixed-image" : "Moving-image"; //280821
 
   return (
     <div
@@ -136,7 +134,7 @@ export function UserInput({
       <div>
         coord_x:{" "}
         <input
-          value={imageMoving.x}
+          value={imageMoving.x} //230821 G
           type="number"
           onChange={(event) =>
             setImageMoving({ ...imageMoving, x: +event.target.value })
@@ -146,10 +144,12 @@ export function UserInput({
       <div>
         coord_y:{" "}
         <input
-          value={imageMoving.y}
+          value={imageMoving.y} //  imageMoving is a stack (which is a dictionary containing all images of the stack, but only one x and one y as these values are ok for all images in the one stack)
           type="number"
-          onChange={(event) =>
-            setImageMoving({ ...imageMoving, y: +event.target.value })
+          onChange={
+            (event) =>
+              setImageMoving({ ...imageMoving, y: +event.target.value })
+            //setImageMoving(imageMoving.map( entry => ({...entry, y: +event.target.value })))
           }
         />
       </div>
@@ -215,17 +215,6 @@ export function UserInput({
           />
         </Stack>
       </div>
-
-      <a href={settings} download="settings.json">
-        <Button
-          variant="contained"
-          style={{ width: "300px" }}
-          color="inherit"
-          startIcon={<AddCircleOutlineIcon />}
-        >
-          Add image to image stack (Moving Image ID={imageMoving.id})
-        </Button>
-      </a>
 
       <br />
       <a href={settings} download="settings.json">

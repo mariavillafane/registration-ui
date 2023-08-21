@@ -9,7 +9,7 @@ import { ImageUploader } from "./ImageUploader";
 
 function App() {
   const [worldScale, setWorldScale] = useState(1.0);
-  const [images, setImages] = useState([]);
+  const [stacks, setStacks] = useState([]);
   const [selectedImageId, setSelectedImageId] = useState(0);
 
   return (
@@ -24,7 +24,7 @@ function App() {
             gap: "10px",
           }}
         >
-          <span> CANVAS </span> <h2> v.230819 </h2>
+          <span> CANVAS </span> <h2> v.230821 </h2>
         </div>
       </h1>
 
@@ -35,21 +35,22 @@ function App() {
           flexDirection: "row",
         }}
       >
-        <RegistrationCanvas images={images} worldScale={worldScale} />
+        <RegistrationCanvas stacks={stacks} worldScale={worldScale} />
+
         <ImageUploader
-          images={images}
-          setImages={setImages}
+          stacks={stacks}
+          setStacks={setStacks}
           selectedImageId={selectedImageId}
           setSelectedImageId={setSelectedImageId}
         />
 
         <UserInput
-          workingImages={images}
-          imageMoving={images.find((image) => selectedImageId == image.id)}
+          workingImages={stacks}
+          imageMoving={stacks.find((stack) => selectedImageId == stack.id)}
           setImageMoving={(newImageMoving) => {
-            setImages((allImages) => {
+            setStacks((allImages) => {
               const x = allImages.findIndex(
-                (image) => selectedImageId == image.id
+                (stack) => selectedImageId == stack.id
               );
               return [
                 ...allImages.slice(0, x),
@@ -59,7 +60,7 @@ function App() {
             });
           }}
           setWorkingImages={(newWorkingImages) => {
-            setImages((allImages) => [allImages[0], ...newWorkingImages]);
+            setStacks((allImages) => [allImages[0], ...newWorkingImages]);
           }}
           {...{
             worldScale,

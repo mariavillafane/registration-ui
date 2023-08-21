@@ -13,68 +13,82 @@ import ClearIcon from "@mui/icons-material/Clear";
 // using href only works if you never upload the same image
 //let id = 0;
 
-function toImageEntry(id, imageUrl, w, h) {
-  return {
-    id,
-    href: imageUrl,
-    x: 0,
-    y: 0,
-    width: w,
-    height: h,
-    opacity: 1,
-    scaling: 1,
-    rotation: 0,
-  };
-}
+// function toImageEntry(id, imageUrl, w, h) {
+//   return {
+//     id,
+//     href: imageUrl,
+//     x: 0,
+//     y: 0,
+//     width: w,
+//     height: h,
+//     opacity: 1,
+//     scaling: 1,
+//     rotation: 0,
+//   };
+// }
 
-function computeNextId(uploadedImages) {
-  // if (uploadedImages.length == 0){
-  //   return 0
-  // } else{
-  //   return uploadedImages.map(x => x.id).sort().reverse()[0]+1
-  // }
-  return uploadedImages
-    .map((x) => x.id + 1)
-    .reduce((a, b) => (a > b ? a : b), 0);
+function computeNextId(stacks) {
+  return stacks.map((x) => x.id + 1).reduce((a, b) => (a > b ? a : b), 0);
 }
 
 export function ImageUploader({
-  images,
-  setImages,
+  stacks,
+  setStacks,
   selectedImageId,
   setSelectedImageId,
 }) {
-  console.log("rerender", images.length, selectedImageId);
+  console.log("rerender", stacks.length, selectedImageId);
+
+  function onDrop(acceptedFiles) {
+    const imageEntries = [];
+    const stackId = computeNextId(stacks);
+    acceptedFiles.map((file) =>
+      readImage(file, (imageUrl) =>
+        getImageSize(imageUrl, ({ width, height }) => {
+          const imageEntry = {
+            stackId,
+            id: file.name,
+            width,
+            height,
+            imageUrl,
+          };
+          imageEntries.push(imageEntry);
+
+          if (imageEntries.length == acceptedFiles.length) {
+            console.log(imageEntries, width, height); //230821 check!
+
+            if (
+              !imageEntries.every((x) => x.width == width && x.heigth == height)
+            ) {
+              console.log(
+                "some images differ in size => not all widths and heights of images of stack are the same"
+              ); //230821 check!
+            }
+
+            const stack = {
+              x: 0,
+              y: 0,
+              opacity: 1,
+              scaling: 1,
+              rotation: 0,
+              id: stackId,
+              imageEntries,
+              width,
+              height,
+            };
+
+            setStacks((stacks) => [...stacks, stack]);
+          }
+        })
+      )
+    );
+  }
 
   return (
     <Card sx={{ minWidth: 250, maxHeight: 700, overflowY: "scroll" }}>
       <CardContent>
-        {/* <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)}> */}
-
         <section>
-          <Dropzone
-            onDrop={(acceptedFiles) =>
-              acceptedFiles.map((file) =>
-                readImage(file, (imageUrl) =>
-                  getImageSize(
-                    imageUrl,
-                    (
-                      { width, height } //the onComplete (of ImageSize)takes arguments "width" and "height"
-                    ) =>
-                      setImages((uploadedImages) => [
-                        ...uploadedImages,
-                        toImageEntry(
-                          computeNextId(uploadedImages),
-                          imageUrl,
-                          width,
-                          height
-                        ),
-                      ])
-                  )
-                )
-              )
-            }
-          >
+          <Dropzone onDrop={onDrop}>
             {({ getRootProps, getInputProps }) => (
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
@@ -89,48 +103,43 @@ export function ImageUploader({
               </div>
             )}
           </Dropzone>
-          {images.map(
-            (
-              image // we can't rely in index since it will refer to the wrong entry as soon as one deletes an entry
-            ) => (
-              <Card key={image.id}>
-                <img
-                  src={image.href}
-                  style={{
-                    width: 140,
-                    border:
-                      selectedImageId == image.id && image.id !== 0
-                        ? "solid 10px coral"
-                        : selectedImageId == image.id && image.id == 0
-                        ? "solid 10px #321ab0"
-                        : "none",
-                    //selectedImageId == image.id && image.id !== 0? "solid 10px coral" : "none",
-                  }}
-                  onClick={() => setSelectedImageId(image.id)}
-                />
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                ></div>
-                image ID = {image.id}
-                {image.id == 0 ? " (fixed)" : " (moving)"}
-                <ClearIcon
-                  onClick={() => {
-                    setImages((uploadedImages) => {
-                      // not the most efficient approach but ensures we delete the right item
-                      // and create a new array
-                      // using splice would mutate the same array and react will not notice it has changed
-                      return uploadedImages.filter((x) => x.id != image.id);
-                    });
-                  }}
-                />
-                <br />
-                <br />
-              </Card>
-            )
-          )}
+          {stacks.map((stack) => (
+            <Card key={stack.id}>
+              <img
+                src={stack.imageEntries[0].imageUrl}
+                style={{
+                  width: 140,
+                  border:
+                    selectedImageId == stack.id && stack.id !== 0
+                      ? "solid 10px coral"
+                      : selectedImageId == stack.id && stack.id == 0
+                      ? "solid 10px #321ab0"
+                      : "none",
+                }}
+                onClick={() => setSelectedImageId(stack.id)}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                }}
+              ></div>
+              image ID = {stack.id}
+              {stack.id == 0 ? " (fixed)" : " (moving)"}
+              <ClearIcon
+                onClick={() => {
+                  setStacks((stacks) => {
+                    // not the most efficient approach but ensures we delete the right item
+                    // and create a new array
+                    // using splice would mutate the same array and react will not notice it has changed
+                    return stacks.filter((x) => x.id != stack.id);
+                  });
+                }}
+              />
+              <br />
+              <br />
+            </Card>
+          ))}
 
           {/* <p>Drag 'n' drop some files here, or click to select files</p> */}
         </section>
