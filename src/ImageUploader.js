@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import { readImage, getImageSize } from "./ImageTools";
 import { useState } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
+import { Checkbox, Paper } from "@mui/material";
 
 // we use this to generate an unique id, so we can find images by id
 // using href only works if you never upload the same image
@@ -58,11 +59,11 @@ export function ImageUploader({
             console.log(imageEntries, width, height); //230821 check!
 
             if (
-              !imageEntries.every((x) => x.width == width && x.heigth == height)
+              !imageEntries.every((x) => x.width == width && x.height == height)
             ) {
               console.log(
                 "some images differ in size => not all widths and heights of images of stack are the same"
-              ); //230821 check!
+              ); //230822 ok!
             }
 
             const stack = {
@@ -103,45 +104,72 @@ export function ImageUploader({
               </div>
             )}
           </Dropzone>
-          {stacks.map((stack) => (
-            <Card key={stack.id}>
-              <img
-                src={stack.imageEntries[0].imageUrl}
-                style={{
-                  width: 140,
-                  border:
-                    selectedImageId == stack.id && stack.id !== 0
-                      ? "solid 10px coral"
-                      : selectedImageId == stack.id && stack.id == 0
-                      ? "solid 10px #321ab0"
-                      : "none",
-                }}
-                onClick={() => setSelectedImageId(stack.id)}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                }}
-              ></div>
-              image ID = {stack.id}
-              {stack.id == 0 ? " (fixed)" : " (moving)"}
-              <ClearIcon
-                onClick={() => {
-                  setStacks((stacks) => {
-                    // not the most efficient approach but ensures we delete the right item
-                    // and create a new array
-                    // using splice would mutate the same array and react will not notice it has changed
-                    return stacks.filter((x) => x.id != stack.id);
-                  });
-                }}
-              />
-              <br />
-              <br />
-            </Card>
-          ))}
 
-          {/* <p>Drag 'n' drop some files here, or click to select files</p> */}
+          {stacks.map((stack, index) => (
+            <Paper
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                padding: 8,
+                margin: 8,
+                backgroundColor: "lightgray",
+              }}
+            >
+              {stack.imageEntries.map((imageEntry) => (
+                <Card key={imageEntry.id}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <img
+                      src={imageEntry.imageUrl}
+                      style={{
+                        width: 140,
+                        border:
+                          selectedImageId == stack.id && stack.id !== 0
+                            ? "solid 10px coral"
+                            : selectedImageId == stack.id && stack.id == 0
+                            ? "solid 10px #321ab0"
+                            : "none",
+                      }}
+                      onClick={() => setSelectedImageId(stack.id)}
+                    />
+                    image ID = {stack.id}
+                    {stack.id == 0 ? " (fixed)" : " (moving)"}
+                    <ClearIcon
+                      onClick={() => {
+                        const newEntries = stack.imageEntries.filter(
+                          (x) => x.id != imageEntry.id
+                        );
+
+                        if (newEntries.length == 0) {
+                          setStacks([
+                            ...stacks.slice(0, index),
+                            ...stacks.slice(index + 1, stack.length),
+                          ]);
+                        } else {
+                          const newStack = {
+                            ...stack,
+                            imageEntries: newEntries,
+                          };
+                          setStacks([
+                            ...stacks.slice(0, index),
+                            newStack,
+                            ...stacks.slice(index + 1, stack.length),
+                          ]);
+                        }
+                      }}
+                    />
+                    <Checkbox onChange={console.log} />
+                  </div>
+                  <br />
+                  <br />
+                </Card>
+              ))}
+            </Paper>
+          ))}
         </section>
       </CardContent>
     </Card>

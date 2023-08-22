@@ -24,7 +24,7 @@ function App() {
             gap: "10px",
           }}
         >
-          <span> CANVAS </span> <h2> v.230821 </h2>
+          <span> CANVAS </span> <h2> v.230822 </h2>
         </div>
       </h1>
 
