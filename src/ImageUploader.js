@@ -52,8 +52,9 @@ export function ImageUploader({
             width,
             height,
             imageUrl,
+            checked: true,
           };
-          imageEntries.push(imageEntry);
+          imageEntries.push(imageEntry); //230823 push is method for arrays (imageEntries is an array)
 
           if (imageEntries.length == acceptedFiles.length) {
             console.log(imageEntries, width, height); //230821 check!
@@ -107,6 +108,7 @@ export function ImageUploader({
 
           {stacks.map((stack, index) => (
             <Paper
+              key={index}
               style={{
                 display: "flex",
                 flexDirection: "row",
@@ -115,7 +117,7 @@ export function ImageUploader({
                 backgroundColor: "lightgray",
               }}
             >
-              {stack.imageEntries.map((imageEntry) => (
+              {stack.imageEntries.map((imageEntry, entryIndex) => (
                 <Card key={imageEntry.id}>
                   <div
                     style={{
@@ -141,6 +143,7 @@ export function ImageUploader({
                     <ClearIcon
                       onClick={() => {
                         const newEntries = stack.imageEntries.filter(
+                          //newEntries are all the entries remaining (the ones not-deleted)
                           (x) => x.id != imageEntry.id
                         );
 
@@ -162,7 +165,33 @@ export function ImageUploader({
                         }
                       }}
                     />
-                    <Checkbox onChange={console.log} />
+                    <Checkbox
+                      checked={imageEntry.checked}
+                      onChange={(event) => {
+                        const newEntry = {
+                          ...imageEntry,
+                          checked: event.target.checked,
+                        };
+                        const newEntries = [
+                          ...stack.imageEntries.slice(0, entryIndex),
+                          newEntry,
+                          ...stack.imageEntries.slice(
+                            entryIndex + 1,
+                            stack.imageEntries.length
+                          ),
+                        ];
+
+                        const newStack = {
+                          ...stack,
+                          imageEntries: newEntries,
+                        };
+                        setStacks([
+                          ...stacks.slice(0, index),
+                          newStack,
+                          ...stacks.slice(index + 1, stacks.length),
+                        ]);
+                      }}
+                    />
                   </div>
                   <br />
                   <br />

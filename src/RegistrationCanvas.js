@@ -113,7 +113,7 @@ const CanvasImage = memo(
       x={props.x}
       y={props.y}
       opacity={props.opacity}
-      href={props.imageEntries[0].imageUrl}
+      href={props.imageUrl}
       width={props.width * props.scaling}
       height={props.height * props.scaling}
       transform={`rotate(${props.rotation},${props.x},${props.y})`}
@@ -304,9 +304,17 @@ export function RegistrationCanvas(props) {
           height: outercanvasY, //"800px", // pixels on the screen
         }}
       >
-        {props.stacks.map((stack) => (
-          <CanvasImage key={stack.id} {...stack} />
-        ))}
+        {props.stacks.flatMap((stack) =>
+          stack.imageEntries
+            .filter((x) => x.checked)
+            .map((entry) => (
+              <CanvasImage
+                key={stack.id + "-" + entry.id}
+                {...stack}
+                {...entry}
+              />
+            ))
+        )}
 
         <CanvasGrid
           inner_canvas_width={inner_canvas_width}
