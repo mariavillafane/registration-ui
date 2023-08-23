@@ -78,7 +78,7 @@ export function readImage(file, onComplete, method = "readAsDataURL") {
       const pngImageForBrowser = encodePng({ image: memoryImage });
       const blob = new Blob([pngImageForBrowser], { type: "image/png" });
 
-      var url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
       onComplete(url);
     });
     reader.readAsArrayBuffer(file);

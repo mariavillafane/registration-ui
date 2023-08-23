@@ -9,6 +9,7 @@ import { readImage, getImageSize } from "./ImageTools";
 import { useState } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
 import { Checkbox, Paper } from "@mui/material";
+import { useImageSize, useImageReader } from "./ImageTools";
 
 // we use this to generate an unique id, so we can find images by id
 // using href only works if you never upload the same image
@@ -86,8 +87,56 @@ export function ImageUploader({
     );
   }
 
+  function onDropImageToStack(stack, index, acceptedFiles) {
+    const imageEntries = [];
+    acceptedFiles.map((file) =>
+      readImage(file, (imageUrl) =>
+        getImageSize(imageUrl, ({ width, height }) => {
+          const imageEntry = {
+            stackId: stack.id,
+            id: file.name,
+            width,
+            height,
+            imageUrl,
+            checked: true,
+          };
+          imageEntries.push(imageEntry); //230823 (imageEntries is an array)
+
+          if (imageEntries.length == acceptedFiles.length) {
+            if (
+              !imageEntries.every((x) => x.width == width && x.height == height)
+            ) {
+              console.log(
+                "some images differ in size => not all widths and heights of images of stack are the same"
+              );
+            }
+
+            const stackWithMoreImages = {
+              ...stack,
+              imageEntries: [...stack.imageEntries, ...imageEntries],
+            };
+
+            setStacks((stacks) => [
+              ...stacks.slice(0, index),
+              stackWithMoreImages,
+              ...stacks.slice(index + 1, stacks.length),
+            ]);
+          }
+        })
+      )
+    );
+  }
+
   return (
-    <Card sx={{ minWidth: 250, maxHeight: 700, overflowY: "scroll" }}>
+    <Card
+      sx={{
+        minWidth: 200,
+        maxHeight: 800,
+        overflowY: "scroll",
+        overflowX: "scroll",
+        display: "flex",
+      }}
+    >
       <CardContent>
         <section>
           <Dropzone onDrop={onDrop}>
@@ -112,8 +161,9 @@ export function ImageUploader({
               style={{
                 display: "flex",
                 flexDirection: "row",
-                padding: 8,
-                margin: 8,
+                padding: ".6em",
+                margin: ".6em",
+                gap: ".3em",
                 backgroundColor: "lightgray",
               }}
             >
@@ -197,6 +247,29 @@ export function ImageUploader({
                   <br />
                 </Card>
               ))}
+
+              <Dropzone
+                onDrop={(acceptedFiles) =>
+                  onDropImageToStack(stack, index, acceptedFiles)
+                }
+              >
+                {({ getRootProps, getInputProps }) => (
+                  <Button
+                    {...getRootProps()}
+                    color="primary"
+                    sx={{ maxWidth: 25 }}
+                    variant="outlined"
+                  >
+                    Add image to stack
+                    <input
+                      // type = "file"
+                      // onChange={(event) => setSelectedSettings(event.target.files[0])}
+                      {...getInputProps()}
+                      accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
+                    />
+                  </Button>
+                )}
+              </Dropzone>
             </Paper>
           ))}
         </section>
