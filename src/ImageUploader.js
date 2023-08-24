@@ -5,6 +5,8 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import VisibilitySharpIcon from "@mui/icons-material/VisibilitySharp";
+import VisibilityOffSharpIcon from "@mui/icons-material/VisibilityOffSharp";
 import { readImage, getImageSize } from "./ImageTools";
 import { useState } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -131,6 +133,7 @@ export function ImageUploader({
     <Card
       sx={{
         minWidth: 200,
+        maxWidth: 800,
         maxHeight: 800,
         overflowY: "scroll",
         overflowX: "scroll",
@@ -188,8 +191,22 @@ export function ImageUploader({
                       }}
                       onClick={() => setSelectedImageId(stack.id)}
                     />
-                    image ID = {stack.id}
-                    {stack.id == 0 ? " (fixed)" : " (moving)"}
+                    {/* stack ID = {stack.id}
+                    {stack.id == 0 ? " (fixed)" : " (moving)"} */}
+
+                    {/* stack ID = {stack.id} */}
+                    {index == 0 ? (
+                      <>
+                        <span> stack ID = {stack.id} </span>
+                        <span> image ID = {imageEntry.id} (fixed image) </span>
+                      </>
+                    ) : (
+                      <>
+                        <span> stack ID = {stack.id} </span>
+                        <span> image ID = {imageEntry.id} (moving) </span>
+                      </>
+                    )}
+
                     <ClearIcon
                       onClick={() => {
                         const newEntries = stack.imageEntries.filter(
@@ -215,8 +232,12 @@ export function ImageUploader({
                         }
                       }}
                     />
+
                     <Checkbox
                       checked={imageEntry.checked}
+                      //icon={imageEntry.checked ? <VisibilitySharpIcon color="primary"/>  : <VisibilityOffSharpIcon />}
+                      icon={<VisibilityOffSharpIcon />}
+                      checkedIcon={<VisibilitySharpIcon color="primary" />}
                       onChange={(event) => {
                         const newEntry = {
                           ...imageEntry,
@@ -230,7 +251,6 @@ export function ImageUploader({
                             stack.imageEntries.length
                           ),
                         ];
-
                         const newStack = {
                           ...stack,
                           imageEntries: newEntries,
@@ -248,7 +268,7 @@ export function ImageUploader({
                 </Card>
               ))}
 
-              <Dropzone
+              {/* <Dropzone
                 onDrop={(acceptedFiles) =>
                   onDropImageToStack(stack, index, acceptedFiles)
                 }
@@ -269,7 +289,32 @@ export function ImageUploader({
                     />
                   </Button>
                 )}
-              </Dropzone>
+              </Dropzone> */}
+
+              {index != 0 ? (
+                <Dropzone
+                  onDrop={(acceptedFiles) =>
+                    onDropImageToStack(stack, index, acceptedFiles)
+                  }
+                >
+                  {({ getRootProps, getInputProps }) => (
+                    <Button
+                      {...getRootProps()}
+                      color="primary"
+                      sx={{ maxWidth: 25 }}
+                      variant="outlined"
+                    >
+                      Add image to stack
+                      <input
+                        // type = "file"
+                        // onChange={(event) => setSelectedSettings(event.target.files[0])}
+                        {...getInputProps()}
+                        accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
+                      />
+                    </Button>
+                  )}
+                </Dropzone>
+              ) : null}
             </Paper>
           ))}
         </section>
