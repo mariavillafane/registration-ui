@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import { useImageSize, useImageReader } from "./ImageTools";
+import { useEffect } from "react";
+import { useJsonReader } from "./ImageTools";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import Image from "image-js";
 
 //opacity marks
 const marks = [
@@ -32,7 +33,7 @@ export function UserInput({
   workingImages,
   setWorkingImages,
 }) {
-  const [settingsUploadedByUser, setSelectedSettings] = useImageReader(
+  const [settingsUploadedByUser, setSelectedSettings] = useJsonReader(
     null,
     "readAsText"
   );
@@ -55,10 +56,30 @@ export function UserInput({
     if (settingsUploadedByUser == null) return;
 
     const parsedSettings = JSON.parse(settingsUploadedByUser);
-    setCanvasX(parsedSettings.canvasX);
-    setCanvasY(parsedSettings.canvasY);
-    setWorldScale(parsedSettings.worldScale);
-    setWorkingImages(parsedSettings.workingImages);
+
+    const workingImagesPromise = Promise.all(
+      [parsedSettings.imageFixed, ...parsedSettings.workingImages].map(
+        async (workingImage) => ({
+          ...workingImage,
+          imageEntries: await Promise.all(
+            workingImage.imageEntries.map(async (imageEntry) => {
+              const image = await Image.load(imageEntry.base64);
+              return {
+                ...imageEntry,
+                imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by default this converts to png - 230828
+              };
+            })
+          ),
+        })
+      )
+    );
+
+    workingImagesPromise.then((workingImages) => {
+      // setCanvasX(parsedSettings.canvasX);
+      // setCanvasY(parsedSettings.canvasY);
+      setWorldScale(parsedSettings.worldScale);
+      setWorkingImages(workingImages);
+    });
   }, [settingsUploadedByUser]);
 
   const settingsJson = JSON.stringify(

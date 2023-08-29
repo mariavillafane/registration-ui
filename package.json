@@ -14,6 +14,7 @@
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
     "image-in-browser": "^1.6.3",
+    "image-js": "^0.35.4",
     "pretier": "^0.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

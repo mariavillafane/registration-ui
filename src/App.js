@@ -59,9 +59,10 @@ function App() {
               ];
             });
           }}
-          setWorkingImages={(newWorkingImages) => {
-            setStacks((allImages) => [allImages[0], ...newWorkingImages]);
-          }}
+          // setWorkingImages={(newWorkingImages) => {
+          //   setStacks((allImages) => [allImages[0], ...newWorkingImages]);
+          // }}
+          setWorkingImages={setStacks}
           {...{
             worldScale,
             setWorldScale,

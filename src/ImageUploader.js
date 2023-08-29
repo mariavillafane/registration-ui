@@ -7,29 +7,11 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import VisibilitySharpIcon from "@mui/icons-material/VisibilitySharp";
 import VisibilityOffSharpIcon from "@mui/icons-material/VisibilityOffSharp";
-import { readImage, getImageSize } from "./ImageTools";
+import { readImageAsBase64 } from "./ImageTools";
 import { useState } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
 import { Checkbox, Paper } from "@mui/material";
-import { useImageSize, useImageReader } from "./ImageTools";
-
-// we use this to generate an unique id, so we can find images by id
-// using href only works if you never upload the same image
-//let id = 0;
-
-// function toImageEntry(id, imageUrl, w, h) {
-//   return {
-//     id,
-//     href: imageUrl,
-//     x: 0,
-//     y: 0,
-//     width: w,
-//     height: h,
-//     opacity: 1,
-//     scaling: 1,
-//     rotation: 0,
-//   };
-// }
+import Image from "image-js";
 
 function computeNextId(stacks) {
   return stacks.map((x) => x.id + 1).reduce((a, b) => (a > b ? a : b), 0);
@@ -43,90 +25,81 @@ export function ImageUploader({
 }) {
   console.log("rerender", stacks.length, selectedImageId);
 
-  function onDrop(acceptedFiles) {
-    const imageEntries = [];
+  async function onDrop2(acceptedFiles) {
     const stackId = computeNextId(stacks);
-    acceptedFiles.map((file) =>
-      readImage(file, (imageUrl) =>
-        getImageSize(imageUrl, ({ width, height }) => {
-          const imageEntry = {
-            stackId,
-            id: file.name,
-            width,
-            height,
-            imageUrl,
-            checked: true,
-          };
-          imageEntries.push(imageEntry); //230823 push is method for arrays (imageEntries is an array)
-
-          if (imageEntries.length == acceptedFiles.length) {
-            console.log(imageEntries, width, height); //230821 check!
-
-            if (
-              !imageEntries.every((x) => x.width == width && x.height == height)
-            ) {
-              console.log(
-                "some images differ in size => not all widths and heights of images of stack are the same"
-              ); //230822 ok!
-            }
-
-            const stack = {
-              x: 0,
-              y: 0,
-              opacity: 1,
-              scaling: 1,
-              rotation: 0,
-              id: stackId,
-              imageEntries,
-              width,
-              height,
-            };
-
-            setStacks((stacks) => [...stacks, stack]);
-          }
-        })
-      )
+    const imageEntries = await Promise.all(
+      acceptedFiles.map(async (file) => {
+        const buf = await file.arrayBuffer();
+        const image = await Image.load(buf);
+        return {
+          stackId,
+          id: file.name,
+          width: image.width,
+          height: image.height,
+          base64: await readImageAsBase64(file),
+          imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by default this converts to png - 230828
+          checked: true,
+        };
+      })
     );
+
+    const { width, height } = imageEntries[0];
+    if (!imageEntries.every((x) => x.width == width && x.height == height)) {
+      console.log(
+        "some images differ in size => not all widths and heights of images of stack are the same"
+      );
+    }
+
+    const stack = {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      scaling: 1,
+      rotation: 0,
+      id: stackId,
+      imageEntries,
+      width,
+      height,
+    };
+    setStacks((stacks) => [...stacks, stack]);
   }
 
-  function onDropImageToStack(stack, index, acceptedFiles) {
-    const imageEntries = [];
-    acceptedFiles.map((file) =>
-      readImage(file, (imageUrl) =>
-        getImageSize(imageUrl, ({ width, height }) => {
-          const imageEntry = {
-            stackId: stack.id,
-            id: file.name,
-            width,
-            height,
-            imageUrl,
-            checked: true,
-          };
-          imageEntries.push(imageEntry); //230823 (imageEntries is an array)
-
-          if (imageEntries.length == acceptedFiles.length) {
-            if (
-              !imageEntries.every((x) => x.width == width && x.height == height)
-            ) {
-              console.log(
-                "some images differ in size => not all widths and heights of images of stack are the same"
-              );
-            }
-
-            const stackWithMoreImages = {
-              ...stack,
-              imageEntries: [...stack.imageEntries, ...imageEntries],
-            };
-
-            setStacks((stacks) => [
-              ...stacks.slice(0, index),
-              stackWithMoreImages,
-              ...stacks.slice(index + 1, stacks.length),
-            ]);
-          }
-        })
-      )
+  async function onDropImageToStack(stack, index, acceptedFiles) {
+    const imageEntries = await Promise.all(
+      acceptedFiles.map(async (file) => {
+        const buf = await file.arrayBuffer();
+        const image = await Image.load(buf);
+        return {
+          stackId: stack.id,
+          id: file.name,
+          width: image.width,
+          height: image.height,
+          base64: await readImageAsBase64(file),
+          imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by defult this converts to png - 230828
+          checked: true,
+        };
+      })
     );
+
+    const { width, height } = imageEntries[0];
+    if (imageEntries.length == acceptedFiles.length) {
+      if (!imageEntries.every((x) => x.width == width && x.height == height)) {
+        console.log(
+          "some images differ in size => not all widths and heights of images of stack are the same"
+        );
+      }
+
+      const stackWithMoreImages = {
+        ...stack,
+        imageEntries: [...stack.imageEntries, ...imageEntries],
+      };
+
+      setStacks((stacks) => [
+        ...stacks.slice(0, index),
+        stackWithMoreImages,
+        ...stacks.slice(index + 1, stacks.length),
+      ]);
+    }
   }
 
   return (
@@ -142,7 +115,7 @@ export function ImageUploader({
     >
       <CardContent>
         <section>
-          <Dropzone onDrop={onDrop}>
+          <Dropzone onDrop={onDrop2}>
             {({ getRootProps, getInputProps }) => (
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
@@ -191,10 +164,7 @@ export function ImageUploader({
                       }}
                       onClick={() => setSelectedImageId(stack.id)}
                     />
-                    {/* stack ID = {stack.id}
-                    {stack.id == 0 ? " (fixed)" : " (moving)"} */}
 
-                    {/* stack ID = {stack.id} */}
                     {index == 0 ? (
                       <>
                         <span> stack ID = {stack.id} </span>
@@ -235,7 +205,6 @@ export function ImageUploader({
 
                     <Checkbox
                       checked={imageEntry.checked}
-                      //icon={imageEntry.checked ? <VisibilitySharpIcon color="primary"/>  : <VisibilityOffSharpIcon />}
                       icon={<VisibilityOffSharpIcon />}
                       checkedIcon={<VisibilitySharpIcon color="primary" />}
                       onChange={(event) => {
@@ -268,29 +237,6 @@ export function ImageUploader({
                 </Card>
               ))}
 
-              {/* <Dropzone
-                onDrop={(acceptedFiles) =>
-                  onDropImageToStack(stack, index, acceptedFiles)
-                }
-              >
-                {({ getRootProps, getInputProps }) => (
-                  <Button
-                    {...getRootProps()}
-                    color="primary"
-                    sx={{ maxWidth: 25 }}
-                    variant="outlined"
-                  >
-                    Add image to stack
-                    <input
-                      // type = "file"
-                      // onChange={(event) => setSelectedSettings(event.target.files[0])}
-                      {...getInputProps()}
-                      accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
-                    />
-                  </Button>
-                )}
-              </Dropzone> */}
-
               {index != 0 ? (
                 <Dropzone
                   onDrop={(acceptedFiles) =>
@@ -306,8 +252,6 @@ export function ImageUploader({
                     >
                       Add image to stack
                       <input
-                        // type = "file"
-                        // onChange={(event) => setSelectedSettings(event.target.files[0])}
                         {...getInputProps()}
                         accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
                       />
