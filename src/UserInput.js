@@ -1,12 +1,11 @@
 import { useEffect } from "react";
-import { useJsonReader } from "./ImageTools";
+import { svgToPng, useJsonReader } from "./ImageTools";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import Image from "image-js";
 
 //opacity marks
 const marks = [
@@ -20,6 +19,60 @@ const marks = [
     label: "solid",
   },
 ];
+
+function download(url, name) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+const blobToBase64 = function (blobUrl) {
+  return new Promise((resolve, reject) => {
+    let img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+    img.src = blobUrl;
+  })
+    .then((img) => {
+      // URL.revokeObjectURL(blobUrl);
+      // Limit to 256x256px while preserving aspect ratio
+      let [w, h] = [img.width, img.height];
+
+      let canvas = document.createElement("canvas");
+      console.log(canvas);
+      canvas.width = w;
+      canvas.height = h;
+      let ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      return canvas.toDataURL();
+    })
+    .catch(console.log);
+};
+
+async function downloadCanvas() {
+  await Promise.all(
+    [...document.querySelectorAll("#myCanvas image")].map(async (img) => {
+      img.href.baseVal = await blobToBase64(img.href.baseVal);
+    })
+  );
+
+  const svgAsString = document.querySelector("#myCanvas").outerHTML; //this is a string representative of myCanvas
+  // const preface = '<?xml version="1.0" standalone="no"?>\r\n';
+  // const svgBlob = new Blob([preface, svgAsString], {
+  //   type: "image/svg+xml;charset=utf-8",
+  // });
+  // const svgUrl = URL.createObjectURL(svgBlob);
+
+  const png = await svgToPng(svgAsString, 0, "white");
+
+  const name = "canvas-" + new Date().toISOString().split("T")[0] + ".png";
+
+  download(png, name);
+}
 
 export function UserInput({
   canvasX,
@@ -101,13 +154,6 @@ export function UserInput({
   if (!imageMoving) {
     return null;
   }
-
-  const svgAsString = document.querySelector("#myCanvas").outerHTML; //this is a string representative of myCanvas
-  const preface = '<?xml version="1.0" standalone="no"?>\r\n';
-  const svgBlob = new Blob([preface, svgAsString], {
-    type: "image/svg+xml;charset=utf-8",
-  });
-  const svgUrl = URL.createObjectURL(svgBlob);
 
   const imageType = imageMoving.id == 0 ? "Fixed-image" : "Moving-image"; //280821
 
@@ -248,15 +294,14 @@ export function UserInput({
         </Button>
       </a>
       <br />
-      <a href={svgUrl} download="canvas.svg">
-        <Button
-          variant="contained"
-          style={{ width: "300px" }}
-          startIcon={<DownloadIcon />}
-        >
-          Save Canvas (working images as per settings)
-        </Button>
-      </a>
+      <Button
+        variant="contained"
+        style={{ width: "300px" }}
+        startIcon={<DownloadIcon />}
+        onClick={downloadCanvas}
+      >
+        Save Canvas (working images as per settings)
+      </Button>
     </div>
   );
 }
