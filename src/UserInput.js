@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import ImageJs from "image-js";
 
 //opacity marks
 const marks = [
@@ -116,7 +117,7 @@ export function UserInput({
           ...workingImage,
           imageEntries: await Promise.all(
             workingImage.imageEntries.map(async (imageEntry) => {
-              const image = await Image.load(imageEntry.base64);
+              const image = await ImageJs.load(imageEntry.base64);
               return {
                 ...imageEntry,
                 imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by default this converts to png - 230828
