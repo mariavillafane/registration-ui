@@ -36,7 +36,8 @@ export function ImageUploader({
           id: file.name,
           width: image.width,
           height: image.height,
-          base64: await readImageAsBase64(file),
+          file,
+          // base64: await readImageAsBase64(file),
           imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by default this converts to png - 230828
           checked: true,
         };

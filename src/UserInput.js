@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { svgToPng, useJsonReader } from "./ImageTools";
+import { readImageAsBase64, svgToPng, useJsonReader } from "./ImageTools";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -62,24 +62,67 @@ async function downloadCanvas() {
   );
 
   const svgAsString = document.querySelector("#myCanvas").outerHTML; //this is a string representative of myCanvas
-  // const preface = '<?xml version="1.0" standalone="no"?>\r\n';
-  // const svgBlob = new Blob([preface, svgAsString], {
-  //   type: "image/svg+xml;charset=utf-8",
-  // });
-  // const svgUrl = URL.createObjectURL(svgBlob);
-
   const png = await svgToPng(svgAsString, 0, "white");
-
   const name = "canvas-" + new Date().toISOString().split("T")[0] + ".png";
 
   download(png, name);
 }
 
+async function downloadSettings(data) {
+  const workingImages = await Promise.all(
+    data.workingImages.map(async (workingImage) => ({
+      ...workingImage,
+      imageEntries: await Promise.all(
+        data.workingImages[0].imageEntries.map(async (imageEntry) => ({
+          base64:
+            imageEntry.base64 || (await readImageAsBase64(imageEntry.file)),
+          ...imageEntry,
+        }))
+      ),
+    }))
+  );
+
+  // const imageFixed = {
+  //   ...data.workingImages[0],
+  //   imageEntries: await Promise.all (
+  //       data.workingImages[0].imageEntries.map(async (imageEntry) => ({
+  //       base64: await readImageAsBase64(imageEntry.file),
+  //       ...imageEntry
+  //     }))
+  //   )
+  // }
+
+  // const imageFixed = {
+  //   ...data.workingImages[0],
+  //   imageEntries: [{
+  //     ...data.workingImages[0].imageEntries[0],
+  //     base64: await readImageAsBase64(data.workingImages[0].imageEntries[0].file)
+  //   }]
+  // }
+
+  //workingImages[0],
+  //workingImages: workingImages.slice(1),
+
+  const settingsJson = JSON.stringify(
+    {
+      ...data,
+      imageFixed: workingImages[0],
+      workingImages: workingImages.slice(1),
+    },
+    null,
+    2
+  );
+
+  const settings = window.URL.createObjectURL(
+    new Blob([settingsJson], { type: "application/json" })
+  );
+  download(settings, "settings.json");
+  window.URL.revokeObjectURL(settings); //delete object after creating it
+}
+
 export function UserInput({
   canvasX,
-  setCanvasX,
   canvasY,
-  setCanvasY,
   worldScale,
   setWorldScale,
   imageMoving,
@@ -135,22 +178,6 @@ export function UserInput({
       setWorkingImages(workingImages);
     });
   }, [settingsUploadedByUser]);
-
-  const settingsJson = JSON.stringify(
-    {
-      canvasX,
-      canvasY,
-      worldScale,
-      imageFixed: workingImages[0],
-      workingImages: workingImages.slice(1),
-    },
-    null,
-    2
-  );
-
-  const settings = window.URL.createObjectURL(
-    new Blob([settingsJson], { type: "application/json" })
-  );
 
   if (!imageMoving) {
     return null;
@@ -285,7 +312,7 @@ export function UserInput({
       </div>
 
       <br />
-      <a href={settings} download="settings.json">
+      {/* <a href={settings} download="settings.json">
         <Button
           variant="contained"
           style={{ width: "300px" }}
@@ -293,7 +320,25 @@ export function UserInput({
         >
           Save Settings (Fixed and Moving Images)
         </Button>
-      </a>
+      </a> */}
+
+      <br />
+      <Button
+        variant="contained"
+        style={{ width: "300px" }}
+        startIcon={<DownloadIcon />}
+        onClick={() =>
+          downloadSettings({
+            canvasX,
+            canvasY,
+            worldScale,
+            workingImages,
+          })
+        }
+      >
+        Save Settings (Fixed and Moving Images)
+      </Button>
+
       <br />
       <Button
         variant="contained"
