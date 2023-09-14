@@ -185,6 +185,8 @@ export function ImageUploader({
                           (x) => x.id != imageEntry.id
                         );
 
+                        window.URL.revokeObjectURL(imageEntry.imageUrl); //delete image
+
                         if (newEntries.length == 0) {
                           setStacks([
                             ...stacks.slice(0, index),

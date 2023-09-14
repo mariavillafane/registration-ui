@@ -73,7 +73,7 @@ async function downloadSettings(data) {
     data.workingImages.map(async (workingImage) => ({
       ...workingImage,
       imageEntries: await Promise.all(
-        data.workingImages[0].imageEntries.map(async (imageEntry) => ({
+        workingImage.imageEntries.map(async (imageEntry) => ({
           base64:
             imageEntry.base64 || (await readImageAsBase64(imageEntry.file)),
           ...imageEntry,
@@ -103,6 +103,12 @@ async function downloadSettings(data) {
   //workingImages[0],
   //workingImages: workingImages.slice(1),
 
+  console.log({
+    ...data,
+    imageFixed: workingImages[0],
+    workingImages: workingImages.slice(1),
+  });
+
   const settingsJson = JSON.stringify(
     {
       ...data,
@@ -121,8 +127,8 @@ async function downloadSettings(data) {
 }
 
 export function UserInput({
-  canvasX,
-  canvasY,
+  // canvasX,
+  // canvasY,
   worldScale,
   setWorldScale,
   imageMoving,
@@ -172,8 +178,6 @@ export function UserInput({
     );
 
     workingImagesPromise.then((workingImages) => {
-      // setCanvasX(parsedSettings.canvasX);
-      // setCanvasY(parsedSettings.canvasY);
       setWorldScale(parsedSettings.worldScale);
       setWorkingImages(workingImages);
     });
@@ -329,8 +333,8 @@ export function UserInput({
         startIcon={<DownloadIcon />}
         onClick={() =>
           downloadSettings({
-            canvasX,
-            canvasY,
+            // canvasX,
+            // canvasY,
             worldScale,
             workingImages,
           })
