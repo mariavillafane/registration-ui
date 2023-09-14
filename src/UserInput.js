@@ -160,6 +160,13 @@ export function UserInput({
 
     const parsedSettings = JSON.parse(settingsUploadedByUser);
 
+    const urlsToDelete = workingImages.flatMap((workingImage) =>
+      workingImage.imageEntries.map((imageEntry) => imageEntry.imageUrl)
+    );
+    urlsToDelete.forEach((url) => {
+      window.URL.revokeObjectURL(url); //take away the memory that is linked to urls (they are now empty pointers, just to have memory available for something else / 2 GB limit)
+    });
+
     const workingImagesPromise = Promise.all(
       [parsedSettings.imageFixed, ...parsedSettings.workingImages].map(
         async (workingImage) => ({
