@@ -68,7 +68,7 @@ async function downloadCanvas() {
   download(png, name);
 }
 
-async function downloadSettings(data) {
+async function createSettingsDotJson(data) {
   const workingImages = await Promise.all(
     data.workingImages.map(async (workingImage) => ({
       ...workingImage,
@@ -81,35 +81,12 @@ async function downloadSettings(data) {
       ),
     }))
   );
-
-  // const imageFixed = {
-  //   ...data.workingImages[0],
-  //   imageEntries: await Promise.all (
-  //       data.workingImages[0].imageEntries.map(async (imageEntry) => ({
-  //       base64: await readImageAsBase64(imageEntry.file),
-  //       ...imageEntry
-  //     }))
-  //   )
-  // }
-
-  // const imageFixed = {
-  //   ...data.workingImages[0],
-  //   imageEntries: [{
-  //     ...data.workingImages[0].imageEntries[0],
-  //     base64: await readImageAsBase64(data.workingImages[0].imageEntries[0].file)
-  //   }]
-  // }
-
-  //workingImages[0],
-  //workingImages: workingImages.slice(1),
-
   console.log({
     ...data,
     imageFixed: workingImages[0],
     workingImages: workingImages.slice(1),
   });
-
-  const settingsJson = JSON.stringify(
+  return JSON.stringify(
     {
       ...data,
       imageFixed: workingImages[0],
@@ -118,6 +95,30 @@ async function downloadSettings(data) {
     null,
     2
   );
+}
+
+async function uploadSettingsToServer(data) {
+  const settingsJson = await createSettingsDotJson(data);
+
+  const response = await fetch("http://localhost:4000/start", {
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "same-origin", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    body: settingsJson, // body data type must match "Content-Type" header
+  });
+
+  console.log(await response.json());
+}
+
+async function downloadSettings(data) {
+  const settingsJson = await createSettingsDotJson(data);
 
   const settings = window.URL.createObjectURL(
     new Blob([settingsJson], { type: "application/json" })
@@ -332,6 +333,23 @@ export function UserInput({
           Save Settings (Fixed and Moving Images)
         </Button>
       </a> */}
+
+      <br />
+      <Button
+        variant="contained"
+        style={{ width: "300px" }}
+        startIcon={<FileUploadIcon />}
+        onClick={() =>
+          uploadSettingsToServer({
+            worldScale,
+            workingImages,
+          })
+        }
+      >
+        Run Registration
+      </Button>
+
+      <br />
 
       <br />
       <Button

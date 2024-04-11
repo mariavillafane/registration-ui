@@ -1,20 +1,44 @@
 const express = require("express");
 const { exec } = require("child_process");
+const fs = require("fs/promises");
+const cors = require("cors");
 
-const app = express();
+const app = express(); //express() creates a http server
+app.use(cors());
+app.use(express.json());
+
 const port = 4000;
 
 let i = 0;
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello World again!");
 });
 
 let statuses = {};
 
-app.get("/start", (req, res) => {
+app.post("/start", async (request, response) => {
   i++;
+  console.log(request.body); // 1. receive json (initialised by user pressing "start registration")
+
+  // 2a. create a folder for results each time
+  await fs.mkdir("../results").catch(() => {});
+  await fs.mkdir("../results/" + i).catch(() => {});
+  // 2. save to disk => write settings.json file with data collected from the request (coming from website)
+  await fs.writeFile(
+    "../results/" + i + "/settings.json",
+    JSON.stringify(request.body)
+  );
+
+  // return information to the browser: server was succesful in receiving the task (or not, ie not enough space in disk)
+
+  // 3. start registration (this takes time)
+  // return information to the browser: server was succesful in receiving the task (1. it can start right away / 2. it cannot start since there is a queue / 3. it cannot start but redundant since results already available)
+  // return information to the browser: server was unsuccesful in receiving the task (=> need to try again -- because ie json malformed / not able to run python (wrong installation) / etc )
+
+  // 4. save results
+
   statuses[i] = "started";
-  res.json({ id: i });
+  response.json({ id: i });
 });
 
 app.get("/status", (req, res) => {
