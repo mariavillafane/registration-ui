@@ -24,20 +24,34 @@ app.post("/start", async (request, response) => {
   await fs.mkdir("../results").catch(() => {});
   await fs.mkdir("../results/" + i).catch(() => {});
   // 2. save to disk => write settings.json file with data collected from the request (coming from website)
+
+  const destination_folder = `../results/${i}`; //"../results/" + i
+
   await fs.writeFile(
-    "../results/" + i + "/settings.json",
+    `${destination_folder}/settings.json`,
     JSON.stringify(request.body)
   );
 
-  // return information to the browser: server was succesful in receiving the task (or not, ie not enough space in disk)
-
   // 3. start registration (this takes time)
+  exec(
+    `python ../scripts_registration/imreg_python__read-json-settings.py ${destination_folder}/settings.json ${destination_folder}`,
+    (error, stdout, stderr) => {
+      if (error) {
+        console.log(`error: ${error.message}`);
+      }
+
+      //console.log(`stdout: ${stdout}`);
+      console.log(`stderr: ${stderr}`);
+    }
+  );
+
   // return information to the browser: server was succesful in receiving the task (1. it can start right away / 2. it cannot start since there is a queue / 3. it cannot start but redundant since results already available)
   // return information to the browser: server was unsuccesful in receiving the task (=> need to try again -- because ie json malformed / not able to run python (wrong installation) / etc )
 
   // 4. save results
-
   statuses[i] = "started";
+
+  // return information to the browser: server was succesful in receiving the task (or not, ie not enough space in disk)
   response.json({ id: i });
 });
 
