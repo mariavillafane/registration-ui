@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { readImageAsBase64, svgToPng, useJsonReader } from "./ImageTools";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
@@ -7,6 +7,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ImageJs from "image-js";
+import { Box, CircularProgress } from "@mui/material";
 
 //opacity marks
 const marks = [
@@ -137,6 +138,7 @@ export function UserInput({
   workingImages,
   setWorkingImages,
 }) {
+  const [state, setState] = useState("noRegistrationIsRunning");
   const [settingsUploadedByUser, setSelectedSettings] = useJsonReader(
     null,
     "readAsText"
@@ -323,31 +325,50 @@ export function UserInput({
         </Stack>
       </div>
 
-      <br />
-      {/* <a href={settings} download="settings.json">
+      {state == "noRegistrationIsRunning" ? (
         <Button
           variant="contained"
           style={{ width: "300px" }}
-          startIcon={<DownloadIcon />}
+          startIcon={<FileUploadIcon />}
+          onClick={() => {
+            uploadSettingsToServer({
+              worldScale,
+              workingImages,
+            });
+            setState("runningRegistration");
+          }}
         >
-          Save Settings (Fixed and Moving Images)
+          Run Registration
         </Button>
-      </a> */}
+      ) : null}
 
-      <br />
-      <Button
-        variant="contained"
-        style={{ width: "300px" }}
-        startIcon={<FileUploadIcon />}
-        onClick={() =>
-          uploadSettingsToServer({
-            worldScale,
-            workingImages,
-          })
-        }
-      >
-        Run Registration
-      </Button>
+      {state == "runningRegistration" ? (
+        <Button
+          disabled
+          variant="contained"
+          style={{ width: "300px" }}
+          startIcon={<CircularProgress />}
+        >
+          Registration in progress
+        </Button>
+      ) : null}
+
+      {state == "finishedRegistration" ? (
+        <Button
+          color="success"
+          variant="contained"
+          style={{ width: "300px" }}
+          startIcon={<DownloadIcon />}
+          onClick={() =>
+            uploadSettingsToServer({
+              worldScale,
+              workingImages,
+            })
+          }
+        >
+          Get Results of registration
+        </Button>
+      ) : null}
 
       <br />
 
