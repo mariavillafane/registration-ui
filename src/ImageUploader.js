@@ -10,8 +10,12 @@ import VisibilityOffSharpIcon from "@mui/icons-material/VisibilityOffSharp";
 import { readImageAsBase64 } from "./ImageTools";
 import { useState } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
-import { Box, Checkbox, Paper } from "@mui/material";
+import { Box, Checkbox, Chip, Paper, Tooltip } from "@mui/material";
 import Image from "image-js";
+import ReplayIcon from "@mui/icons-material/Replay"; //rotation
+import LocationOnIcon from "@mui/icons-material/LocationOn"; //position
+import PhotoSizeSelectLargeIcon from "@mui/icons-material/PhotoSizeSelectLarge"; //scaling
+import PhotoSizeSelectActualIcon from "@mui/icons-material/PhotoSizeSelectActual"; //size
 
 function computeNextId(stacks) {
   return stacks.map((x) => x.id + 1).reduce((a, b) => (a > b ? a : b), 0);
@@ -103,6 +107,7 @@ export function ImageUploader({
     }
   }
 
+  console.log(stacks);
   return (
     <Box
       sx={{
@@ -137,131 +142,171 @@ export function ImageUploader({
               key={index}
               style={{
                 display: "flex",
-                flexDirection: "row",
+                flexDirection: "column",
                 padding: ".6em",
                 margin: ".6em",
                 gap: ".3em",
                 backgroundColor: "lightgray",
+                border:
+                  selectedImageId == stack.id && stack.id !== 0
+                    ? "solid 3px coral"
+                    : selectedImageId == stack.id && stack.id == 0
+                    ? "solid 3px #321ab0"
+                    : "solid 3px transparent",
               }}
             >
-              {stack.imageEntries.map((imageEntry, entryIndex) => (
-                <Card key={imageEntry.id}>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <img
-                      src={imageEntry.imageUrl}
-                      style={{
-                        width: 140,
-                        border:
-                          selectedImageId == stack.id && stack.id !== 0
-                            ? "solid 10px coral"
-                            : selectedImageId == stack.id && stack.id == 0
-                            ? "solid 10px #321ab0"
-                            : "none",
+              <Box display="flex" flexDirection={"row"} gap="0.3em">
+                {stack.imageEntries.map((imageEntry, entryIndex) => (
+                  <Card key={imageEntry.id}>
+                    <Box
+                      display="flex"
+                      flexDirection="row"
+                      position="relative"
+                      overflow="hidden"
+                      sx={{
+                        "& > .controls": {
+                          position: "absolute",
+                          top: 0,
+                          bottom: 0,
+                          right: "-1em",
+                          width: 0,
+                          background: "rgba(200,200,200,0.6)",
+                          transition: "all 0.2s",
+                        },
+                        "&:hover > .controls": { right: 0, width: "2em" },
                       }}
-                      onClick={() => setSelectedImageId(stack.id)}
-                    />
-
-                    {index == 0 ? (
-                      <>
-                        <span> stack ID = {stack.id} </span>
-                        <span> image ID = {imageEntry.id} (fixed image) </span>
-                      </>
-                    ) : (
-                      <>
-                        <span> stack ID = {stack.id} </span>
-                        <span> image ID = {imageEntry.id} (moving) </span>
-                      </>
-                    )}
-
-                    <ClearIcon
-                      onClick={() => {
-                        const newEntries = stack.imageEntries.filter(
-                          //newEntries are all the entries remaining (the ones not-deleted)
-                          (x) => x.id != imageEntry.id
-                        );
-
-                        window.URL.revokeObjectURL(imageEntry.imageUrl); //delete image
-
-                        if (newEntries.length == 0) {
-                          setStacks([
-                            ...stacks.slice(0, index),
-                            ...stacks.slice(index + 1, stack.length),
-                          ]);
-                        } else {
-                          const newStack = {
-                            ...stack,
-                            imageEntries: newEntries,
-                          };
-                          setStacks([
-                            ...stacks.slice(0, index),
-                            newStack,
-                            ...stacks.slice(index + 1, stack.length),
-                          ]);
-                        }
-                      }}
-                    />
-
-                    <Checkbox
-                      checked={imageEntry.checked}
-                      icon={<VisibilityOffSharpIcon />}
-                      checkedIcon={<VisibilitySharpIcon color="primary" />}
-                      onChange={(event) => {
-                        const newEntry = {
-                          ...imageEntry,
-                          checked: event.target.checked,
-                        };
-                        const newEntries = [
-                          ...stack.imageEntries.slice(0, entryIndex),
-                          newEntry,
-                          ...stack.imageEntries.slice(
-                            entryIndex + 1,
-                            stack.imageEntries.length
-                          ),
-                        ];
-                        const newStack = {
-                          ...stack,
-                          imageEntries: newEntries,
-                        };
-                        setStacks([
-                          ...stacks.slice(0, index),
-                          newStack,
-                          ...stacks.slice(index + 1, stacks.length),
-                        ]);
-                      }}
-                    />
-                  </div>
-                  <br />
-                  <br />
-                </Card>
-              ))}
-
-              {index != 0 ? (
-                <Dropzone
-                  onDrop={(acceptedFiles) =>
-                    onDropImageToStack(stack, index, acceptedFiles)
-                  }
-                >
-                  {({ getRootProps, getInputProps }) => (
-                    <Button
-                      {...getRootProps()}
-                      color="primary"
-                      sx={{ maxWidth: 25 }}
-                      variant="outlined"
                     >
-                      Add image to stack
-                      <input
-                        {...getInputProps()}
-                        accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
-                      />
-                    </Button>
-                  )}
-                </Dropzone>
-              ) : null}
+                      <Box display="flex" flexDirection={"column"}>
+                        <img
+                          width="100px"
+                          src={imageEntry.imageUrl}
+                          onClick={() => setSelectedImageId(stack.id)}
+                        />
+                        <Typography fontSize={"0.5rem"}>
+                          {imageEntry.id}
+                        </Typography>
+                      </Box>
+
+                      <Box
+                        className="controls"
+                        display="flex"
+                        flexDirection="column"
+                        alignItems={"center"}
+                      >
+                        <ClearIcon
+                          onClick={() => {
+                            const newEntries = stack.imageEntries.filter(
+                              //newEntries are all the entries remaining (the ones not-deleted)
+                              (x) => x.id != imageEntry.id
+                            );
+
+                            window.URL.revokeObjectURL(imageEntry.imageUrl); //delete image
+
+                            if (newEntries.length == 0) {
+                              setStacks([
+                                ...stacks.slice(0, index),
+                                ...stacks.slice(index + 1, stack.length),
+                              ]);
+                            } else {
+                              const newStack = {
+                                ...stack,
+                                imageEntries: newEntries,
+                              };
+                              setStacks([
+                                ...stacks.slice(0, index),
+                                newStack,
+                                ...stacks.slice(index + 1, stack.length),
+                              ]);
+                            }
+                          }}
+                        />
+
+                        <Checkbox
+                          checked={imageEntry.checked}
+                          icon={<VisibilityOffSharpIcon />}
+                          checkedIcon={<VisibilitySharpIcon color="primary" />}
+                          onChange={(event) => {
+                            const newEntry = {
+                              ...imageEntry,
+                              checked: event.target.checked,
+                            };
+                            const newEntries = [
+                              ...stack.imageEntries.slice(0, entryIndex),
+                              newEntry,
+                              ...stack.imageEntries.slice(
+                                entryIndex + 1,
+                                stack.imageEntries.length
+                              ),
+                            ];
+                            const newStack = {
+                              ...stack,
+                              imageEntries: newEntries,
+                            };
+                            setStacks([
+                              ...stacks.slice(0, index),
+                              newStack,
+                              ...stacks.slice(index + 1, stacks.length),
+                            ]);
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  </Card>
+                ))}
+
+                {index != 0 ? (
+                  <Dropzone
+                    onDrop={(acceptedFiles) =>
+                      onDropImageToStack(stack, index, acceptedFiles)
+                    }
+                  >
+                    {({ getRootProps, getInputProps }) => (
+                      <Button
+                        {...getRootProps()}
+                        color="primary"
+                        sx={{ maxWidth: 25 }}
+                        variant="outlined"
+                      >
+                        Add image to stack
+                        <input
+                          {...getInputProps()}
+                          accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
+                        />
+                      </Button>
+                    )}
+                  </Dropzone>
+                ) : null}
+              </Box>
+              <Box display="flex" gap="0.2rem" fontSize="0.5em">
+                <Tooltip title="location x,y">
+                  <Chip
+                    icon={<LocationOnIcon />}
+                    size="small"
+                    variant="outlined"
+                    label={`${stack.x},${stack.y}`}
+                  />
+                </Tooltip>
+                <Tooltip title="rotation">
+                  <Chip
+                    icon={<ReplayIcon />}
+                    size="small"
+                    variant="outlined"
+                    label={`${stack.rotation}`}
+                  />
+                </Tooltip>
+                <Tooltip title="image Size (wxh) @ (scale)">
+                  <Chip
+                    icon={<PhotoSizeSelectLargeIcon />}
+                    size="small"
+                    variant="outlined"
+                    label={`${Math.round(
+                      stack.width * stack.scaling
+                    )}x${Math.round(stack.height * stack.scaling)} @ ${
+                      stack.scaling
+                    }`}
+                  />
+                </Tooltip>
+              </Box>
             </Paper>
           ))}
         </section>
