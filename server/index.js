@@ -110,7 +110,7 @@ app.get("/api/results/:id", async (req, res) => {
   );
   // res.json(listOfFilesResultingFromRegistration);
   const finallist = listOfFilesResultingFromRegistration.map(
-    (fileName) => `/job/${id}/results/${fileName}`
+    (fileName) => `/api/job/${id}/results/${fileName}`
   );
   res.json(finallist);
 });
