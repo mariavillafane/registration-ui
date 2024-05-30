@@ -381,12 +381,12 @@ function App() {
                     maxWidth={"400px"}
                     padding="1em"
                   >
-                    <img src={`http://localhost:4000${image}`} />
+                    <img src={`${image}`} />
 
                     <a
                       target="_blank"
                       download={image.split("/").at(-1)}
-                      href={`http://localhost:4000${image}`}
+                      href={image}
                       title="image"
                     >
                       <span>{image.split("/").at(-1)}</span>
