@@ -2,13 +2,14 @@ const express = require("express");
 const { exec } = require("child_process");
 const fs = require("fs/promises");
 const cors = require("cors");
-const { SmsFailedRounded } = require("@mui/icons-material");
+const crypto = require("crypto");
 
 const app = express(); //express() creates a http server
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "400mb" }));
 //allows access at the job end point to access images in the results folder 240420
-app.use("/job", express.static("../results"));
+app.use("/registration-ui", express.static("../build")); //how to serve react app from express 240529
+app.use("/api/job", express.static("../results"));
 
 const port = 4000;
 
@@ -23,7 +24,7 @@ function startnextjob(statuses) {
     .sort((a, b) => a.entryTime - b.entryTime)
     .find((entry) => entry.status == "queued");
 
-  if (!nextjob) return; //is thete any queued job? if no, do nothing (this finishes the function)
+  if (!nextjob) return; //is there any queued job? if no, do nothing (this finishes the function)
 
   const i = nextjob.id;
   statuses[i].status = "started";
@@ -50,68 +51,68 @@ function startnextjob(statuses) {
   );
 }
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Hello World again!");
 });
 
 let i = 0;
 let statuses = {};
-app.post("/start", async (request, response) => {
+app.post("/api/start", async (request, response) => {
   i++;
-  console.log(request.body); // 1. receive json (initialised by user pressing "start registration")
+  const content = JSON.stringify(request.body);
+
+  const id = crypto.createHash("md5").update(content).digest("hex");
 
   // 2a. create a folder for results each time
   await fs.mkdir("../results").catch(() => {});
-  await fs.mkdir("../results/" + i).catch(() => {});
+  await fs.mkdir("../results/" + id).catch(() => {});
   // 2. save to disk => write settings.json file with data collected from the request (coming from website)
 
-  const destination_folder = `../results/${i}`;
+  const destination_folder = `../results/${id}`;
 
-  await fs.writeFile(
-    `${destination_folder}/settings.json`,
-    JSON.stringify(request.body)
-  );
+  //writing the settings.json file
+  await fs.writeFile(`${destination_folder}/settings.json`, content);
 
+  //statuses is a collection of jobs
   const job = {
-    id: i,
+    id,
     entryTime: +new Date(),
     destination_folder, //destination_folder: destination_folder,
     status: "queued",
   };
 
-  statuses[i] = job;
+  statuses[id] = job;
   startnextjob(statuses);
   response.json(job);
 });
 
-app.get("/status", (req, res) => {
+app.get("/api/status", (req, res) => {
   res.json(statuses);
 });
 
-app.get("/stop/:id", (req, res) => {
-  console.log(req.params.id);
-  statuses = {
-    ...statuses,
-    [req.params.id]: "stopped",
-  };
-  res.json(statuses);
-});
+// app.get("/stop/:id", (req, res) => {
+//   console.log(req.params.id);
+//   statuses = {
+//     ...statuses,
+//     [req.params.id]: "stopped",
+//   };
+//   res.json(statuses);
+// });
 
-app.get("/blub", (req, res) => {
-  exec("ls -la", (error, stdout, stderr) => {
-    if (error) {
-      console.log(`error: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.log(`stderr: ${stderr}`);
-      return;
-    }
-    setTimeout(() => res.send(`${stdout}`), 3000);
-    console.log(`stdout: ${stdout}`);
-  });
+app.get("/api/results/:id", async (req, res) => {
+  const id = req.params.id;
+  const destination_folder = `${
+    statuses[req.params.id].destination_folder
+  }/results`;
 
-  ++i;
+  const listOfFilesResultingFromRegistration = await fs.readdir(
+    destination_folder
+  );
+  // res.json(listOfFilesResultingFromRegistration);
+  const finallist = listOfFilesResultingFromRegistration.map(
+    (fileName) => `/job/${id}/results/${fileName}`
+  );
+  res.json(finallist);
 });
 
 app.listen(port, () => {

@@ -10,7 +10,7 @@ import VisibilityOffSharpIcon from "@mui/icons-material/VisibilityOffSharp";
 import { readImageAsBase64 } from "./ImageTools";
 import { useState } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
-import { Checkbox, Paper } from "@mui/material";
+import { Box, Checkbox, Paper } from "@mui/material";
 import Image from "image-js";
 
 function computeNextId(stacks) {
@@ -104,11 +104,11 @@ export function ImageUploader({
   }
 
   return (
-    <Card
+    <Box
       sx={{
         minWidth: 200,
-        maxWidth: 800,
-        maxHeight: 800,
+        height: "800px",
+        grow: 1,
         overflowY: "scroll",
         overflowX: "scroll",
         display: "flex",
@@ -266,6 +266,6 @@ export function ImageUploader({
           ))}
         </section>
       </CardContent>
-    </Card>
+    </Box>
   );
 }

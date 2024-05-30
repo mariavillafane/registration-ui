@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { readImageAsBase64, svgToPng, useJsonReader } from "./ImageTools";
+import { readImageAsBase64, useJsonReader } from "./ImageTools";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -7,96 +7,13 @@ import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ImageJs from "image-js";
-import { Box, CircularProgress } from "@mui/material";
-
-//opacity marks
-const marks = [
-  {
-    fontSize: "0.01em", //GAETANO 221014
-    value: 0.0,
-    label: "transparent",
-  },
-  {
-    value: 1.0,
-    label: "solid",
-  },
-];
-
-function download(url, name) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-const blobToBase64 = function (blobUrl) {
-  return new Promise((resolve, reject) => {
-    let img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = (err) => reject(err);
-    img.src = blobUrl;
-  })
-    .then((img) => {
-      // URL.revokeObjectURL(blobUrl);
-      // Limit to 256x256px while preserving aspect ratio
-      let [w, h] = [img.width, img.height];
-
-      let canvas = document.createElement("canvas");
-      console.log(canvas);
-      canvas.width = w;
-      canvas.height = h;
-      let ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
-
-      return canvas.toDataURL();
-    })
-    .catch(console.log);
-};
-
-async function downloadCanvas() {
-  await Promise.all(
-    [...document.querySelectorAll("#myCanvas image")].map(async (img) => {
-      img.href.baseVal = await blobToBase64(img.href.baseVal);
-    })
-  );
-
-  const svgAsString = document.querySelector("#myCanvas").outerHTML; //this is a string representative of myCanvas
-  const png = await svgToPng(svgAsString, 0, "white");
-  const name = "canvas-" + new Date().toISOString().split("T")[0] + ".png";
-
-  download(png, name);
-}
-
-async function createSettingsDotJson(data) {
-  const workingImages = await Promise.all(
-    data.workingImages.map(async (workingImage) => ({
-      ...workingImage,
-      imageEntries: await Promise.all(
-        workingImage.imageEntries.map(async (imageEntry) => ({
-          base64:
-            imageEntry.base64 || (await readImageAsBase64(imageEntry.file)),
-          ...imageEntry,
-        }))
-      ),
-    }))
-  );
-  console.log({
-    ...data,
-    imageFixed: workingImages[0],
-    workingImages: workingImages.slice(1),
-  });
-  return JSON.stringify(
-    {
-      ...data,
-      imageFixed: workingImages[0],
-      workingImages: workingImages.slice(1),
-    },
-    null,
-    2
-  );
-}
+import { Box, Card, CircularProgress, Dialog, Drawer } from "@mui/material";
+import {
+  createSettingsDotJson,
+  download,
+  downloadCanvas,
+  downloadSettings,
+} from "./actions";
 
 async function uploadSettingsToServer(data) {
   const settingsJson = await createSettingsDotJson(data);
@@ -115,17 +32,9 @@ async function uploadSettingsToServer(data) {
     body: settingsJson, // body data type must match "Content-Type" header
   });
 
-  console.log(await response.json());
-}
-
-async function downloadSettings(data) {
-  const settingsJson = await createSettingsDotJson(data);
-
-  const settings = window.URL.createObjectURL(
-    new Blob([settingsJson], { type: "application/json" })
-  );
-  download(settings, "settings.json");
-  window.URL.revokeObjectURL(settings); //delete object after creating it
+  const statusOfResult = await response.json();
+  console.log(statusOfResult);
+  return statusOfResult;
 }
 
 export function UserInput({
@@ -139,11 +48,12 @@ export function UserInput({
   setWorkingImages,
 }) {
   const [state, setState] = useState("noRegistrationIsRunning");
+  const [showResults, setShowResults] = useState(false);
   const [settingsUploadedByUser, setSelectedSettings] = useJsonReader(
     null,
     "readAsText"
   );
-  //console.log(settingsUploadedByUser);
+  const [resultingImages, setResultingImages] = useState(null); //as there are no resultingImages prior to running registration
 
   //opacity marks
   const marks = [
@@ -325,17 +235,38 @@ export function UserInput({
         </Stack>
       </div>
 
-      {state == "noRegistrationIsRunning" ? (
+      {state == "finishedRegistration" || state == "noRegistrationIsRunning" ? (
         <Button
           variant="contained"
           style={{ width: "300px" }}
           startIcon={<FileUploadIcon />}
-          onClick={() => {
-            uploadSettingsToServer({
+          onClick={async () => {
+            const { id } = await uploadSettingsToServer({
               worldScale,
               workingImages,
             });
             setState("runningRegistration");
+            setTimeout(async function checkIfRegistrationCompletes() {
+              const statuses = await fetch("http://localhost:4000/status", {
+                method: "GET", // *GET, POST, PUT, DELETE, etc.
+                mode: "cors", // no-cors, *cors, same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+              }).then((x) => x.json());
+
+              if (statuses[id].status == "success") {
+                setState("finishedRegistration");
+                const resultingTransformedImageFiles = await fetch(
+                  `http://localhost:4000/results/${id}`,
+                  {
+                    method: "GET", // *GET, POST, PUT, DELETE, etc.
+                    mode: "cors", // no-cors, *cors, same-origin
+                  }
+                ).then((x) => x.json());
+                setResultingImages(resultingTransformedImageFiles);
+              } else {
+                setTimeout(checkIfRegistrationCompletes, 5000);
+              }
+            }, 5000);
           }}
         >
           Run Registration
@@ -353,18 +284,15 @@ export function UserInput({
         </Button>
       ) : null}
 
-      {state == "finishedRegistration" ? (
+      {state == "finishedRegistration" || resultingImages ? (
         <Button
           color="success"
           variant="contained"
           style={{ width: "300px" }}
           startIcon={<DownloadIcon />}
-          onClick={() =>
-            uploadSettingsToServer({
-              worldScale,
-              workingImages,
-            })
-          }
+          onClick={() => {
+            setShowResults(true);
+          }}
         >
           Get Results of registration
         </Button>
@@ -398,6 +326,30 @@ export function UserInput({
       >
         Save Canvas (working images as per settings)
       </Button>
+
+      <Drawer
+        anchor={"right"}
+        open={showResults}
+        onClose={() => setShowResults(false)}
+      >
+        <Stack spacing={2}>
+          {resultingImages
+            ?.filter((image) => image.endsWith("png"))
+            ?.map((image) => (
+              <Card key={image}>
+                <a
+                  target="_blank"
+                  download={image.split("/").at(-1)}
+                  href={`http://localhost:4000${image}`}
+                  title="image"
+                >
+                  <img src={`http://localhost:4000${image}`} />
+                  <span>{image}</span>
+                </a>
+              </Card>
+            ))}
+        </Stack>
+      </Drawer>
     </div>
   );
 }

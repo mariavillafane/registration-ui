@@ -215,11 +215,7 @@ export function RegistrationCanvas(props) {
     500, //props.canvas_Y
   ]);
   const [mousePosition, setMousePosition] = useState(null);
-  const [zoomPower, setZoomPower] = useState(0.01);
-
-  //new 230217
-  const [outercanvasX, setOutercanvasX] = useState(1000);
-  const [outercanvasY, setOutercanvasY] = useState(950);
+  const zoomPower = props.zoomPower || 0.01;
 
   //console.log("worldScale =", props.worldScale) //GAETANO 26/10/2022
   //console.log(props.images);
@@ -239,50 +235,15 @@ export function RegistrationCanvas(props) {
   );
 
   return (
-    <div>
-      <div
-        style={{ paddingBottom: "20px", paddingLeft: "40px", width: "450px" }}
-      >
-        <div>
-          outer canvas (red) width:{" "}
-          <input
-            value={outercanvasX}
-            type="number"
-            style={{ width: "50px" }}
-            onChange={(event) => setOutercanvasX(event.target.value)}
-          />{" "}
-          x height:{" "}
-          <input
-            value={outercanvasY}
-            type="number"
-            style={{ width: "50px" }}
-            onChange={(event) => setOutercanvasY(event.target.value)}
-          />{" "}
-          (pixels)
-        </div>
-
-        <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-          <span>zoomSpeed </span>
-          <span>
-            <ZoomInIcon />
-          </span>
-          <Slider
-            size="small"
-            value={zoomPower}
-            startIcon={<ZoomInIcon />}
-            type="range"
-            min={0.1}
-            max={0.9}
-            step={0.1}
-            valueLabelDisplay="auto"
-            //style={{fontSize: "0.01em"}}
-            marks={marks}
-            onChange={(event) => setZoomPower(event.target.value)}
-          />
-        </Stack>
-      </div>
-
+    <Box
+      grow={1}
+      display="flex"
+      flexDirection="column"
+      justifyContent={"stretch"}
+      alignItems={"stretch"}
+    >
       <svg
+        style={{ grow: 1, height: "100%" }}
         xmlns="http://www.w3.org/2000/svg"
         ref={ref}
         id="myCanvas"
@@ -297,12 +258,6 @@ export function RegistrationCanvas(props) {
           viewBox
         )}
         viewBox={viewBox.join(" ")}
-        //viewBox={`0 0 200 200`}   //ZOOM
-
-        style={{
-          width: outercanvasX, //"1000px",
-          height: outercanvasY, //"800px", // pixels on the screen
-        }}
       >
         {props.stacks.flatMap((stack) =>
           stack.imageEntries
@@ -322,6 +277,6 @@ export function RegistrationCanvas(props) {
           inner_grid_start={inner_grid_start}
         />
       </svg>
-    </div>
+    </Box>
   );
 }
