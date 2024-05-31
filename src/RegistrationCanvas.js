@@ -1,9 +1,11 @@
-import { useState, useRef, memo } from "react";
+import { useState, useRef, memo, useMemo } from "react";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import { Button } from "@mui/material";
 import { Box } from "@mui/system";
+import { ReactSVGPanZoom, TOOL_NONE, INITIAL_VALUE } from "react-svg-pan-zoom";
+import { useWindowSize } from "@react-hook/window-size";
 
 //zoom speed marks
 const marks = [
@@ -54,229 +56,163 @@ function calculateViewBoxChange(event, viewBox, ref, zoomPower) {
   return newViewBox;
 }
 
-function handleDrag(ref, mousePosition, setMousePosition, setViewBox, viewBox) {
-  //DRAG
-  const onMouseDown = (event) =>
-    setMousePosition({
-      x: event.clientX,
-      y: event.clientY,
-      viewBox,
-    });
-
-  const onMouseUp = () => setMousePosition(null);
-
-  const onMouseMove = (event) => {
-    if (!mousePosition) return;
-    const movement = {
-      x: event.clientX - mousePosition.x,
-      y: event.clientY - mousePosition.y,
-    };
-    console.log(movement);
-
-    const canvasWidth = +ref.current.clientWidth;
-    const canvasHeight = +ref.current.clientHeight;
-
-    setViewBox([
-      mousePosition.viewBox[0] - (movement.x / canvasWidth) * viewBox[2],
-      mousePosition.viewBox[1] - (movement.y / canvasHeight) * viewBox[3],
-      viewBox[2],
-      viewBox[3],
-    ]);
-  };
-  return {
-    onMouseDown,
-    onMouseUp,
-    onMouseMove,
-  };
-}
-
-function count(n) {
-  return Array.from({ length: n }, (_, i) => i);
-}
-
-function arePropsEqual(oldProps, newProps) {
-  return (
-    oldProps.x === newProps.x &&
-    oldProps.y === newProps.y &&
-    oldProps.width === newProps.width &&
-    oldProps.height === newProps.height &&
-    oldProps.scaling === newProps.scaling &&
-    oldProps.rotation === newProps.rotation &&
-    oldProps.opacity === newProps.opacity &&
-    oldProps.id === newProps.id
-  );
-}
-
-const CanvasImage = memo(
-  (props) => (
-    <image
-      x={props.x}
-      y={props.y}
-      opacity={props.opacity}
-      href={props.imageUrl}
-      width={props.width * props.scaling}
-      height={props.height * props.scaling}
-      transform={`rotate(${props.rotation},${props.x},${props.y})`}
-    />
-  ),
-  arePropsEqual
-);
-
-const CanvasGrid = ({
-  inner_canvas_width,
-  inner_canvas_height,
-  inner_grid_start,
-}) => (
-  <>
-    <rect
-      width={inner_canvas_width + Math.abs(inner_grid_start[0])}
-      height={inner_canvas_height + Math.abs(inner_grid_start[1])}
-      x={inner_grid_start[0]}
-      y={inner_grid_start[1]}
-      fill="url(#grid)"
-    ></rect>
-    <defs>
-      <pattern
-        id="grid"
-        // viewBox = "0,0,10,10"
-        width="10"
-        height="10"
-        patternUnits="userSpaceOnUse"
-      >
-        <line
-          x1="0"
-          y1="0"
-          x2="0"
-          y2="10"
-          stroke="black"
-          strokeOpacity="0.67"
-          strokeWidth="0.5"
-        />
-        <line
-          x1="0"
-          y1="0"
-          x2="10"
-          y2="0"
-          stroke="grey"
-          strokeOpacity="0.5"
-          strokeWidth="0.5"
-        />
-      </pattern>
-    </defs>
-    <line
-      id="myWorkSpace_axis_x"
-      x1={inner_grid_start[0]}
-      y1={0}
-      x2={inner_canvas_width}
-      y2={0}
-      stroke="grey"
-      strokeOpacity="0.67"
-      strokeWidth="1.0"
-    />
-    <line
-      id="myWorkSpace_axis_y"
-      x1={0}
-      y1={inner_grid_start[1]}
-      x2={0}
-      y2={inner_canvas_height}
-      stroke="grey"
-      strokeOpacity="0.67"
-      strokeWidth="1.0"
-    />
-    {count(
-      Math.ceil((inner_canvas_height + Math.abs(inner_grid_start[1])) / 100)
-    )
-      .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[1] / 100)))
-      .map((i) => (
-        <text key={i} x={-15} y={i * 100} fontSize="0.25em" fill="blck">
-          {" "}
-          (0,{i * 100}){" "}
-        </text>
-      ))}
-    {count(
-      Math.ceil((inner_canvas_width + Math.abs(inner_grid_start[0])) / 100)
-    )
-      .map((i) => i + Math.min(0, Math.ceil(inner_grid_start[0] / 100)))
-      .map((i) => (
-        <text key={i} x={i * 100} y={-2} fontSize="0.25em" fill="blck">
-          {" "}
-          ({i * 100}, 0){" "}
-        </text>
-      ))}
-  </>
+const CanvasImage = (props) => (
+  <image
+    data-stack-id={props.stackId}
+    data-entry-id={props.entryId}
+    x={props.x}
+    y={props.y}
+    opacity={props.opacity}
+    href={props.imageUrl}
+    width={props.width * props.scaling}
+    height={props.height * props.scaling}
+    transform={`rotate(${props.rotation},${props.x},${props.y})`}
+  />
 );
 
 export function RegistrationCanvas(props) {
   const ref = useRef();
-  const [viewBox, setViewBox] = useState([
-    0,
-    0,
-    500, //props.canvas_X
-    500, //props.canvas_Y
-  ]);
-  const [mousePosition, setMousePosition] = useState(null);
-  const zoomPower = props.zoomPower || 0.01;
+  const Viewer = useRef(null);
+  const [tool, onChangeTool] = useState(TOOL_NONE);
+  const [value, onChangeValue] = useState(INITIAL_VALUE);
+  const [dragStart, setDragStart] = useState(null);
+  // const [width, height] = useWindowSize({initialWidth: 400, initialHeight: 400})
 
-  //console.log("worldScale =", props.worldScale) //GAETANO 26/10/2022
-  //console.log(props.images);
-
-  //get size of inner (green) canvas
-  const inner_canvas_width = props.stacks
-    .map((stack) => stack.width * stack.scaling + stack.x)
-    .reduce((a, b) => (a > b ? a : b), 0); //is a bigger thank? if yes keep a, else keep b, and start with 0
-
-  const inner_canvas_height = props.stacks
-    .map((stack) => stack.height * stack.scaling + stack.y)
-    .reduce((a, b) => (a > b ? a : b), 0); //is a bigger thank? if yes keep a, else keep b, and start with 0
-
-  const inner_grid_start = props.stacks.reduce(
-    ([x, y], b) => [x < b.x ? x : b.x, y < b.y ? y : b.y],
-    [0, 0]
-  );
+  const w = (props.stacks?.[0]?.x || 0) + (props.stacks?.[0]?.width || 0);
+  const h = (props.stacks?.[0]?.y || 0) + (props.stacks?.[0]?.height || 0);
 
   return (
     <Box
+      onMouseLeave={() => setDragStart(null)}
+      ref={ref}
+      width="100%"
       grow={1}
       display="flex"
       flexDirection="column"
       justifyContent={"stretch"}
       alignItems={"stretch"}
     >
-      <svg
-        style={{ grow: 1, height: "100%" }}
-        xmlns="http://www.w3.org/2000/svg"
-        ref={ref}
-        id="myCanvas"
-        onWheel={(event) =>
-          setViewBox(calculateViewBoxChange(event, viewBox, ref, zoomPower))
-        }
-        {...handleDrag(
-          ref,
-          mousePosition,
-          setMousePosition,
-          setViewBox,
-          viewBox
-        )}
-        viewBox={viewBox.join(" ")}
-      >
-        {props.stacks.flatMap((stack) =>
-          stack.imageEntries
-            .filter((x) => x.checked)
-            .map((entry) => (
-              <CanvasImage
-                key={stack.id + "-" + entry.id}
-                {...stack}
-                {...entry}
-              />
-            ))
-        )}
+      <ReactSVGPanZoom
+        background="transparent"
+        SVGBackground="transparent"
+        width={ref.current?.clientWidth || 1000}
+        height={ref.current?.clientHeight || 500}
+        ref={Viewer}
+        value={value}
+        onChangeValue={onChangeValue}
+        tool={tool}
+        onChangeTool={onChangeTool}
+        onMouseDown={(e) => {
+          if (e.originalEvent?.target?.dataset?.stackId === undefined) return;
 
-        <CanvasGrid
+          const id = +e.originalEvent.target.dataset.stackId;
+          const { clientX, clientY } = e.originalEvent;
+          const { x, y } = props.stacks[id];
+          setDragStart([clientX / e.value.a, clientY / e.value.d, x, y, id]);
+          console.log(e);
+          console.log([clientX, clientY, x, y, id]);
+          props.setSelectedImageId(id);
+        }}
+        onMouseMove={(e) => {
+          if (!dragStart) return;
+          console.log(e);
+
+          const id = dragStart[4];
+          const { clientX, clientY } = e.originalEvent;
+          const [x, y] = [
+            clientX / e.value.a - dragStart[0] + dragStart[2],
+            clientY / e.value.d - dragStart[1] + dragStart[3],
+          ];
+
+          const stacks = [
+            ...props.stacks.slice(0, id),
+            { ...props.stacks[id], x, y },
+            ...props.stacks.slice(id + 1, props.stacks.length),
+          ];
+
+          console.log({ dragStart }, { x, y });
+          props.setStacks(stacks);
+        }}
+        onMouseUp={(e) => {
+          if (!dragStart) return;
+          const id = dragStart[4];
+
+          const { clientX, clientY } = e.originalEvent;
+          const [x, y] = [
+            clientX / e.value.a - dragStart[0] + dragStart[2],
+            clientY / e.value.d - dragStart[1] + dragStart[3],
+          ];
+
+          const stacks = [
+            ...props.stacks.slice(0, id),
+            { ...props.stacks[id], x, y },
+            ...props.stacks.slice(id + 1, props.stacks.length),
+          ];
+
+          props.setStacks(stacks);
+          setDragStart(null);
+        }}
+      >
+        <svg width={w} height={h}>
+          <defs>
+            <pattern
+              id="smallGrid"
+              width="8"
+              height="8"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 10 0 L 0 0 0 10"
+                fill="none"
+                stroke="gray"
+                stroke-width="0.5"
+              />
+            </pattern>
+            <pattern
+              id="grid"
+              width="100"
+              height="100"
+              patternUnits="userSpaceOnUse"
+            >
+              <rect width="100" height="100" fill="url(#smallGrid)" />
+              <path
+                d="M 100 0 L 0 0 0 100"
+                fill="none"
+                stroke="gray"
+                stroke-width="1"
+              />
+            </pattern>
+          </defs>
+
+          <rect
+            x={-1000}
+            y={-1000}
+            width="200%"
+            height="200%"
+            fill="url(#grid)"
+          />
+
+          {props.stacks.flatMap((stack) =>
+            stack.imageEntries
+              .filter((x) => x.checked)
+              .map((entry) => (
+                <CanvasImage
+                  key={stack.id + "-" + entry.id}
+                  stackId={stack.id}
+                  entryId={entry.id}
+                  {...stack}
+                  {...entry}
+                />
+              ))
+          )}
+
+          {/* <CanvasGrid
           inner_canvas_width={inner_canvas_width}
           inner_canvas_height={inner_canvas_height}
           inner_grid_start={inner_grid_start}
-        />
-      </svg>
+        /> */}
+        </svg>
+      </ReactSVGPanZoom>
     </Box>
   );
 }

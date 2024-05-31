@@ -476,6 +476,9 @@ function App() {
         }}
       >
         <RegistrationCanvas
+          selectedImageId={selectedImageId}
+          setSelectedImageId={setSelectedImageId}
+          setStacks={setStacks}
           stacks={stacks}
           worldScale={worldScale}
           zoomPower={zoomPower}
@@ -487,31 +490,6 @@ function App() {
           selectedImageId={selectedImageId}
           setSelectedImageId={setSelectedImageId}
         />
-
-        {/* <UserInput
-          workingImages={stacks}
-          imageMoving={stacks.find((stack) => selectedImageId == stack.id)}
-          setImageMoving={(newImageMoving) => {
-            setStacks((allImages) => {
-              const x = allImages.findIndex(
-                (stack) => selectedImageId == stack.id
-              );
-              return [
-                ...allImages.slice(0, x),
-                newImageMoving,
-                ...allImages.slice(x + 1),
-              ];
-            });
-          }}
-          // setWorkingImages={(newWorkingImages) => {
-          //   setStacks((allImages) => [allImages[0], ...newWorkingImages]);
-          // }}
-          setWorkingImages={setStacks}
-          {...{
-            worldScale,
-            setWorldScale,
-          }}
-        /> */}
       </div>
     </div>
   );

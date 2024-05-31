@@ -283,7 +283,7 @@ export function ImageUploader({
                     icon={<LocationOnIcon />}
                     size="small"
                     variant="outlined"
-                    label={`${stack.x},${stack.y}`}
+                    label={`${Math.round(stack.x)},${Math.round(stack.y)}`}
                   />
                 </Tooltip>
                 <Tooltip title="rotation">

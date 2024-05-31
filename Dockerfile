@@ -1,4 +1,5 @@
 FROM continuumio/miniconda3
+SHELL ["/bin/bash", "--login", "-c"]
 
 WORKDIR /app
 
@@ -9,9 +10,11 @@ RUN conda env create -f environment.yml
 RUN conda init bash
 
 # Activate the environment, and make sure it's activated:
+# RUN conda init && conda activate image_registration_legacy
+
 RUN conda activate image_registration_legacy
 
-RUN echo "conda activate image_registration_legacy" >> ~/.bashrc
+RUN echo "conda init && conda activate image_registration_legacy" >> ~/.bashrc
 SHELL ["/bin/bash", "--login", "-c"]
 
 RUN python -c "import SimpleITK"

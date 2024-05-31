@@ -11,6 +11,7 @@
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.9",
     "@mui/styled-engine-sc": "^5.10.6",
+    "@react-hook/window-size": "^3.1.1",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -24,6 +25,7 @@
     "react-dropzone": "^14.2.3",
     "react-scripts": "5.0.1",
     "react-split-pane": "^0.1.92",
+    "react-svg-pan-zoom": "^3.12.1",
     "styled-components": "^5.3.6",
     "web-vitals": "^2.1.0",
     "yieldable-json": "^2.0.1"
