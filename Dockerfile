@@ -15,13 +15,9 @@ RUN conda init bash
 RUN conda activate image_registration_legacy
 
 RUN echo "conda init && conda activate image_registration_legacy" >> ~/.bashrc
-SHELL ["/bin/bash", "--login", "-c"]
 
-RUN python -c "import SimpleITK"
-RUN python -c "import cv2"
-RUN python -c "import mat"
-RUN python -c "import pandas"
-RUN python -c "import PIL"
+
+COPY .
 
 
 ENTRYPOINT ["python", "run.py"]
