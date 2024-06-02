@@ -21,6 +21,19 @@ function computeNextId(stacks) {
   return stacks.map((x) => x.id + 1).reduce((a, b) => (a > b ? a : b), 0);
 }
 
+let counter = 0;
+
+function makefilename(file, stackId) {
+  const filename = file.name.split(".");
+  console.log(filename);
+  const filename_ok = filename.slice(0, -1);
+  const filename_ok_joined = filename_ok.join("."); //all the parts of the filename now concatenated, still missing the extension (-1)
+  const filename_ok_joined_ok = `${stackId}-${filename_ok_joined}_${counter++}.${filename.at(
+    -1
+  )}`; //here putting again the extension with . (ie .jpg)
+  return filename_ok_joined_ok;
+}
+
 export function ImageUploader({
   stacks,
   setStacks,
@@ -37,7 +50,7 @@ export function ImageUploader({
         const image = await Image.load(buf);
         return {
           stackId,
-          id: file.name,
+          id: makefilename(file, stackId), //`${stackId}-${counter++}-${file.name}`,
           width: image.width,
           height: image.height,
           file,
@@ -76,7 +89,7 @@ export function ImageUploader({
         const image = await Image.load(buf);
         return {
           stackId: stack.id,
-          id: file.name,
+          id: makefilename(file, stack.id), //`${stack.id}-${filename_ok_joined}_${counter++}.${filename.at(-1)}`,
           width: image.width,
           height: image.height,
           base64: await readImageAsBase64(file),
@@ -94,16 +107,12 @@ export function ImageUploader({
         );
       }
 
-      const stackWithMoreImages = {
-        ...stack,
-        imageEntries: [...stack.imageEntries, ...imageEntries],
-      };
-
-      setStacks((stacks) => [
-        ...stacks.slice(0, index),
-        stackWithMoreImages,
-        ...stacks.slice(index + 1, stacks.length),
-      ]);
+      setStacks((stacks) =>
+        stacks.with(index, {
+          ...stack,
+          imageEntries: [...stack.imageEntries, ...imageEntries], //stackWithMoreImages
+        })
+      );
     }
   }
 
@@ -111,7 +120,7 @@ export function ImageUploader({
   return (
     <Box
       sx={{
-        minWidth: 200,
+        minWidth: 300, //200
         height: "800px",
         grow: 1,
         overflowY: "scroll",
@@ -208,15 +217,12 @@ export function ImageUploader({
                                 ...stacks.slice(index + 1, stack.length),
                               ]);
                             } else {
-                              const newStack = {
-                                ...stack,
-                                imageEntries: newEntries,
-                              };
-                              setStacks([
-                                ...stacks.slice(0, index),
-                                newStack,
-                                ...stacks.slice(index + 1, stack.length),
-                              ]);
+                              setStacks(
+                                stacks.with(index, {
+                                  ...stack,
+                                  imageEntries: newEntries,
+                                })
+                              );
                             }
                           }}
                         />
@@ -226,27 +232,19 @@ export function ImageUploader({
                           icon={<VisibilityOffSharpIcon />}
                           checkedIcon={<VisibilitySharpIcon color="primary" />}
                           onChange={(event) => {
-                            const newEntry = {
-                              ...imageEntry,
-                              checked: event.target.checked,
-                            };
-                            const newEntries = [
-                              ...stack.imageEntries.slice(0, entryIndex),
-                              newEntry,
-                              ...stack.imageEntries.slice(
-                                entryIndex + 1,
-                                stack.imageEntries.length
-                              ),
-                            ];
-                            const newStack = {
-                              ...stack,
-                              imageEntries: newEntries,
-                            };
-                            setStacks([
-                              ...stacks.slice(0, index),
-                              newStack,
-                              ...stacks.slice(index + 1, stacks.length),
-                            ]);
+                            const newEntries = stack.imageEntries.with(
+                              entryIndex,
+                              {
+                                ...imageEntry,
+                                checked: event.target.checked,
+                              }
+                            );
+                            setStacks(
+                              stacks.with(index, {
+                                ...stack,
+                                imageEntries: newEntries,
+                              })
+                            );
                           }}
                         />
                       </Box>

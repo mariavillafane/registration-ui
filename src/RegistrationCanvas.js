@@ -58,6 +58,7 @@ function calculateViewBoxChange(event, viewBox, ref, zoomPower) {
 
 const CanvasImage = (props) => (
   <image
+    data-id={props.i}
     data-stack-id={props.stackId}
     data-entry-id={props.entryId}
     x={props.x}
@@ -103,9 +104,9 @@ export function RegistrationCanvas(props) {
         tool={tool}
         onChangeTool={onChangeTool}
         onMouseDown={(e) => {
-          if (e.originalEvent?.target?.dataset?.stackId === undefined) return;
+          if (e.originalEvent?.target?.dataset?.id === undefined) return;
 
-          const id = +e.originalEvent.target.dataset.stackId;
+          const id = +e.originalEvent.target.dataset.id;
           const { clientX, clientY } = e.originalEvent;
           const { x, y } = props.stacks[id];
           setDragStart([clientX / e.value.a, clientY / e.value.d, x, y, id]);
@@ -120,15 +121,11 @@ export function RegistrationCanvas(props) {
           const id = dragStart[4];
           const { clientX, clientY } = e.originalEvent;
           const [x, y] = [
-            clientX / e.value.a - dragStart[0] + dragStart[2],
-            clientY / e.value.d - dragStart[1] + dragStart[3],
+            Math.round(clientX / e.value.a - dragStart[0] + dragStart[2]),
+            Math.round(clientY / e.value.d - dragStart[1] + dragStart[3]),
           ];
 
-          const stacks = [
-            ...props.stacks.slice(0, id),
-            { ...props.stacks[id], x, y },
-            ...props.stacks.slice(id + 1, props.stacks.length),
-          ];
+          const stacks = props.stacks.with(id, { ...props.stacks[id], x, y });
 
           console.log({ dragStart }, { x, y });
           props.setStacks(stacks);
@@ -139,15 +136,11 @@ export function RegistrationCanvas(props) {
 
           const { clientX, clientY } = e.originalEvent;
           const [x, y] = [
-            clientX / e.value.a - dragStart[0] + dragStart[2],
-            clientY / e.value.d - dragStart[1] + dragStart[3],
+            Math.round(clientX / e.value.a - dragStart[0] + dragStart[2]),
+            Math.round(clientY / e.value.d - dragStart[1] + dragStart[3]),
           ];
 
-          const stacks = [
-            ...props.stacks.slice(0, id),
-            { ...props.stacks[id], x, y },
-            ...props.stacks.slice(id + 1, props.stacks.length),
-          ];
+          const stacks = props.stacks.with(id, { ...props.stacks[id], x, y });
 
           props.setStacks(stacks);
           setDragStart(null);
@@ -192,19 +185,21 @@ export function RegistrationCanvas(props) {
             fill="url(#grid)"
           />
 
-          {props.stacks.flatMap((stack) =>
-            stack.imageEntries
-              .filter((x) => x.checked)
-              .map((entry) => (
-                <CanvasImage
-                  key={stack.id + "-" + entry.id}
-                  stackId={stack.id}
-                  entryId={entry.id}
-                  {...stack}
-                  {...entry}
-                />
-              ))
-          )}
+          {props.stacks
+            .map((x, i) => ({ ...x, i }))
+            .flatMap((stack) =>
+              stack.imageEntries
+                .filter((x) => x.checked)
+                .map((entry) => (
+                  <CanvasImage
+                    key={stack.id + "-" + entry.id}
+                    stackId={stack.id}
+                    entryId={entry.id}
+                    {...stack}
+                    {...entry}
+                  />
+                ))
+            )}
 
           {/* <CanvasGrid
           inner_canvas_width={inner_canvas_width}

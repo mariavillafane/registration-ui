@@ -131,11 +131,7 @@ function App() {
   const setImageMoving = (newImageMoving) => {
     setStacks((allImages) => {
       const x = allImages.findIndex((stack) => selectedImageId == stack.id);
-      return [
-        ...allImages.slice(0, x),
-        newImageMoving,
-        ...allImages.slice(x + 1),
-      ];
+      return [allImages.with(x, newImageMoving)];
     });
   };
 
@@ -175,8 +171,16 @@ function App() {
           </ButtonGroup> */}
 
             <Box marginLeft={"1em"} display="flex">
-              <TextField {...getInputProps("x-coord", "x")} />
-              <TextField {...getInputProps("y-coord", "y")} />
+              {/* <TextField {...getInputProps("x-coord", "x")} />
+              <TextField {...getInputProps("y-coord", "y")} /> */}
+              <TextField
+                {...getInputProps("x-coord", "x")}
+                inputProps={{ maxLength: 8, step: 1 }}
+              />
+              <TextField
+                {...getInputProps("y-coord", "y")}
+                inputProps={{ maxLength: 8, step: 1 }}
+              />
               <TextField
                 {...getInputProps("rotation", "rotation")}
                 inputProps={{ maxLength: 6, step: 0.1 }}
