@@ -1,0 +1,7 @@
+services:
+  regui:
+    image: regui
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./results:/app/results

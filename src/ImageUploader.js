@@ -54,7 +54,6 @@ export function ImageUploader({
           width: image.width,
           height: image.height,
           file,
-          // base64: await readImageAsBase64(file),
           imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by default this converts to png - 230828
           checked: true,
         };
@@ -116,7 +115,7 @@ export function ImageUploader({
     }
   }
 
-  console.log(stacks);
+  //console.log(stacks);
   return (
     <Box
       sx={{
@@ -252,6 +251,29 @@ export function ImageUploader({
                   </Card>
                 ))}
 
+                {/* {index != 20 ? (
+                  <Dropzone
+                    onDrop={(acceptedFiles) =>
+                      onDropImageToStack(stack, index, acceptedFiles)
+                    }
+                  >
+                    {({ getRootProps, getInputProps }) => (
+                      <Button
+                        {...getRootProps()}
+                        color="primary"
+                        sx={{ maxWidth: 25 }}
+                        variant="outlined"
+                      >
+                        Add image to stack
+                        <input
+                          {...getInputProps()}
+                          accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
+                        />
+                      </Button>
+                    )}
+                  </Dropzone>
+                ) : null} */}
+
                 {index != 0 ? (
                   <Dropzone
                     onDrop={(acceptedFiles) =>
@@ -273,7 +295,28 @@ export function ImageUploader({
                       </Button>
                     )}
                   </Dropzone>
-                ) : null}
+                ) : (
+                  <Dropzone
+                    onDrop={(acceptedFiles) =>
+                      onDropImageToStack(stack, index, acceptedFiles)
+                    }
+                  >
+                    {({ getRootProps, getInputProps }) => (
+                      <Button
+                        {...getRootProps()}
+                        color="primary"
+                        sx={{ maxWidth: 25 }}
+                        variant="outlined"
+                      >
+                        Replace fixed image
+                        <input
+                          {...getInputProps()}
+                          accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
+                        />
+                      </Button>
+                    )}
+                  </Dropzone>
+                )}
               </Box>
               <Box display="flex" gap="0.2rem" fontSize="0.5em">
                 <Tooltip title="location x,y">

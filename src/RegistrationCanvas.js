@@ -1,60 +1,11 @@
 import { useState, useRef, memo, useMemo } from "react";
-import Slider from "@mui/material/Slider";
-import Stack from "@mui/material/Stack";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import { Button } from "@mui/material";
 import { Box } from "@mui/system";
-import { ReactSVGPanZoom, TOOL_NONE, INITIAL_VALUE } from "react-svg-pan-zoom";
-import { useWindowSize } from "@react-hook/window-size";
-
-//zoom speed marks
-const marks = [
-  {
-    fontSize: "0.01em", //GAETANO 221014
-    value: 0.1,
-    label: "slowZoom",
-  },
-  {
-    value: 0.9,
-    label: "fastZoom",
-  },
-];
-
-//ZOOM
-function calculateViewBoxChange(event, viewBox, ref, zoomPower) {
-  ////console.log(event);  //console.log(event.target.getBoundingClientRect());
-  //console.log(ref.current.getBoundingClientRect()); //the svg
-  //console.log(event.clientX)
-  const mouseX = -ref.current.getBoundingClientRect().x + event.clientX;
-  //console.log(mouseX);
-
-  const mouseY = -ref.current.getBoundingClientRect().y + event.clientY;
-  //console.log(mouseY);
-
-  const canvasWidth = +ref.current.clientWidth;
-  const canvasHeight = +ref.current.clientHeight;
-
-  //console.log(ref.current);
-
-  const mouseScroll = event.deltaY > 0 ? 1 : -1; //if event bigger than 0, then 1, else -1
-
-  const newViewBoxWidth = viewBox[2] + zoomPower * mouseScroll * viewBox[2];
-  const newViewBoxHeight = viewBox[3] + zoomPower * mouseScroll * viewBox[3];
-
-  const offsetX = (mouseX / canvasWidth) * (viewBox[2] - newViewBoxWidth);
-  const offsetY = (mouseY / canvasHeight) * (viewBox[3] - newViewBoxHeight);
-
-  //console.log({ offsetX, offsetY, mx: mouseX / canvasWidth });
-
-  const newViewBox = [
-    viewBox[0] + offsetX,
-    viewBox[1] + offsetY,
-    newViewBoxWidth, //the smaller this value, the bigger the image (ZOOM)
-    newViewBoxHeight,
-  ];
-
-  return newViewBox;
-}
+import {
+  ReactSVGPanZoom,
+  TOOL_NONE,
+  INITIAL_VALUE,
+  TOOL_PAN,
+} from "react-svg-pan-zoom";
 
 const CanvasImage = (props) => (
   <image
@@ -74,10 +25,9 @@ const CanvasImage = (props) => (
 export function RegistrationCanvas(props) {
   const ref = useRef();
   const Viewer = useRef(null);
-  const [tool, onChangeTool] = useState(TOOL_NONE);
+  const [tool, onChangeTool] = useState(TOOL_PAN);
   const [value, onChangeValue] = useState(INITIAL_VALUE);
   const [dragStart, setDragStart] = useState(null);
-  // const [width, height] = useWindowSize({initialWidth: 400, initialHeight: 400})
 
   const w = (props.stacks?.[0]?.x || 0) + (props.stacks?.[0]?.width || 0);
   const h = (props.stacks?.[0]?.y || 0) + (props.stacks?.[0]?.height || 0);
@@ -94,6 +44,7 @@ export function RegistrationCanvas(props) {
       alignItems={"stretch"}
     >
       <ReactSVGPanZoom
+        className="myCanvas"
         background="transparent"
         SVGBackground="transparent"
         width={ref.current?.clientWidth || 1000}
@@ -150,8 +101,8 @@ export function RegistrationCanvas(props) {
           <defs>
             <pattern
               id="smallGrid"
-              width="8"
-              height="8"
+              width="10"
+              height="10"
               patternUnits="userSpaceOnUse"
             >
               <path
@@ -200,12 +151,6 @@ export function RegistrationCanvas(props) {
                   />
                 ))
             )}
-
-          {/* <CanvasGrid
-          inner_canvas_width={inner_canvas_width}
-          inner_canvas_height={inner_canvas_height}
-          inner_grid_start={inner_grid_start}
-        /> */}
         </svg>
       </ReactSVGPanZoom>
     </Box>

@@ -1,7 +1,7 @@
 import "./App.css";
 import { useEffect, useMemo, useState } from "react";
 import { RegistrationCanvas } from "./RegistrationCanvas";
-import { UserInput } from "./UserInput";
+// import { UserInput } from "./UserInput";  //deleted on 240831
 import { ImageUploader } from "./ImageUploader";
 import {
   AppBar,
@@ -27,10 +27,6 @@ import {
 } from "@mui/material";
 import QueueIcon from "@mui/icons-material/Queue";
 import CollectionsIcon from "@mui/icons-material/Collections";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import PanToolIcon from "@mui/icons-material/PanTool";
-import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
-
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import FileOpen from "@mui/icons-material/FileOpen";
 import MemoryIcon from "@mui/icons-material/Memory";
@@ -131,7 +127,7 @@ function App() {
   const setImageMoving = (newImageMoving) => {
     setStacks((allImages) => {
       const x = allImages.findIndex((stack) => selectedImageId == stack.id);
-      return [allImages.with(x, newImageMoving)];
+      return allImages.with(x, newImageMoving);
     });
   };
 
@@ -145,6 +141,7 @@ function App() {
     defaultValue,
     value: imageMoving?.[field] || defaultValue,
     onChange: (event) => {
+      console.log(imageMoving);
       if (imageMoving)
         setImageMoving({ ...imageMoving, [field]: +event.target.value });
     },
@@ -165,14 +162,7 @@ function App() {
       <AppBar position="static">
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box display="flex">
-            {/* <ButtonGroup variant="contained" sx={{background:'white'}} aria-label="Loading button group">
-            <IconButton><PanToolIcon/></IconButton>
-            <IconButton><ZoomOutMapIcon/></IconButton>
-          </ButtonGroup> */}
-
             <Box marginLeft={"1em"} display="flex">
-              {/* <TextField {...getInputProps("x-coord", "x")} />
-              <TextField {...getInputProps("y-coord", "y")} /> */}
               <TextField
                 {...getInputProps("x-coord", "x")}
                 inputProps={{ maxLength: 8, step: 1 }}
@@ -258,7 +248,7 @@ function App() {
                 >
                   <FileOpen />
                 </Badge>
-                <Typography fontSize={"small"}>Open</Typography>
+                <Typography fontSize={"small"}>OpenSettings</Typography>
               </Box>
             </IconButton>
 

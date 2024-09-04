@@ -13,11 +13,20 @@ RUN conda init bash
 # RUN conda init && conda activate image_registration_legacy
 
 RUN conda activate image_registration_legacy
-
 RUN echo "conda init && conda activate image_registration_legacy" >> ~/.bashrc
 
 
-COPY .
+RUN mkdir -p results \
+    && wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+COPY .nvmrc .
+RUN nvm install && npm i -g yarn
 
+COPY . .
 
-ENTRYPOINT ["python", "run.py"]
+RUN yarn && yarn build
+#VOLUME /app/results
+
+WORKDIR /app/server
+RUN yarn
+
+CMD ["/bin/bash", "--login", "-c", "yarn start"]

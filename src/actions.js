@@ -37,12 +37,12 @@ export const blobToBase64 = function (blobUrl) {
 
 export async function downloadCanvas() {
   await Promise.all(
-    [...document.querySelectorAll("#myCanvas image")].map(async (img) => {
+    [...document.querySelectorAll(".myCanvas image")].map(async (img) => {
       img.href.baseVal = await blobToBase64(img.href.baseVal);
     })
   );
 
-  const svgAsString = document.querySelector("#myCanvas").outerHTML; //this is a string representative of myCanvas
+  const svgAsString = document.querySelector(".myCanvas svg").outerHTML; //this is a string representative of myCanvas
   const png = await svgToPng(svgAsString, 0, "white");
   const name = "canvas-" + new Date().toISOString().split("T")[0] + ".png";
 

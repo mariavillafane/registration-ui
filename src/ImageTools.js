@@ -52,11 +52,12 @@ export function svgToPng(svgText, margin, fill) {
 
       // create a canvas element to pass through
       var canvas = document.createElement("canvas");
-      canvas.width = height + margin * 2;
-      canvas.height = width + margin * 2;
+      canvas.width = width + margin * 1.2;
+      canvas.height = height + margin * 1.2;
       var ctx = canvas.getContext("2d");
 
       // make a blob from the svg
+      console.log(svgText);
       var svg = new Blob([svgText], {
         type: "image/svg+xml;charset=utf-8",
       });
