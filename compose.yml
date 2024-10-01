@@ -1,6 +1,6 @@
 services:
   regui:
-    image: regui
+    image: mariavillafane/regui:latest
     ports:
       - "4000:4000"
     volumes:
