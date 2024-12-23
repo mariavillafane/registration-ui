@@ -103,7 +103,7 @@ export async function uploadSettingsToServer(data) {
     },
     redirect: "follow", // manual, *follow, error
     referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: settingsJson, // body data type must match "Content-Type" header
+    body: new Blob([settingsJson], { type: "application/json" }), // body data type must match "Content-Type" header
   });
 
   const statusOfResult = await response.json();

@@ -1364,6 +1364,7 @@ def get_transform_from_parameters_bspline(best_tr_s4, best_tr_s3, config):
     return finalTx_
 
 
+#241223 - renaming of output images
 #230830 - already up there
 #2211 (Nov2022)
 # registration of 1 fixed image and 1 moving image (with its corresponding transform)
@@ -1403,22 +1404,101 @@ def save_transform_and_image_0(transform, fixed_image, moving_image, outputfile_
 
     cv2.imwrite(config['folder_partial_results'] + '/' + str(outputfile_prefix) + 'rawdata_opencv2_fromArray' + '.tiff', sitk.GetArrayFromImage(simg2))
 
-    cimg1_inv = sitk.Compose(255 - (simg2 // 1.))           # INVERTED (greyscale) >> sitk.Compose(255 - (simg2 // 2.))
-    cimg1_nor = sitk.Compose(simg2 // 1.)                   # NORMAL                >> sitk.Compose(255 + (simg2 // 2.))
-    cimg2 = sitk.Compose(simg1 // 2. + simg2 // 2.)         # NORMAL monochrome (Background = Fixed image)
+    transf_img_inverted = sitk.Compose(255 - (simg2 // 1.))           # INVERTED (greyscale) >> sitk.Compose(255 - (simg2 // 2.))              #typically = cimg1_inv
+    transf_img = sitk.Compose(simg2 // 1.)                              # NORMAL                                                               #typically = cimg1_nor
+    transf_img_overlayed_fixedImage = sitk.Compose(simg1 // 2. + simg2 // 2.)         # NORMAL monochrome (Background = Fixed image)           #typically = cimg2
 
     writer = sitk.ImageFileWriter()
-    writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_cimg1_invert' + '_output.tiff') #231219
-    writer.Execute(cimg1_inv)
+    # writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_cimg1_invert' + '_output.tiff') #231219
+    # writer.Execute(cimg1_inv)
+    writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_transformed_image_INVERTED.tiff')                    #typically = cimg1_inv #241223
+    writer.Execute(transf_img_inverted)
 
-    writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_cimg1_normal' + '_output.tiff') #231219
-    writer.Execute(cimg1_nor)
-
-    writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_cimg2_normal_back' + '_output.tiff') #231219
-    #    writer.SetFileName(str(outputfile_prefix) + '_cimg2_normal_back' + '_output.tiff') #config['folder_partial_results'] + '/' +
-    writer.Execute(cimg2)
+    # writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_cimg1_normal' + '_output.tiff') #231219
+    # writer.Execute(cimg1_nor)
+    writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_transformed_image.tiff')                              #typically = _cimg1_normal #241223
+    writer.Execute(transf_img)
 
 
+    # writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_cimg2_normal_back' + '_output.tiff') #231219
+    # writer.Execute(cimg2)
+    writer.SetFileName(config['folder_partial_results'] + '/' + str(outputfile_prefix) + '_transformed_image' + '_overlayed_on_fixedImage.tiff')   #typically = cimg2      #241219
+    writer.Execute(transf_img_overlayed_fixedImage)                                                                                                #typically = cimg2
+
+
+#241223 - importing these from C:\Users\eugen\PycharmProjects\ImageRegistration_results\applyTransforms_bspline_6dc_v6_from_json_alphachannel_many_slices_cmd
+# these are used by C:\Users\eugen\PycharmProjects\ImageRegistration_results\applyTransforms_bspline_6dc_v6_from_json_alphachannel_many_slices_cmd\apply_transform_to_image_from_json_alpha.py
+# for REGUI - applying transforms to other images (than those of datacube registered)
+
+#241205
+def get_image_as_array_from_path(path):
+    # Fixed image
+    image_sitk = sitk.ReadImage(path, sitk.sitkFloat64)
+    image_as_array = sitk.GetArrayFromImage(image_sitk)
+    #image_as_array_scaled = image_scale(image_as_array, scaling_coef)
+    print('shape image_as_array = ' + str(image_as_array.shape))
+    #image_sitk_scaled = sitk.GetImageFromArray(image_as_array_scaled)
+    return image_as_array
+
+
+
+#241202
+def create_array_for_white_image(shape):
+    #array[:] = 255                                                                 #this overwrites an array
+    array_for_white_image = np.ones((shape[0], shape[1]), dtype=np.uint8)*255
+    return array_for_white_image
+
+
+
+#241202 - to register images from json as alpha channel (GUI / registration ui)
+def save_transformed_image_from_json_with_fixedImageSize_alpha(target_fixed_image_shape, transform, slices_of_moving_image_dict):
+
+    ## 1 - CREATING a dummy fixed image based on "target_fixed_image_size_scaled" to apply transforms to moving images
+    ## 241202 - POTATO
+    array_for_fixed = create_array_for_white_image(target_fixed_image_shape)
+
+    resample = sitk.ResampleImageFilter()
+    resample.SetReferenceImage(sitk.GetImageFromArray(array_for_fixed))
+    # SimpleITK supports several interpolation options, we go with the simplest that gives reasonable results.
+    resample.SetInterpolator(sitk.sitkLinear)
+
+    transform = transform[0]
+    images_to_merge = {}
+
+    # #slices_of_moving_image = list of images-as-arrays (these constitute the movingimage)
+    # slices_of_moving_image_dict = {'0': slices_of_moving_image}
+
+    for key, image in slices_of_moving_image_dict.items():
+    #for image in slices_of_moving_image:
+        print("moving image = " + str(image))
+        #construct white image for each moving image => this will be opaque in alpha channel
+        ph_ = np.ones(image.shape) * 255
+        ph = sitk.GetImageFromArray(ph_)
+        print("shape moving image = " + str(key) + ":  " + str(ph_.shape))
+
+        resample.SetTransform(transform)
+
+        # RGB_channel (channels no.1-2-3)
+        out_i = resample.Execute(sitk.GetImageFromArray(image))
+        simg_i = sitk.Cast(sitk.RescaleIntensity(out_i, 0, 255), sitk.sitkUInt8)
+
+        # 230908 - one strand:
+        cimg_inv = simg_i
+
+        # alpha_channel (channel no.4)
+        out_alpha = resample.Execute(ph)
+        simg_alpha = sitk.Cast(out_alpha, sitk.sitkUInt8)
+        cimg_alpha = simg_alpha
+
+        ac = sitk.GetArrayFromImage(cimg_alpha)
+        print("shape cimg_alpha = " + str(key) + ":  " + str(ac.shape))
+        rgb = sitk.GetArrayFromImage(cimg_inv)
+        print("shape cimg_rgb = " + str(key) + ":  " + str(rgb.shape))
+
+        images_to_merge = {
+            **images_to_merge, str(key): [rgb, ac]
+        }
+    return images_to_merge
 
 
 

@@ -289,18 +289,18 @@ function App() {
             </IconButton>
 
             <IconButton
-              disabled={inProgress}
+              disabled={inProgress || stacks.length < 2}
               size="large"
               aria-label="register"
               color="inherit"
               onClick={async () => {
+                //if () => show message "Please elect images to register"
+
                 setInProgress(true);
                 const result = await uploadSettingsToServer(settingsJson).catch(
                   () => setInProgress(false)
                 );
                 setTimeout(() => setInProgress(false), 10000);
-
-                if (!result) return;
               }}
             >
               <Box display="flex" flexDirection="column" alignItems={"center"}>

@@ -24,7 +24,7 @@ RUN nvm install && npm i -g yarn
 COPY . .
 
 RUN yarn && yarn build
-#VOLUME /app/results
+VOLUME /app/results 
 
 WORKDIR /app/server
 RUN yarn
