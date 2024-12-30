@@ -6,6 +6,13 @@ const crypto = require("crypto");
 const { glob } = require("glob");
 const path = require("path");
 
+const multer = require("multer");
+const sharp = require("sharp");
+const { mkdirp } = require("mkdirp");
+const { emitWarning } = require("process");
+mkdirp("tmp");
+const upload = multer({ dest: "tmp/" });
+
 const app = express(); //express() creates a http server
 app.use(cors());
 app.set("limit", "2000mb");
@@ -91,9 +98,7 @@ app.post("/api/start", async (request, response) => {
 
   const id = crypto.createHash("md5").update(content).digest("hex");
 
-  // 2a. create a folder for results each time
-  await fs.mkdir("../results").catch(() => {});
-  await fs.mkdir("../results/" + id).catch(() => {});
+  await mkdirp("../results/" + id).catch(() => {});
   // 2. save to disk => write settings.json file with data collected from the request (coming from website)
 
   const destination_folder = `../results/${id}`;
@@ -127,14 +132,74 @@ app.get("/api/results/:id", async (req, res) => {
   const id = req.params.id;
   const destination_folder = `../results/${id}/results`;
 
-  const listOfFilesResultingFromRegistration = await fs.readdir(
-    destination_folder
+  const listOfFilesResultingFromRegistration = await glob(
+    `${destination_folder}/**`
   );
-  const finallist = listOfFilesResultingFromRegistration.map(
-    (fileName) => `/api/job/${id}/results/${fileName}`
-  );
+
+  const finallist = listOfFilesResultingFromRegistration
+    .map((x) => x.replace(/\\/g, "/").replace(destination_folder, ""))
+    .map((fileName) => `/api/job/${id}/results${fileName}`);
   res.json(finallist);
 });
+
+function stripMetadataBuffers(data) {
+  return Object.fromEntries(
+    Object.entries(data).filter(([_k, v]) => !Buffer.isBuffer(v))
+  );
+}
+
+app.post("/api/upload", upload.single("image"), async (req, res) => {
+  const dest = "uploads/" + req.file.filename;
+  await mkdirp(dest);
+  const filePath = (dest + "/" + req.file.originalname).replace(/\\/g, "/");
+  const filePathNoExt = filePath.replace(/\.[^/.]+$/, "");
+  await fs.rename(req.file.path, filePath);
+  const image = sharp(filePath);
+
+  const isTiff = filePath.endsWith(".tif") || filePath.endsWith(".tiff");
+
+  const [metadata] = await Promise.all([
+    image.metadata().then(stripMetadataBuffers),
+    isTiff ? image.toFile(filePathNoExt + ".web.png") : Promise.resolve(),
+    image
+      .resize(128, 128, { resize: "contain" })
+      .toFile(filePathNoExt + ".128.png"),
+    image
+      .resize(512, 512, { resize: "contain" })
+      .toFile(filePathNoExt + ".512.png"),
+    new Promise((done) => setTimeout(done, 3000)),
+  ]);
+
+  await fs.writeFile(filePathNoExt + ".json", JSON.stringify(metadata));
+
+  res.json({
+    metadata,
+    url: "/api/" + filePath,
+    path: filePath,
+    webUrl: "/api/" + filePathNoExt + ".web.png",
+    smallUrl: "/api/" + filePathNoExt + ".128.png",
+    mediumUrl: "/api/" + filePathNoExt + ".512.png",
+  });
+});
+
+app.post("/api/transform", (req, res) => {
+  const { transformation, image } = req.body;
+
+  const imgHash = image.split(/[/.]/g)[1];
+  const transformationJsonPath = transformation.split("job/")[1];
+  const destination =
+    transformationJsonPath.replace("_transformations.json", "") + `/${imgHash}`;
+
+  exec(
+    `python ../scripts_registration/apply_transform_to_image_from_json_alpha.py ../results/${destination} "../results/${transformationJsonPath}" "../server/${image}"`,
+    async (error, stdout, stderr) => {
+      console.log({ error, stdout, stderr });
+      res.end("done");
+    }
+  );
+});
+
+app.use("/api/uploads", express.static("./uploads"));
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
