@@ -39,20 +39,14 @@ def get_datacube_from_single_images(config_path_moving_images): #config
 
 # #231218
 def get_fixed_image_as_array_from_json_COLOR(data_from_json):
-    image_base64_str = data_from_json['imageFixed']['imageEntries'][0]['base64'].split("base64,")[1]     #[1] for the 2nd part of the string    # ['imageEntries'][0] is the first image of imageFixed (['imageFixed'] is the first dictionary of settings.json) #230904 NG
-    image_base64_pilimg_COLOR = stringToImage_COLOR(image_base64_str)
-    image_base64_pilimg_GREY = image_base64_pilimg_COLOR.convert("L")
-
-    image_base64_array = toGRAY(toGRAY_fromBGR(image_base64_pilimg_GREY))
-    print('shape fixed_image= ' + str(image_base64_array.shape))
-
-    image_base64_array_COLOR = toGRAY_fromBGR(image_base64_pilimg_COLOR.convert("RGB"))
-    print('shape fixed_image COLOR = ' + str(image_base64_array_COLOR.shape))
+    image = loadImageFromEntry(data_from_json['imageFixed']['imageEntries'][0])    #[1] for the 2nd part of the string    # ['imageEntries'][0] is the first image of imageFixed (['imageFixed'] is the first dictionary of settings.json) #230904 NG
+    image_COLOR = toCOLOR(image)
+    image_GREY = toGRAY(image)
 
     #data_from_json['imageFixed'].pop('imageEntries', None) #muted231214
     dict = {
-        'fixed_image_as_array': image_base64_array,
-        'fixed_image_as_array_COLOR': image_base64_array_COLOR,
+        'fixed_image_as_array': image_GREY,
+        'fixed_image_as_array_COLOR': image_COLOR,
         **data_from_json['imageFixed']
     }
     return dict
@@ -62,14 +56,9 @@ def get_fixed_image_as_array_from_json_COLOR(data_from_json):
 
 # #230829 - NEW (230209)
 def get_fixed_image_as_array_from_json(data_from_json):
-    image_base64_str = data_from_json['imageFixed']['imageEntries'][0]['base64'].split("base64,")[1]     #[1] for the 2nd part of the string    # ['imageEntries'][0] is the first image of imageFixed (['imageFixed'] is the first dictionary of settings.json) #230904 NG
-    image_base64_pilimg = stringToImage(image_base64_str)
-    image_base64_array = toGRAY(toGRAY_fromBGR(image_base64_pilimg))
-    print('shape fixed_image= ' + str(image_base64_array.shape))
-    #data_from_json['imageFixed']['imageEntries'][0].pop('base64', None)
-    #data_from_json['imageFixed'].pop('imageEntries', None) #muted231214
+    image = toGRAY(loadImageFromEntry(data_from_json['imageFixed']['imageEntries'][0]))
     dict = {
-        'fixed_image_as_array': image_base64_array,
+        'fixed_image_as_array': image,
         **data_from_json['imageFixed']
     }
     return dict
@@ -91,19 +80,23 @@ def get_datacube_from_json__image_and_settings__by_id(data_from_json, no_of_data
     return datacube_from_json__image_and_settings
 
 
+def loadImageFromEntry (entry):
+    if("base64" in entry):
+        image_base64_str = image['base64'].split("base64,")[1]                        #[1] for the 2nd part of the string
+        image_base64_pilimg = stringToImage(image_base64_str)
+        return image_base64_pilimg
+    else:
+        return Image.open(entry["path"])
+
+
 #new 231214
 def get_moving_images_from_json_dict__imagestack__by_id(data_from_json, no_of_datacube):
     for counter, image in enumerate(data_from_json['workingImages'][no_of_datacube]['imageEntries']):               #(= workingImages == all moving images)
         # load moving images
-        image_base64_str = image['base64'].split("base64,")[1]                        #[1] for the 2nd part of the string
-        image_base64_pilimg = stringToImage(image_base64_str)
-        image_base64_array = toGRAY(image_base64_pilimg)
-        print('shape moving_image[' + str(counter) + '] = '+ str(image_base64_array.shape))
-        #image.pop('base64', None) #muted231214
-        dict = {
-            image['id']: image_base64_array,
-        }
-        yield  (image['id'], image_base64_array) #yield  (image['id'], image_base64_array)  #DESIRABLE 230830
+
+        image_array = toGRAY(loadImageFromEntry(image))
+        
+        yield  (image['id'], image_array) #yield  (image['id'], image_base64_array)  #DESIRABLE 230830
 
 
 
@@ -111,15 +104,9 @@ def get_moving_images_from_json_dict__imagestack__by_id(data_from_json, no_of_da
 def get_moving_images_from_json_dict__imagestack(data_from_json, no_of_datacube):
     for counter, image in enumerate(data_from_json['workingImages'][no_of_datacube]['imageEntries']):               #(= workingImages == all moving images)
         # load moving images
-        image_base64_str = image['base64'].split("base64,")[1]                        #[1] for the 2nd part of the string
-        image_base64_pilimg = stringToImage(image_base64_str)
-        image_base64_array = toGRAY(image_base64_pilimg)
-        print('shape moving_image[' + str(counter) + '] = '+ str(image_base64_array.shape))
-        #image.pop('base64', None) #muted231214
-        dict = {
-            image['id']: image_base64_array,
-        }
-        yield (str(counter), image_base64_array)
+        image_array = toGRAY(loadImageFromEntry(image))
+
+        yield (str(counter), image_array)
 
 
 # 231214
@@ -240,11 +227,11 @@ def stringToImage_COLOR(base64_string):
 # 230209 = array needs to be FLOAT np.dtype
 # 230208 - convert PIL Image to an RGB/Grey image ( technically a numpy array ) that's compatible with opencv
 def toGRAY(image):
-    return np.array(image, dtype=np.float) #return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB) #for color image
+    return np.array(image.convert('L'), dtype=np.float) #return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB) #for color image
 
 
 # 230209
-def toGRAY_fromBGR(image):
+def toCOLOR(image):
     return np.array(image)
 #    return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2GRAY) #for color image
 

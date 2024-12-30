@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 
-from functions import    get_fixed_image_from_path, get_image_as_array_from_path,\
+from functions import    get_image_as_array_from_path,\
                          get_transform_from_parameters_bspline_fullFixedimage_translation, \
                          save_transformed_image_from_json_with_fixedImageSize_alpha,\
                          merge_images_to_create_png, load_json_from_path
