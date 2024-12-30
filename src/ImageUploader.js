@@ -16,6 +16,7 @@ import ReplayIcon from "@mui/icons-material/Replay"; //rotation
 import LocationOnIcon from "@mui/icons-material/LocationOn"; //position
 import PhotoSizeSelectLargeIcon from "@mui/icons-material/PhotoSizeSelectLarge"; //scaling
 import PhotoSizeSelectActualIcon from "@mui/icons-material/PhotoSizeSelectActual"; //size
+import { uploadImage } from "./actions";
 
 function computeNextId(stacks) {
   return stacks.map((x) => x.id + 1).reduce((a, b) => (a > b ? a : b), 0);
@@ -46,15 +47,22 @@ export function ImageUploader({
     const stackId = computeNextId(stacks);
     const imageEntries = await Promise.all(
       acceptedFiles.map(async (file) => {
-        const buf = await file.arrayBuffer();
-        const image = await Image.load(buf);
+        const data = await uploadImage(file);
+        console.log(data);
+
         return {
           stackId,
           id: makefilename(file, stackId), //`${stackId}-${counter++}-${file.name}`,
-          width: image.width,
-          height: image.height,
-          file,
-          imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by default this converts to png - 230828
+          ...data.metadata,
+          file: {
+            name: file.name,
+            lastModified: file.lastModified,
+            relativePath: file.webkitRelativePath,
+          },
+          path: data.path,
+          imageUrl: data.webUrl, //image drawn in browser, by default this converts to png - 230828
+          thumbnailUrl: data.smallUrl,
+          galleryUrl: data.mediumUrl,
           checked: true,
         };
       })
@@ -84,15 +92,16 @@ export function ImageUploader({
   async function onDropImageToStack(stack, index, acceptedFiles) {
     const imageEntries = await Promise.all(
       acceptedFiles.map(async (file) => {
-        const buf = await file.arrayBuffer();
-        const image = await Image.load(buf);
+        const data = await uploadImage(file);
         return {
           stackId: stack.id,
           id: makefilename(file, stack.id), //`${stack.id}-${filename_ok_joined}_${counter++}.${filename.at(-1)}`,
-          width: image.width,
-          height: image.height,
-          base64: await readImageAsBase64(file),
-          imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by defult this converts to png - 230828
+          ...data.metadata,
+          path: data.path,
+          //base64: await readImageAsBase64(file),
+          imageUrl: data.webUrl, //await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by defult this converts to png - 230828
+          thumbnailUrl: data.smallUrl, //await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by
+          galleryUrl: data.mediumUrl,
           checked: true,
         };
       })
@@ -187,7 +196,7 @@ export function ImageUploader({
                       <Box display="flex" flexDirection={"column"}>
                         <img
                           width="100px"
-                          src={imageEntry.imageUrl}
+                          src={imageEntry.thumbnailUrl}
                           onClick={() => setSelectedImageId(stack.id)}
                         />
                         <Typography fontSize={"0.5rem"}>
@@ -208,7 +217,7 @@ export function ImageUploader({
                               (x) => x.id != imageEntry.id
                             );
 
-                            window.URL.revokeObjectURL(imageEntry.imageUrl); //delete image
+                            //window.URL.revokeObjectURL(imageEntry.imageUrl); //delete image
 
                             if (newEntries.length == 0) {
                               setStacks([

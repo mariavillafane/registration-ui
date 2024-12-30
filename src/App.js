@@ -7,8 +7,10 @@ import {
   AppBar,
   Badge,
   Box,
+  Button,
   ButtonGroup,
   Card,
+  Chip,
   CircularProgress,
   Divider,
   Drawer,
@@ -35,6 +37,7 @@ import {
   downloadCanvas,
   downloadSettings,
   loadSettings,
+  uploadImage,
   uploadSettingsToServer,
 } from "./actions";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -43,6 +46,110 @@ import GetAppIcon from "@mui/icons-material/GetApp";
 
 //https://www.geeksforgeeks.org/lodash-_-omit-method/
 //https://react-dnd.github.io/react-dnd/examples/sortable/simple
+
+function TransformationData({ transformation }) {
+  const [data, setData] = useState({});
+  useEffect(() => {
+    fetch(transformation, {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      mode: "cors", // no-cors, *cors, same-origin
+    })
+      .then((x) => x.json())
+      .then((data) => setData(data));
+  }, [transformation]);
+
+  return (
+    <Box>
+      <h2>{transformation.split("/").at(-1).replace(".json", "")} </h2>
+      <Box>
+        <Chip label={`tx: ${data?.transformation_obtained_s3?.tx}`} />
+        <Chip label={`ty: ${data?.transformation_obtained_s3?.ty}`} />
+        <Chip
+          label={`mi: ${data?.transformation_obtained_s4?.mi_average.toFixed(
+            3
+          )}`}
+        />
+      </Box>
+      <Dropzone
+        onDrop={async (files) => {
+          for (const file of files) {
+            const data = await uploadImage(file);
+            console.log(data);
+
+            const result = await fetch("/api/transform", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                transformation,
+                image: data.url,
+              }),
+            })
+              .then((x) => x.json())
+              .catch((e) => e);
+            console.log(result);
+          }
+        }}
+      >
+        {({ getRootProps, getInputProps }) => (
+          <div {...getRootProps()}>
+            <input {...getInputProps()} />
+            <Button> Apply Transformation to More Images</Button>
+          </div>
+        )}
+      </Dropzone>
+    </Box>
+  );
+}
+
+function Results({ files }) {
+  const transformed = files
+    .filter((image) => image.endsWith("transformations.json"))
+    .map((t) => {
+      const prefix = t.replace("_transformations.json", "");
+      return {
+        transformation: t,
+        images: files
+          .filter((x) => x.startsWith(prefix))
+          .filter((x) => x.endsWith(".png")),
+      };
+    });
+
+  return (
+    <>
+      {transformed.map((t) => (
+        <Box key={t.transformation}>
+          <TransformationData {...t} />
+          <h2>Transformed Images</h2>
+          {t.images.map((image) => (
+            <>
+              <Card key={image}>
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  maxWidth={"400px"}
+                  padding="1em"
+                >
+                  <img src={`${image}`} />
+
+                  <a
+                    target="_blank"
+                    download={image.split("/").at(-1)}
+                    href={image}
+                    title="image"
+                  >
+                    <span>{image.split("/").at(-1)}</span>
+                  </a>
+                </Box>
+              </Card>
+            </>
+          ))}
+        </Box>
+      ))}{" "}
+    </>
+  );
+}
 
 function useJobQueue(pollInterval = 10000) {
   const [jobQueue, setJobQueue] = useState({
@@ -294,8 +401,6 @@ function App() {
               aria-label="register"
               color="inherit"
               onClick={async () => {
-                //if () => show message "Please elect images to register"
-
                 setInProgress(true);
                 const result = await uploadSettingsToServer(settingsJson).catch(
                   () => setInProgress(false)
@@ -365,29 +470,7 @@ function App() {
               </Typography>
             </Box>
             <Divider />
-            {results
-              ?.filter((image) => image.endsWith("png"))
-              ?.map((image) => (
-                <Card key={image}>
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    maxWidth={"400px"}
-                    padding="1em"
-                  >
-                    <img src={`${image}`} />
-
-                    <a
-                      target="_blank"
-                      download={image.split("/").at(-1)}
-                      href={image}
-                      title="image"
-                    >
-                      <span>{image.split("/").at(-1)}</span>
-                    </a>
-                  </Box>
-                </Card>
-              ))}
+            {<Results files={results} />}
           </Stack>
         )}
         {showDrawer < 3 && (
@@ -427,7 +510,7 @@ function App() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>ID</TableCell>
+                    <TableCell>Job ID</TableCell>
                     <TableCell>Start Time</TableCell>
                     <TableCell>End Time</TableCell>
                     <TableCell>Status</TableCell>

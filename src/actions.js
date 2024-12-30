@@ -36,37 +36,14 @@ export const blobToBase64 = function (blobUrl) {
 };
 
 export async function downloadCanvas() {
-  await Promise.all(
-    [...document.querySelectorAll(".myCanvas image")].map(async (img) => {
-      img.href.baseVal = await blobToBase64(img.href.baseVal);
-    })
-  );
-
   const svgAsString = document.querySelector(".myCanvas svg").outerHTML; //this is a string representative of myCanvas
   const png = await svgToPng(svgAsString, 0, "white");
   const name = "canvas-" + new Date().toISOString().split("T")[0] + ".png";
-
   download(png, name);
 }
 
 export async function createSettingsDotJson(data) {
-  const workingImages = await Promise.all(
-    data.workingImages.map(async (workingImage) => ({
-      ...workingImage,
-      imageEntries: await Promise.all(
-        workingImage.imageEntries.map(async (imageEntry) => ({
-          base64:
-            imageEntry.base64 || (await readImageAsBase64(imageEntry.file)),
-          ...imageEntry,
-        }))
-      ),
-    }))
-  );
-  console.log({
-    ...data,
-    imageFixed: workingImages[0],
-    workingImages: workingImages.slice(1),
-  });
+  const { workingImages } = data;
   return JSON.stringify(
     {
       ...data,
@@ -125,7 +102,9 @@ export async function loadSettings(oldWorkingImages, settingsUploadedByUser) {
   const parsedSettings = JSON.parse(fileContent);
 
   const urlsToDelete = oldWorkingImages.flatMap((workingImage) =>
-    workingImage.imageEntries.map((imageEntry) => imageEntry.imageUrl)
+    workingImage.imageEntries
+      .filter((imageEntry) => imageEntry.base64)
+      .map((imageEntry) => imageEntry.imageUrl)
   );
   urlsToDelete.forEach((url) => {
     window.URL.revokeObjectURL(url); //take away the memory that is linked to urls (they are now empty pointers, just to have memory available for something else / 2 GB limit)
@@ -137,10 +116,18 @@ export async function loadSettings(oldWorkingImages, settingsUploadedByUser) {
         ...workingImage,
         imageEntries: await Promise.all(
           workingImage.imageEntries.map(async (imageEntry) => {
+            if (!imageEntry.base64) {
+              return {
+                ...imageEntry,
+              };
+            }
             const image = await ImageJs.load(imageEntry.base64);
+            const url = await URL.createObjectURL(await image.toBlob());
             return {
               ...imageEntry,
-              imageUrl: await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by default this converts to png - 230828
+              imageUrl: url, //image drawn in browser, by default this converts to png - 230828
+              thumbnailUrl: url, //image drawn in browser, by default this converts to png - 230828
+              galleryUrl: url, //image drawn in browser, by default this converts to png - 230828
             };
           })
         ),
@@ -152,4 +139,13 @@ export async function loadSettings(oldWorkingImages, settingsUploadedByUser) {
     worldScale: parsedSettings.worldScale,
     workingImages,
   };
+}
+
+export async function uploadImage(file) {
+  const formData = new FormData();
+  formData.append("image", file);
+  return fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  }).then((x) => x.json());
 }

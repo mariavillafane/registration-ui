@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import { Canvg } from "canvg";
 export function useJsonReader(initialPath, method = "readAsDataURL") {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageAsDataURL, setImageAsDataURL] = useState(initialPath);
@@ -25,78 +25,41 @@ export function readImageAsBase64(file) {
   });
 }
 
-export function svgToPng(svgText, margin, fill) {
+export async function svgToPng(svgText, margin) {
   // convert an svg text to png using the browser
-  return new Promise(function (resolve, reject) {
-    try {
-      // can use the domUrl function from the browser
-      var domUrl = window.URL || window.webkitURL || window;
-      if (!domUrl) {
-        throw new Error("(browser doesnt support this)");
-      }
+  // can use the domUrl function from the browser
+  const domUrl = window.URL || window.webkitURL || window;
+  if (!domUrl) {
+    throw new Error("(browser doesnt support this)");
+  }
 
-      // figure out the height and width from svg text
-      var match = svgText.match(/height=\"(\d+)/m);
-      var height = match && match[1] ? parseInt(match[1], 10) : 200;
-      var match = svgText.match(/width=\"(\d+)/m);
-      var width = match && match[1] ? parseInt(match[1], 10) : 200;
-      margin = margin || 0;
+  // figure out the height and width from svg text
+  var match = svgText.match(/height=\"(\d+)/m);
+  var height = match && match[1] ? parseInt(match[1], 10) : 200;
+  var match = svgText.match(/width=\"(\d+)/m);
+  var width = match && match[1] ? parseInt(match[1], 10) : 200;
+  margin = margin || 0;
 
-      // it needs a namespace
-      if (!svgText.match(/xmlns=\"/im)) {
-        svgText = svgText.replace(
-          "<svg ",
-          '<svg xmlns="http://www.w3.org/2000/svg" '
-        );
-      }
+  // it needs a namespace
+  if (!svgText.match(/xmlns=\"/im)) {
+    svgText = svgText.replace(
+      "<svg ",
+      '<svg xmlns="http://www.w3.org/2000/svg" '
+    );
+  }
 
-      // create a canvas element to pass through
-      var canvas = document.createElement("canvas");
-      canvas.width = width + margin * 1.2;
-      canvas.height = height + margin * 1.2;
-      var ctx = canvas.getContext("2d");
+  // create a canvas element to pass through
+  const canvas = document.createElement("canvas");
+  canvas.width = width + margin * 1.2;
+  canvas.height = height + margin * 1.2;
+  const ctx = canvas.getContext("2d");
 
-      // make a blob from the svg
-      console.log(svgText);
-      var svg = new Blob([svgText], {
-        type: "image/svg+xml;charset=utf-8",
-      });
-
-      // create a dom object for that image
-      var url = domUrl.createObjectURL(svg);
-
-      // create a new image to hold it the converted type
-      var img = new Image();
-
-      // when the image is loaded we can get it as base64 url
-      img.onload = function () {
-        // draw it to the canvas
-        ctx.drawImage(this, margin, margin);
-
-        // if it needs some styling, we need a new canvas
-        if (fill) {
-          var styled = document.createElement("canvas");
-          styled.width = canvas.width;
-          styled.height = canvas.height;
-          var styledCtx = styled.getContext("2d");
-          styledCtx.save();
-          styledCtx.fillStyle = fill;
-          styledCtx.fillRect(0, 0, canvas.width, canvas.height);
-          styledCtx.strokeRect(0, 0, canvas.width, canvas.height);
-          styledCtx.restore();
-          styledCtx.drawImage(canvas, 0, 0);
-          canvas = styled;
-        }
-        // we don't need the original any more
-        domUrl.revokeObjectURL(url);
-        // now we can resolve the promise, passing the base64 url
-        resolve(canvas.toDataURL());
-      };
-
-      // load the image
-      img.src = url;
-    } catch (err) {
-      reject("failed to convert svg to png " + err);
-    }
+  // make a blob from the svg
+  const svg = new Blob([svgText], {
+    type: "image/svg+xml;charset=utf-8",
   });
+
+  const v = Canvg.fromString(ctx, svgText);
+  await v.render();
+  return canvas.toDataURL();
 }

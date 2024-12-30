@@ -7,20 +7,31 @@ import {
   TOOL_PAN,
 } from "react-svg-pan-zoom";
 
-const CanvasImage = (props) => (
-  <image
-    data-id={props.i}
-    data-stack-id={props.stackId}
-    data-entry-id={props.entryId}
-    x={props.x}
-    y={props.y}
-    opacity={props.opacity}
-    href={props.imageUrl}
-    width={props.width * props.scaling}
-    height={props.height * props.scaling}
-    transform={`rotate(${props.rotation},${props.x},${props.y})`}
-  />
-);
+const CanvasImage = (props) => {
+  const [retry, setRetry] = useState(0);
+  return (
+    <image
+      onError={(e) => {
+        console.log(e);
+        if (retry < 3) {
+          setTimeout(() => {
+            setRetry(retry + 1);
+          }, 100);
+        }
+      }}
+      data-id={props.i}
+      data-stack-id={props.stackId}
+      data-entry-id={props.entryId}
+      x={props.x}
+      y={props.y}
+      opacity={props.opacity}
+      href={props.imageUrl + `${retry ? "?" + retry : ""}`}
+      width={props.width * props.scaling}
+      height={props.height * props.scaling}
+      transform={`rotate(${props.rotation},${props.x},${props.y})`}
+    />
+  );
+};
 
 export function RegistrationCanvas(props) {
   const ref = useRef();
@@ -131,8 +142,8 @@ export function RegistrationCanvas(props) {
           <rect
             x={-1000}
             y={-1000}
-            width="200%"
-            height="200%"
+            width="1000%"
+            height="1000%"
             fill="url(#grid)"
           />
 

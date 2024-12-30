@@ -4,3 +4,5 @@ Dockerfile
 **/build
 **/node_modules
 **/dist
+/server/tmp
+/server/uploads
