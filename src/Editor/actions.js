@@ -1,4 +1,5 @@
 import ImageJs from "image-js";
+import { v4 as uuidv4 } from "uuid";
 
 import { readImageAsBase64, svgToPng } from "./ImageTools";
 
@@ -42,13 +43,18 @@ export async function downloadCanvas() {
   download(png, name);
 }
 
+export async function saveCanvas() {
+  const svgAsString = document.querySelector(".myCanvas svg").outerHTML; //this is a string representative of myCanvas
+  const png = await svgToPng(svgAsString, 0, "white");
+  localStorage.setItem("preview", png);
+}
+
 export async function createSettingsDotJson(data) {
   const { workingImages } = data;
   return JSON.stringify(
     {
       ...data,
-      imageFixed: workingImages[0],
-      workingImages: workingImages.slice(1),
+      workingImages: workingImages,
     },
     null,
     2
@@ -65,10 +71,41 @@ export async function downloadSettings(data) {
   window.URL.revokeObjectURL(settings); //delete object after creating it
 }
 
-export async function uploadSettingsToServer(data) {
-  const settingsJson = await createSettingsDotJson(data);
+export async function runRegistration(data) {
+  await saveSettings(data);
+  const response = await fetch(`/api/start/${data.id}`, {
+    //"http://localhost:4000/start" => "/start"
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "same-origin", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin
+  });
 
-  const response = await fetch("/api/start", {
+  const statusOfResult = await response.json();
+  console.log(statusOfResult);
+  return statusOfResult;
+}
+
+export async function saveSettings(settings) {
+  const id = settings.id || uuidv4();
+
+  const svgAsString = document.querySelector(".myCanvas svg").outerHTML; //this is a string representative of myCanvas
+  const thumbnail = await svgToPng(svgAsString, 0, "white");
+  console.log({ thumbnail });
+
+  const settingsJson = await createSettingsDotJson({
+    id,
+    ...settings,
+    thumbnail,
+  });
+
+  const response = await fetch(`/api/save/${id}`, {
     //"http://localhost:4000/start" => "/start"
     method: "POST", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
@@ -84,7 +121,6 @@ export async function uploadSettingsToServer(data) {
   });
 
   const statusOfResult = await response.json();
-  console.log(statusOfResult);
   return statusOfResult;
 }
 
@@ -141,10 +177,10 @@ export async function loadSettings(oldWorkingImages, settingsUploadedByUser) {
   };
 }
 
-export async function uploadImage(file) {
+export async function uploadImage(projectId, file) {
   const formData = new FormData();
   formData.append("image", file);
-  return fetch("/api/upload", {
+  return fetch("/api/upload/" + projectId, {
     method: "POST",
     body: formData,
   }).then((x) => x.json());

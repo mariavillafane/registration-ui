@@ -10,7 +10,16 @@ import VisibilityOffSharpIcon from "@mui/icons-material/VisibilityOffSharp";
 import { readImageAsBase64 } from "./ImageTools";
 import { useState } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
-import { Box, Checkbox, Chip, Paper, Tooltip } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Checkbox,
+  Chip,
+  LinearProgress,
+  Paper,
+  Snackbar,
+  Tooltip,
+} from "@mui/material";
 import Image from "image-js";
 import ReplayIcon from "@mui/icons-material/Replay"; //rotation
 import LocationOnIcon from "@mui/icons-material/LocationOn"; //position
@@ -36,18 +45,22 @@ function makefilename(file, stackId) {
 }
 
 export function ImageUploader({
+  projectId,
   stacks,
   setStacks,
   selectedImageId,
   setSelectedImageId,
 }) {
+  const [uploads, setUploads] = useState([0, 0]);
   console.log("rerender", stacks.length, selectedImageId);
 
   async function onDrop2(acceptedFiles) {
     const stackId = computeNextId(stacks);
     const imageEntries = await Promise.all(
-      acceptedFiles.map(async (file) => {
-        const data = await uploadImage(file);
+      acceptedFiles.map(async (file, i, all) => {
+        setUploads([i, all.length]);
+        const data = await uploadImage(projectId, file);
+        setUploads([i + 1, all.length]);
         console.log(data);
 
         return {
@@ -89,36 +102,54 @@ export function ImageUploader({
     setStacks((stacks) => [...stacks, stack]);
   }
 
-  async function onDropImageToStack(stack, index, acceptedFiles) {
+  async function onDropImageToStack(
+    stack,
+    index,
+    acceptedFiles,
+    allowMultiple = true
+  ) {
     const imageEntries = await Promise.all(
-      acceptedFiles.map(async (file) => {
-        const data = await uploadImage(file);
-        return {
-          stackId: stack.id,
-          id: makefilename(file, stack.id), //`${stack.id}-${filename_ok_joined}_${counter++}.${filename.at(-1)}`,
-          ...data.metadata,
-          path: data.path,
-          //base64: await readImageAsBase64(file),
-          imageUrl: data.webUrl, //await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by defult this converts to png - 230828
-          thumbnailUrl: data.smallUrl, //await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by
-          galleryUrl: data.mediumUrl,
-          checked: true,
-        };
-      })
+      (allowMultiple ? acceptedFiles : acceptedFiles.slice(0, 1)).map(
+        async (file, i, all) => {
+          setUploads([i, all.length]);
+          const data = await uploadImage(projectId, file);
+          setUploads([i + 1, all.length]);
+          return {
+            stackId: stack.id,
+            id: makefilename(file, stack.id), //`${stack.id}-${filename_ok_joined}_${counter++}.${filename.at(-1)}`,
+            ...data.metadata,
+            path: data.path,
+            //base64: await readImageAsBase64(file),
+            imageUrl: data.webUrl, //await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by defult this converts to png - 230828
+            thumbnailUrl: data.smallUrl, //await URL.createObjectURL(await image.toBlob()), //image drawn in browser, by
+            galleryUrl: data.mediumUrl,
+            checked: true,
+          };
+        }
+      )
     );
 
     const { width, height } = imageEntries[0];
-    if (imageEntries.length == acceptedFiles.length) {
-      if (!imageEntries.every((x) => x.width == width && x.height == height)) {
-        console.log(
-          "some images differ in size => not all widths and heights of images of stack are the same"
-        );
-      }
+    if (!imageEntries.every((x) => x.width == width && x.height == height)) {
+      console.log(
+        "some images differ in size => not all widths and heights of images of stack are the same"
+      );
+    }
 
+    if (allowMultiple) {
       setStacks((stacks) =>
         stacks.with(index, {
           ...stack,
           imageEntries: [...stack.imageEntries, ...imageEntries], //stackWithMoreImages
+        })
+      );
+    } else {
+      setStacks((stacks) =>
+        stacks.with(index, {
+          ...stack,
+          width,
+          height,
+          imageEntries,
         })
       );
     }
@@ -136,6 +167,14 @@ export function ImageUploader({
         display: "flex",
       }}
     >
+      <Snackbar
+        autoHideDuration={5000}
+        open={uploads[1] > 0 && uploads[0] < uploads[1]}
+      >
+        <Alert severity="info">
+          Uploading {uploads[0]} / {uploads[1]} <LinearProgress />{" "}
+        </Alert>
+      </Snackbar>
       <CardContent>
         <section>
           <Dropzone onDrop={onDrop2}>
@@ -260,29 +299,6 @@ export function ImageUploader({
                   </Card>
                 ))}
 
-                {/* {index != 20 ? (
-                  <Dropzone
-                    onDrop={(acceptedFiles) =>
-                      onDropImageToStack(stack, index, acceptedFiles)
-                    }
-                  >
-                    {({ getRootProps, getInputProps }) => (
-                      <Button
-                        {...getRootProps()}
-                        color="primary"
-                        sx={{ maxWidth: 25 }}
-                        variant="outlined"
-                      >
-                        Add image to stack
-                        <input
-                          {...getInputProps()}
-                          accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*"
-                        />
-                      </Button>
-                    )}
-                  </Dropzone>
-                ) : null} */}
-
                 {index != 0 ? (
                   <Dropzone
                     onDrop={(acceptedFiles) =>
@@ -307,7 +323,7 @@ export function ImageUploader({
                 ) : (
                   <Dropzone
                     onDrop={(acceptedFiles) =>
-                      onDropImageToStack(stack, index, acceptedFiles)
+                      onDropImageToStack(stack, index, acceptedFiles, false)
                     }
                   >
                     {({ getRootProps, getInputProps }) => (

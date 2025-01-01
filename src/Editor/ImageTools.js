@@ -40,24 +40,11 @@ export async function svgToPng(svgText, margin) {
   var width = match && match[1] ? parseInt(match[1], 10) : 200;
   margin = margin || 0;
 
-  // it needs a namespace
-  if (!svgText.match(/xmlns=\"/im)) {
-    svgText = svgText.replace(
-      "<svg ",
-      '<svg xmlns="http://www.w3.org/2000/svg" '
-    );
-  }
-
   // create a canvas element to pass through
   const canvas = document.createElement("canvas");
   canvas.width = width + margin * 1.2;
   canvas.height = height + margin * 1.2;
   const ctx = canvas.getContext("2d");
-
-  // make a blob from the svg
-  const svg = new Blob([svgText], {
-    type: "image/svg+xml;charset=utf-8",
-  });
 
   const v = Canvg.fromString(ctx, svgText);
   await v.render();

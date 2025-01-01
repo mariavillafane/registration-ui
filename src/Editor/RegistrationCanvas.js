@@ -72,8 +72,6 @@ export function RegistrationCanvas(props) {
           const { clientX, clientY } = e.originalEvent;
           const { x, y } = props.stacks[id];
           setDragStart([clientX / e.value.a, clientY / e.value.d, x, y, id]);
-          console.log(e);
-          console.log([clientX, clientY, x, y, id]);
           props.setSelectedImageId(id);
         }}
         onMouseMove={(e) => {
@@ -89,7 +87,6 @@ export function RegistrationCanvas(props) {
 
           const stacks = props.stacks.with(id, { ...props.stacks[id], x, y });
 
-          console.log({ dragStart }, { x, y });
           props.setStacks(stacks);
         }}
         onMouseUp={(e) => {

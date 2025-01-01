@@ -1,8 +1,9 @@
 import "./App.css";
 import { useEffect, useMemo, useState } from "react";
 import { RegistrationCanvas } from "./RegistrationCanvas";
-// import { UserInput } from "./UserInput";  //deleted on 240831
 import { ImageUploader } from "./ImageUploader";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   AppBar,
   Badge,
@@ -30,24 +31,21 @@ import {
 import QueueIcon from "@mui/icons-material/Queue";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
-import FileOpen from "@mui/icons-material/FileOpen";
 import MemoryIcon from "@mui/icons-material/Memory";
 import CameraIcon from "@mui/icons-material/Camera";
 import {
   downloadCanvas,
-  downloadSettings,
   loadSettings,
+  runRegistration,
+  saveSettings,
   uploadImage,
-  uploadSettingsToServer,
 } from "./actions";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Dropzone from "react-dropzone";
 import GetAppIcon from "@mui/icons-material/GetApp";
+import { useParams } from "react-router";
 
-//https://www.geeksforgeeks.org/lodash-_-omit-method/
-//https://react-dnd.github.io/react-dnd/examples/sortable/simple
-
-function TransformationData({ transformation }) {
+function TransformationData({ id, transformation }) {
   const [data, setData] = useState({});
   useEffect(() => {
     fetch(transformation, {
@@ -73,10 +71,10 @@ function TransformationData({ transformation }) {
       <Dropzone
         onDrop={async (files) => {
           for (const file of files) {
-            const data = await uploadImage(file);
+            const data = await uploadImage(id, file);
             console.log(data);
 
-            const result = await fetch("/api/transform", {
+            await fetch("/api/transform", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -85,10 +83,7 @@ function TransformationData({ transformation }) {
                 transformation,
                 image: data.url,
               }),
-            })
-              .then((x) => x.json())
-              .catch((e) => e);
-            console.log(result);
+            }).catch((e) => e);
           }
         }}
       >
@@ -103,7 +98,7 @@ function TransformationData({ transformation }) {
   );
 }
 
-function Results({ files }) {
+function Results({ id, files }) {
   const transformed = files
     .filter((image) => image.endsWith("transformations.json"))
     .map((t) => {
@@ -120,7 +115,7 @@ function Results({ files }) {
     <>
       {transformed.map((t) => (
         <Box key={t.transformation}>
-          <TransformationData {...t} />
+          <TransformationData id={id} {...t} />
           <h2>Transformed Images</h2>
           {t.images.map((image) => (
             <>
@@ -151,6 +146,25 @@ function Results({ files }) {
   );
 }
 
+async function fetchJobs() {
+  const jobs = await fetch("/api/status", {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+  }).then((x) => x.json());
+
+  const entries = Object.values(jobs);
+  const done = entries.filter((x) => x.status == "success").length;
+  const queued = entries.filter((x) => x.status == "queued").length;
+  const inProgress = entries.filter((x) => x.status == "started").length;
+  const total = entries.length;
+  const failed = entries.filter((x) => x.status == "failed").length;
+
+  const updatedQueue = { done, queued, inProgress, failed, total, jobs };
+
+  return updatedQueue;
+}
+
 function useJobQueue(pollInterval = 10000) {
   const [jobQueue, setJobQueue] = useState({
     done: 0,
@@ -162,27 +176,10 @@ function useJobQueue(pollInterval = 10000) {
   });
 
   useEffect(() => {
-    const h = setInterval(async () => {
-      const jobs = await fetch("/api/status", {
-        method: "GET", // *GET, POST, PUT, DELETE, etc.
-        mode: "cors", // no-cors, *cors, same-origin
-        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      }).then((x) => x.json());
-
-      const entries = Object.values(jobs);
-      const done = entries.filter((x) => x.status == "success").length;
-      const queued = entries.filter((x) => x.status == "queued").length;
-      const inProgress = entries.filter((x) => x.status == "started").length;
-      const total = entries.length;
-      const failed = entries.filter((x) => x.status == "failed").length;
-
-      const updatedQueue = { done, queued, inProgress, failed, total, jobs };
-
-      setJobQueue(updatedQueue);
-    }, pollInterval);
+    fetchJobs().then(setJobQueue);
+    const h = setInterval(() => fetchJobs().then(setJobQueue), pollInterval);
 
     return () => {
-      console.log("destroy interval");
       clearInterval(h);
     };
   }, [pollInterval]);
@@ -192,7 +189,7 @@ function useJobQueue(pollInterval = 10000) {
 
 function usePersistentState(name, defaultValue) {
   const [state, setState] = useState(
-    localStorage.getItem(name) || defaultValue
+    () => localStorage.getItem(name) || defaultValue
   );
   return [
     state,
@@ -203,9 +200,40 @@ function usePersistentState(name, defaultValue) {
   ];
 }
 
+const isFunction = (x) => typeof x == "function";
+
+const invokeOrGet = (data, valueOrFunc) =>
+  isFunction(valueOrFunc) ? valueOrFunc(data) : valueOrFunc;
+
 function App() {
-  const [worldScale, setWorldScale] = useState(1.0);
-  const [stacks, setStacks] = useState([]);
+  const { id } = useParams();
+  const [settingsJson, setSettingsJson] = useState({
+    loading: true,
+    id: uuidv4(),
+    worldScale: 1.0,
+    workingImages: [],
+  });
+
+  useEffect(() => {
+    fetch(`/api/uploads/${id}/settings.json`)
+      .then((res) => res.json())
+      .then(setSettingsJson)
+      .catch(() => setSettingsJson((x) => ({ ...x, loading: false })));
+  }, [id]);
+
+  const setWorldScale = (x) =>
+    setSettingsJson((json) => ({
+      ...json,
+      worldScale: invokeOrGet(json.worldScale, x),
+    }));
+  const setStacks = (x) =>
+    setSettingsJson((json) => ({
+      ...json,
+      workingImages: invokeOrGet(json.workingImages, x),
+    }));
+  const stacks = settingsJson.workingImages;
+  const worldScale = settingsJson.worldScale;
+
   const [selectedImageId, setSelectedImageId] = useState(0);
   const [results, setResults] = useState(null);
   const [inProgress, setInProgress] = useState(false);
@@ -215,7 +243,15 @@ function App() {
 
   const jobQueue = useJobQueue();
 
-  const settingsJson = { worldScale, workingImages: stacks };
+  useEffect(() => {
+    if (settingsJson.loading) return;
+    const h = setTimeout(() => {
+      saveSettings(settingsJson)
+        .catch((e) => e)
+        .then(console.log);
+    }, 3 * 1000);
+    return () => clearTimeout(h);
+  }, [settingsJson]);
 
   const [showDrawer, setShowDrawer] = useState(0);
 
@@ -248,11 +284,12 @@ function App() {
     defaultValue,
     value: imageMoving?.[field] || defaultValue,
     onChange: (event) => {
-      console.log(imageMoving);
       if (imageMoving)
         setImageMoving({ ...imageMoving, [field]: +event.target.value });
     },
   });
+
+  if (settingsJson.loading) return null;
 
   return (
     <div
@@ -313,11 +350,11 @@ function App() {
               size="large"
               aria-label="register"
               color="inherit"
-              onClick={() => downloadSettings(settingsJson)}
+              onClick={() => window.open(`/api/export/${settingsJson.id}`)}
             >
               <Box display="flex" flexDirection="column" alignItems={"center"}>
                 <SaveAltIcon />
-                <Typography fontSize={"small"}>SaveSettings</Typography>
+                <Typography fontSize={"small"}>Export</Typography>
               </Box>
             </IconButton>
 
@@ -332,30 +369,6 @@ function App() {
               <Box display="flex" flexDirection="column" alignItems={"center"}>
                 <CameraIcon />
                 <Typography fontSize={"small"}>Canvas</Typography>
-              </Box>
-            </IconButton>
-
-            <Divider orientation="vertical" flexItem />
-
-            <IconButton
-              size="large"
-              aria-label="upload settings File"
-              color="inherit"
-              onClick={() => {
-                setShowDrawer(5);
-              }}
-            >
-              <Box display="flex" flexDirection="column" alignItems={"center"}>
-                <Badge
-                  badgeContent={
-                    isLoadingFile ? (
-                      <CircularProgress color="warning" />
-                    ) : undefined
-                  }
-                >
-                  <FileOpen />
-                </Badge>
-                <Typography fontSize={"small"}>OpenSettings</Typography>
               </Box>
             </IconButton>
 
@@ -402,8 +415,8 @@ function App() {
               color="inherit"
               onClick={async () => {
                 setInProgress(true);
-                const result = await uploadSettingsToServer(settingsJson).catch(
-                  () => setInProgress(false)
+                const result = await runRegistration(settingsJson).catch(() =>
+                  setInProgress(false)
                 );
                 setTimeout(() => setInProgress(false), 10000);
               }}
@@ -470,7 +483,7 @@ function App() {
               </Typography>
             </Box>
             <Divider />
-            {<Results files={results} />}
+            {<Results id={settingsJson.id} files={results} />}
           </Stack>
         )}
         {showDrawer < 3 && (
@@ -562,6 +575,7 @@ function App() {
         />
 
         <ImageUploader
+          projectId={settingsJson.id}
           stacks={stacks}
           setStacks={setStacks}
           selectedImageId={selectedImageId}
@@ -573,6 +587,3 @@ function App() {
 }
 
 export default App;
-
-//useful links
-//https://code-boxx.com/create-save-files-javascript/#:~:text=The%20possible%20ways%20to%20create,offer%20a%20%E2%80%9Csave%20as%E2%80%9D.
