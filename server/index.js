@@ -1,8 +1,9 @@
+const archiver = require("archiver");
+const unzipper = require("unzipper");
 const express = require("express");
 const { exec } = require("child_process");
 const fs = require("fs/promises");
 const cors = require("cors");
-const crypto = require("crypto");
 const { glob } = require("glob");
 const path = require("path");
 
@@ -10,6 +11,8 @@ const multer = require("multer");
 const sharp = require("sharp");
 const { mkdirp } = require("mkdirp");
 const { emitWarning } = require("process");
+const { default: prettyBytes } = require("pretty-bytes");
+const { rimraf } = require("rimraf");
 mkdirp("tmp");
 const upload = multer({ dest: "tmp/" });
 
@@ -19,7 +22,6 @@ app.set("limit", "2000mb");
 app.use(express.json({ limit: "2000mb" }));
 //allows access at the job end point to access images in the results folder 240420
 app.use("/registration-ui", express.static("../build")); //how to serve react app from express 240529
-app.use("/api/job", express.static("../results"));
 
 const port = 4000;
 
@@ -35,7 +37,7 @@ async function readMetadataOfJob(path) {
 }
 
 async function getStatuses() {
-  const paths_to_read = await glob("../results/*/metadata.json"); //once we have metadata.json, glob will need to read from jsons of each job
+  const paths_to_read = await glob("uploads/*/metadata.json"); //once we have metadata.json, glob will need to read from jsons of each job
   const array_of_metadata = await Promise.all(
     paths_to_read.map(readMetadataOfJob)
   );
@@ -64,6 +66,7 @@ async function startnextjob(statuses) {
   const destination_folder = statuses[i].destination_folder;
 
   await writeMetadataOfJob(statuses[i]);
+  await mkdirp(destination_folder + "/results").catch(() => {});
 
   // 3. start registration (this takes a function (run registration) and a callback (with only 1 function taking 3 args))
   exec(
@@ -91,23 +94,15 @@ app.get("/api", (req, res) => {
   res.send("Hello World again!");
 });
 
-let i = 0;
-app.post("/api/start", async (request, response) => {
-  i++;
-  const content = JSON.stringify(request.body);
+app.post("/api/start/:id", async (request, response) => {
+  const { id } = request.params;
 
-  const id = crypto.createHash("md5").update(content).digest("hex");
-
-  await mkdirp("../results/" + id).catch(() => {});
-  // 2. save to disk => write settings.json file with data collected from the request (coming from website)
-
-  const destination_folder = `../results/${id}`;
-
-  //writing the settings.json file
-  await fs.writeFile(`${destination_folder}/settings.json`, content);
-
-  //statuses is a collection of jobs
+  const destination_folder = `uploads/${id}`;
   const statuses = await getStatuses();
+
+  if (statuses[id] && statuses[id].status != "failure") {
+    return response.json(statuses[id]);
+  }
 
   const job = {
     id,
@@ -130,7 +125,7 @@ app.get("/api/status", async (req, res) => {
 
 app.get("/api/results/:id", async (req, res) => {
   const id = req.params.id;
-  const destination_folder = `../results/${id}/results`;
+  const destination_folder = `uploads/${id}/results`;
 
   const listOfFilesResultingFromRegistration = await glob(
     `${destination_folder}/**`
@@ -138,7 +133,7 @@ app.get("/api/results/:id", async (req, res) => {
 
   const finallist = listOfFilesResultingFromRegistration
     .map((x) => x.replace(/\\/g, "/").replace(destination_folder, ""))
-    .map((fileName) => `/api/job/${id}/results${fileName}`);
+    .map((fileName) => `/api/uploads/${id}/results${fileName}`);
   res.json(finallist);
 });
 
@@ -148,50 +143,62 @@ function stripMetadataBuffers(data) {
   );
 }
 
-app.post("/api/upload", upload.single("image"), async (req, res) => {
-  const dest = "uploads/" + req.file.filename;
+app.post("/api/upload/:id", upload.single("image"), async (req, res) => {
+  const dest = "uploads/" + req.params.id + "/images/" + req.file.filename;
   await mkdirp(dest);
   const filePath = (dest + "/" + req.file.originalname).replace(/\\/g, "/");
   const filePathNoExt = filePath.replace(/\.[^/.]+$/, "");
   await fs.rename(req.file.path, filePath);
   const image = sharp(filePath);
 
-  const isTiff = filePath.endsWith(".tif") || filePath.endsWith(".tiff");
-
   const [metadata] = await Promise.all([
-    image.metadata().then(stripMetadataBuffers),
-    isTiff ? image.toFile(filePathNoExt + ".web.png") : Promise.resolve(),
+    image
+      .metadata()
+      .then(stripMetadataBuffers)
+      .then((x) => ({
+        ...x,
+        files: {
+          url: "/api/" + filePath,
+          path: filePath,
+          webUrl: "/api/" + filePathNoExt + ".web.png",
+          smallUrl: "/api/" + filePathNoExt + ".128.png",
+          mediumUrl: "/api/" + filePathNoExt + ".512.png",
+        },
+        destination: dest,
+        size: req.file.size,
+        uploaded: Date.now(),
+        sizeStr: prettyBytes(req.file.size),
+      })),
+    image.toFile(filePathNoExt + ".web.png"),
     image
       .resize(128, 128, { resize: "contain" })
       .toFile(filePathNoExt + ".128.png"),
     image
       .resize(512, 512, { resize: "contain" })
       .toFile(filePathNoExt + ".512.png"),
-    new Promise((done) => setTimeout(done, 3000)),
   ]);
 
   await fs.writeFile(filePathNoExt + ".json", JSON.stringify(metadata));
 
   res.json({
     metadata,
-    url: "/api/" + filePath,
-    path: filePath,
-    webUrl: "/api/" + filePathNoExt + ".web.png",
-    smallUrl: "/api/" + filePathNoExt + ".128.png",
-    mediumUrl: "/api/" + filePathNoExt + ".512.png",
+    ...metadata.files,
   });
 });
 
 app.post("/api/transform", (req, res) => {
   const { transformation, image } = req.body;
 
-  const imgHash = image.split(/[/.]/g)[1];
-  const transformationJsonPath = transformation.split("job/")[1];
+  const imagePath = image.replace("/api/", "");
+  const imgHash = imagePath.split(/[/.]/g)[3];
+  const transformationJsonPath = transformation.replace("/api/", "");
   const destination =
     transformationJsonPath.replace("_transformations.json", "") + `/${imgHash}`;
 
+  console.log(req.body, { destination, image, transformationJsonPath });
+
   exec(
-    `python ../scripts_registration/apply_transform_to_image_from_json_alpha.py ../results/${destination} "../results/${transformationJsonPath}" "../server/${image}"`,
+    `python ../scripts_registration/apply_transform_to_image_from_json_alpha.py ${destination} "${transformationJsonPath}" "${imagePath}"`,
     async (error, stdout, stderr) => {
       console.log({ error, stdout, stderr });
       res.end("done");
@@ -200,6 +207,110 @@ app.post("/api/transform", (req, res) => {
 });
 
 app.use("/api/uploads", express.static("./uploads"));
+
+app.post("/api/save/:id", async (req, res) => {
+  const dest = "uploads/" + req.params.id + "/";
+  await mkdirp(dest);
+  const isInlineThumbnail = req.body.thumbnail.startsWith("data:image");
+  const thumbnail = req.body.thumbnail.replace(/^data:image\/png;base64,/, "");
+  console.log({ isInlineThumbnail, thumbnail: req.body.thumbnail });
+  await Promise.all([
+    isInlineThumbnail
+      ? fs.writeFile(dest + "thumbnail.png", thumbnail, "base64")
+      : Promise.resolve(),
+    fs.writeFile(
+      dest + "settings.json",
+      JSON.stringify(
+        {
+          ...req.body,
+          dest,
+          uploaded: Date.now(),
+          id: req.params.id,
+          thumbnail: "/api/" + dest + "thumbnail.png",
+          status: "wip",
+        },
+        null,
+        2
+      )
+    ),
+  ]);
+  res.json({ status: "success" });
+});
+
+app.post("/api/delete/:id", async (req, res) => {
+  const { id } = req.params;
+  await rimraf(`uploads/${id}`).catch(console.log);
+  res.json({});
+});
+
+app.get("/api/export/:id", async (req, res) => {
+  const folderToZip = path.join(__dirname, "uploads", req.params.id); // Replace 'your-folder' with your folder name
+  const zipFileName = req.params.id + ".zip";
+
+  res.setHeader("Content-Type", "application/zip");
+  res.setHeader("Content-Disposition", `attachment; filename=${zipFileName}`);
+
+  const archive = archiver("zip", {
+    zlib: { level: 9 }, // Sets the compression level
+  });
+
+  // Listen for all archive data to be written
+  archive.on("end", () => {
+    console.log("Archive wrote %d bytes", archive.pointer());
+  });
+
+  // Good practice to catch warnings (ie stat failures and other non-blocking errors)
+  archive.on("warning", (err) => {
+    if (err.code === "ENOENT") {
+      console.warn(err.message); // log warning
+    } else {
+      // throw error for other errors
+      throw err;
+    }
+  });
+
+  // Catch errors that may occur during the zipping process
+  archive.on("error", (err) => {
+    res.status(500).send({ error: err.message });
+  });
+
+  // Pipe the zip data to the response
+  archive.pipe(res);
+  // Append files from the folder
+  archive.directory(folderToZip, req.params.id);
+  // Finalize the archive (i.e. we are done appending files)
+  archive.finalize();
+});
+
+app.post("/api/import", upload.single("project"), async (req, res) => {
+  await unzipper.Open.file(req.file.path)
+    .then((x) => {
+      console.log("open", req.file);
+      return x.extract({ path: __dirname + "/uploads" });
+    })
+    .then(() => {
+      console.log("extracted");
+      return rimraf(req.file.path);
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+  res.end("");
+});
+
+app.get("/api/projects", async (req, res) => {
+  const files = await glob("./uploads/*/settings.json").then((paths) =>
+    paths.map((x) => require("./" + x.replace(/\\/g, "/")))
+  );
+  res.json(files);
+});
+
+app.get("/api/images", async (req, res) => {
+  const files = await glob("./uploads/*/*.json").then((paths) =>
+    paths.map((x) => require("./" + x.replace(/\\/g, "/")))
+  );
+  res.json(files);
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
