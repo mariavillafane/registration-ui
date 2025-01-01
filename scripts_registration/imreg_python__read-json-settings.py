@@ -48,18 +48,24 @@ def main():
     #230903 - send all printed data to destination_folder (destination_folder+name of file to write)
     destination_folder = os.path.join(os.getcwd(), 'results') if (len(sys.argv) < 3) else sys.argv[2]
 
-    if not os.path.exists(destination_folder):
-        os.makedirs(destination_folder)
+    try:
+       os.makedirs(os.path.join(destination_folder, 'results'))
+    except:
+        pass
 
     data_from_json = load_json_from_path(path_json) # 230209
+    data_from_json['imageFixed'] = data_from_json['workingImages'][0]
+    data_from_json['workingImages'] = data_from_json['workingImages'][1:]
 
     amount_of_datacubes = len(data_from_json['workingImages'])
 
-    os.makedirs(os.path.join(destination_folder, 'results')) #240415
 
     for no_of_datacube in range(amount_of_datacubes):
         #os.makedirs(os.path.join(os.getcwd(), 'results_datacube_' + str(no_of_datacube)))
-        os.makedirs(os.path.join(destination_folder, 'results_datacube_' + str(no_of_datacube)))
+        try:
+          os.makedirs(os.path.join(destination_folder, 'results_datacube_' + str(no_of_datacube)))
+        except:
+          pass
 
         #no_of_datacube = 3  #d06   #['workingImages'][no_of_datacube] for pointing at n-th datacube of settings.json; ['workingImages'] is the second dictionary of settings.json #230904 NG
         datacube_from_json = get_datacube_from_json__image_and_settings(data_from_json, no_of_datacube)  # 230903
