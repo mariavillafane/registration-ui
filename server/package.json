@@ -1,6 +1,7 @@
 {
   "name": "registration-ui-server",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "dependencies": {
     "archiver": "^7.0.1",
