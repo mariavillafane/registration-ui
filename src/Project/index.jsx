@@ -11,6 +11,14 @@ import {
   SpeedDialAction,
   SpeedDialIcon,
   Accordion,
+  LinearProgress,
+  AccordionSummary,
+  AccordionDetails,
+  Divider,
+  Modal,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
@@ -28,7 +36,9 @@ import UploadIcon from "@mui/icons-material/Upload";
 import { Link } from "react-router";
 import { v4 as uuidV4 } from "uuid";
 import { useNavigate } from "react-router";
-import { useDropzone } from "react-dropzone";
+import Dropzone, { useDropzone } from "react-dropzone";
+import { useJobQueue } from "../utils/hooks";
+import { uploadImage } from "../utils/actions";
 
 function ProjectCard({ refresh, ...p }) {
   const navigate = useNavigate();
@@ -41,7 +51,7 @@ function ProjectCard({ refresh, ...p }) {
         paddingBottom: 4,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-start",
+        justifyContent: "stretch",
         flexWrap: "wrap",
         "& .actions": {
           opacity: 0,
@@ -68,6 +78,13 @@ function ProjectCard({ refresh, ...p }) {
             label={p.workingImages.flatMap((x) => x.imageEntries).length}
           />
         </Tooltip>
+
+        {/* <Tooltip title="Jobs">
+          <Chip
+            avatar={<WorkIcon />}
+            label={jobsByProject[x.id].length}
+          />
+        </Tooltip> */}
       </Box>
 
       <Button>
@@ -78,6 +95,18 @@ function ProjectCard({ refresh, ...p }) {
           />
         </Link>
       </Button>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          justifySelf: "flex-end",
+          flex: 1,
+        }}
+      >
+        {p.title || p.id}
+      </Box>
 
       <SpeedDial
         className="actions"
@@ -119,10 +148,160 @@ function ProjectCard({ refresh, ...p }) {
   );
 }
 
+function TransformationData({ id, transformation }) {
+  const [data, setData] = useState({});
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    fetch(transformation, {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      mode: "cors", // no-cors, *cors, same-origin
+    })
+      .then((x) => x.json())
+      .then((data) => setData(data));
+  }, [transformation]);
+
+  return (
+    <Box display="flex" justifyContent={"space-between"} alignItems={"center"}>
+      <h2>{transformation.split("/").at(-1).replace(".json", "")} </h2>
+      <Box>
+        <Chip label={`tx: ${data?.transformation_obtained_s3?.tx}`} />
+        <Chip label={`ty: ${data?.transformation_obtained_s3?.ty}`} />
+        <Chip
+          label={`mi: ${data?.transformation_obtained_s4?.mi_average.toFixed(
+            3
+          )}`}
+        />
+        <Button variant="text" onClick={() => setOpen(true)}>
+          See details
+        </Button>
+      </Box>
+      <Dialog open={open} onClose={() => setOpen(false)} scroll="paper">
+        <DialogTitle>{transformation}</DialogTitle>
+        <DialogContent>
+          <pre>
+            <code>{JSON.stringify(data, null, 2)}</code>
+          </pre>
+        </DialogContent>
+      </Dialog>
+      <Dropzone
+        onDrop={async (files) => {
+          for (const file of files) {
+            const data = await uploadImage(id, file);
+            console.log(data);
+
+            await fetch("/api/transform", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                transformation,
+                image: data.url,
+              }),
+            }).catch((e) => e);
+          }
+        }}
+      >
+        {({ getRootProps, getInputProps }) => (
+          <div {...getRootProps()}>
+            <input {...getInputProps()} />
+            <Button> Apply Transformation to More Images</Button>
+          </div>
+        )}
+      </Dropzone>
+    </Box>
+  );
+}
+
+function Results({ id, files }) {
+  const transformed = files
+    .filter((image) => image.endsWith("transformations.json"))
+    .map((t) => {
+      const prefix = t.replace("_transformations.json", "");
+      return {
+        transformation: t,
+        images: files
+          .filter((x) => x.startsWith(prefix))
+          .filter((x) => x.endsWith(".png")),
+      };
+    });
+
+  return (
+    <>
+      {transformed.map((t) => (
+        <Box key={t.transformation}>
+          <TransformationData id={id} {...t} />
+          <Box display="flex" flexWrap="wrap" gap={2}>
+            {t.images
+              .filter((image) => !image.includes("fixed_image"))
+              .map((image) => (
+                <Card key={image}>
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    maxWidth="400px"
+                    padding="1em"
+                  >
+                    <img
+                      src={`${image}`}
+                      style={{ maxWidth: "300px", maxHeight: "300px" }}
+                    />
+
+                    <a
+                      target="_blank"
+                      download={image.split("/").at(-1)}
+                      href={image}
+                      title="image"
+                    >
+                      <span>{image.split("/").at(-1)}</span>
+                    </a>
+                  </Box>
+                </Card>
+              ))}
+          </Box>
+          <Divider />
+        </Box>
+      ))}{" "}
+    </>
+  );
+}
+
+export function JobResults(job) {
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    fetch(`/api/results/${job.id}`, {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      mode: "cors", // no-cors, *cors, same-origin
+    })
+      .then((x) => x.json())
+      .then(setResults);
+  }, [job.id]);
+
+  return (
+    <Box>
+      <Results id={job.id} files={results} />
+    </Box>
+  );
+}
+
+export function JobDetails(job) {
+  if (job.status == "error") {
+    return (
+      <pre>
+        <code>{job.message} </code>
+      </pre>
+    );
+  }
+  return <JobResults {...job} />;
+}
+
 export default function ProjectView() {
   const [time, setTime] = useState(0);
   const refresh = () => setTime(Date.now());
   const [projects, setProjects] = useState([]);
+
+  const { jobs } = useJobQueue();
   useEffect(() => {
     fetch("/api/projects")
       .then((x) => x.json())
@@ -170,7 +349,7 @@ export default function ProjectView() {
         <Box display={"flex"} gap={2} maxWidth={"xl"} sx={{ m: "auto" }}>
           <input {...getInputProps()} />
           <Button>
-            <Link to={`/${uuidV4()}`}>
+            <Link to={`/project-${uuidV4()}`}>
               <Card sx={{ p: 4 }}>
                 <AddCircleOutlineIcon />
                 <Box> New Project</Box>
@@ -192,17 +371,147 @@ export default function ProjectView() {
           display={"flex"}
           flexDirection={"row"}
           gap={2}
-          maxWidth="xl"
           sx={{
             alignItems: "stretch",
             justifyContent: "stretch",
             flexWrap: "wrap",
-            m: "auto",
           }}
         >
           {projects.map((p) => (
             <ProjectCard key={p.id} {...p} refresh={refresh} />
           ))}
+        </Box>
+
+        <h1> Results </h1>
+
+        <Box display="flex" flexDirection={"column"} gap={2}>
+          {Object.values(jobs)
+            .sort((a, b) => b.updated - a.updated)
+            .map((x) => (
+              <Accordion
+                key={x.id}
+                slotProps={{ transition: { unmountOnExit: true } }}
+              >
+                <AccordionSummary>
+                  <Box
+                    width="100%"
+                    display="flex"
+                    justifyContent={"space-between"}
+                    gap={2}
+                    alignItems={"center"}
+                  >
+                    <Box
+                      flexGrow={1}
+                      display="flex"
+                      justifyContent={"stretch"}
+                      gap={2}
+                      alignItems={"center"}
+                    >
+                      <Box
+                        display="block"
+                        width="96px"
+                        height="96px"
+                        overflow="hidden"
+                      >
+                        <img src={x.thumbnail} height="96px" />
+                      </Box>
+                      <Box>
+                        <Box>{new Date(x.updated).toUTCString()} </Box>
+                        <Box>{x.title}</Box>
+                      </Box>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          width: "20ex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Box>{x.status}</Box>
+                        {x.status != "queued" &&
+                          (!x.done ||
+                            ["error", "success"].includes(x.status)) && (
+                            <LinearProgress
+                              color={
+                                ["success", "error"].includes(x.status)
+                                  ? x.status
+                                  : "primary"
+                              }
+                              label={`${x.progress[0]} / ${x.progress[1]}`}
+                              variant={
+                                +x.progress[1] ? "determinate" : "indeterminate"
+                              }
+                              value={(+x.progress[0] / +x.progress[1]) * 100}
+                            />
+                          )}
+                      </Box>
+                    </Box>
+
+                    <Box>
+                      <Box fontSize="small" textAlign={"right"}>
+                        {x.id}
+                      </Box>
+
+                      <Button> View </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(`/api/export/${x.id}`, "_blank");
+                        }}
+                      >
+                        {" "}
+                        Download{" "}
+                      </Button>
+
+                      {x.status != "stopped" && (
+                        <Button
+                          disabled={x.status != "started"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fetch(`/api/stop/${x.id}`, {
+                              method: "POST",
+                            });
+                          }}
+                        >
+                          {" "}
+                          Stop{" "}
+                        </Button>
+                      )}
+
+                      {x.status == "stopped" && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fetch(`/api/resume/${x.id}`, {
+                              method: "POST",
+                            });
+                          }}
+                        >
+                          {" "}
+                          Restart{" "}
+                        </Button>
+                      )}
+
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fetch(`/api/delete/${x.id}`, {
+                            method: "POST",
+                          });
+                        }}
+                      >
+                        {" "}
+                        Delete{" "}
+                      </Button>
+                    </Box>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Divider />
+                  <JobDetails {...x} />
+                </AccordionDetails>
+              </Accordion>
+            ))}
         </Box>
       </Box>
     </>

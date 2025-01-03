@@ -16,6 +16,7 @@ import {
   Divider,
   Drawer,
   IconButton,
+  LinearProgress,
   Paper,
   Stack,
   Table,
@@ -35,15 +36,17 @@ import MemoryIcon from "@mui/icons-material/Memory";
 import CameraIcon from "@mui/icons-material/Camera";
 import {
   downloadCanvas,
+  fetchJobs,
   loadSettings,
   runRegistration,
   saveSettings,
   uploadImage,
-} from "./actions";
+} from "../utils/actions";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Dropzone from "react-dropzone";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import { useParams } from "react-router";
+import { useJobQueue } from "../utils/hooks";
 
 function TransformationData({ id, transformation }) {
   const [data, setData] = useState({});
@@ -146,45 +149,149 @@ function Results({ id, files }) {
   );
 }
 
-async function fetchJobs() {
-  const jobs = await fetch("/api/status", {
-    method: "GET", // *GET, POST, PUT, DELETE, etc.
-    mode: "cors", // no-cors, *cors, same-origin
-    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-  }).then((x) => x.json());
+function JobQueueViewer({ id }) {
+  const [results, setResults] = useState(null);
+  const jobQueue = useJobQueue();
+  const [showDrawer, setShowDrawer] = useState(0);
 
-  const entries = Object.values(jobs);
-  const done = entries.filter((x) => x.status == "success").length;
-  const queued = entries.filter((x) => x.status == "queued").length;
-  const inProgress = entries.filter((x) => x.status == "started").length;
-  const total = entries.length;
-  const failed = entries.filter((x) => x.status == "failed").length;
+  const fetchResults = async ({ id, status }) => {
+    if (status != "success") return;
+    console.log("feching", id, status);
+    const resultingTransformedImageFiles = await fetch(`/api/results/${id}`, {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      mode: "cors", // no-cors, *cors, same-origin
+    }).then((x) => x.json());
+    setResults(resultingTransformedImageFiles);
+    setShowDrawer(3);
+  };
 
-  const updatedQueue = { done, queued, inProgress, failed, total, jobs };
+  return (
+    <>
+      <IconButton
+        size="large"
+        aria-label="shows all jobs"
+        color="inherit"
+        onClick={() => {
+          setShowDrawer(2);
+        }}
+      >
+        <Box display="flex" flexDirection="column" alignItems={"center"}>
+          <Badge badgeContent={jobQueue.total} color="error">
+            <QueueIcon />
+          </Badge>
+          <Typography fontSize={"small"}>All</Typography>
+        </Box>
+      </IconButton>
+      <Drawer
+        open={showDrawer > 0}
+        anchor={"right"}
+        onClose={() => setShowDrawer(0)}
+      >
+        {showDrawer == 3 && (
+          <Stack spacing={2}>
+            <Box display={"flex"}>
+              <IconButton onClick={() => setShowDrawer(2)}>
+                <ArrowBackIcon />
+              </IconButton>
+              <Typography marginLeft="0.25em" variant="h3">
+                Results
+              </Typography>
+            </Box>
+            <Divider />
+            {<Results id={id} files={results} />}
+          </Stack>
+        )}
+        {showDrawer < 3 && (
+          <>
+            <Box display="flex">
+              <IconButton
+                size="large"
+                aria-label="shows completed jobs"
+                color="inherit"
+                onClick={() => {
+                  setShowDrawer(1);
+                }}
+              >
+                <Badge badgeContent={jobQueue.done} color="success">
+                  <CollectionsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                aria-label="shows all jobs"
+                color="inherit"
+                onClick={() => {
+                  setShowDrawer(2);
+                }}
+              >
+                <Badge badgeContent={jobQueue.total} color="error">
+                  <QueueIcon />
+                </Badge>
+              </IconButton>
+              <Typography marginLeft="0.25em" variant="h3">
+                {showDrawer == 2 ? "All Jobs" : "Completed Jobs"}
+              </Typography>
+            </Box>
+            <Divider />
 
-  return updatedQueue;
-}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Job ID</TableCell>
+                    <TableCell>Start Time</TableCell>
+                    <TableCell>End Time</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
 
-function useJobQueue(pollInterval = 10000) {
-  const [jobQueue, setJobQueue] = useState({
-    done: 0,
-    queued: 0,
-    inProgress: 0,
-    total: 0,
-    failed: 0,
-    jobs: {},
-  });
+                <TableBody>
+                  {Object.values(jobQueue.jobs).map((x) => (
+                    <TableRow key={x.id} onClick={() => fetchResults(x)}>
+                      <TableCell>{x.id}</TableCell>
+                      <TableCell>
+                        {x.startTime && new Date(x.startTime).toLocaleString()}
+                      </TableCell>
 
-  useEffect(() => {
-    fetchJobs().then(setJobQueue);
-    const h = setInterval(() => fetchJobs().then(setJobQueue), pollInterval);
+                      <TableCell>
+                        {x.endTime && new Date(x.endTime).toLocaleString()}
+                      </TableCell>
 
-    return () => {
-      clearInterval(h);
-    };
-  }, [pollInterval]);
-
-  return jobQueue;
+                      <TableCell>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Box>{x.status}</Box>
+                          {x.status != "queued" && (
+                            <LinearProgress
+                              color={
+                                ["success", "error"].includes(x.status)
+                                  ? x.status
+                                  : "primary"
+                              }
+                              label={`${x.progress[0]} / ${x.progress[1]}`}
+                              variant={
+                                +x.progress[1] ? "determinate" : "indeterminate"
+                              }
+                              value={(+x.progress[0] / +x.progress[1]) * 100}
+                            />
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        )}
+      </Drawer>
+    </>
+  );
 }
 
 function usePersistentState(name, defaultValue) {
@@ -209,7 +316,7 @@ function App() {
   const { id } = useParams();
   const [settingsJson, setSettingsJson] = useState({
     loading: true,
-    id: uuidv4(),
+    id,
     worldScale: 1.0,
     workingImages: [],
   });
@@ -235,7 +342,6 @@ function App() {
   const worldScale = settingsJson.worldScale;
 
   const [selectedImageId, setSelectedImageId] = useState(0);
-  const [results, setResults] = useState(null);
   const [inProgress, setInProgress] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState(0);
 
@@ -252,19 +358,6 @@ function App() {
     }, 3 * 1000);
     return () => clearTimeout(h);
   }, [settingsJson]);
-
-  const [showDrawer, setShowDrawer] = useState(0);
-
-  const fetchResults = async ({ id, status }) => {
-    if (status != "success") return;
-    console.log("feching", id, status);
-    const resultingTransformedImageFiles = await fetch(`/api/results/${id}`, {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-    }).then((x) => x.json());
-    setResults(resultingTransformedImageFiles);
-    setShowDrawer(3);
-  };
 
   const imageMoving = stacks.find((stack) => selectedImageId == stack.id);
   const setImageMoving = (newImageMoving) => {
@@ -333,6 +426,7 @@ function App() {
                 onChange={(e) => setZoomPower(e.target.value)}
                 inputProps={{ maxLength: 6, step: 0.1, max: 1, min: 0 }}
                 size="small"
+                fontSize="5"
                 margin="normal"
                 type="number"
                 color="secondary"
@@ -341,8 +435,18 @@ function App() {
             </Box>
           </Box>
 
-          <div>ImageRegistration Canvas</div>
-
+          <TextField
+            size="small"
+            margin="normal"
+            variant="outlined"
+            fullWidth
+            label="project name"
+            color="secondary"
+            value={settingsJson.title || settingsJson.id}
+            onChange={(e) =>
+              setSettingsJson((x) => ({ ...x, title: e.target.value }))
+            }
+          />
           <ButtonGroup aria-label="Input-Output">
             <Divider orientation="vertical" flexItem />
 
@@ -374,39 +478,7 @@ function App() {
 
             <Divider orientation="vertical" flexItem />
 
-            <IconButton
-              size="large"
-              aria-label="shows completed jobs"
-              color="inherit"
-              onClick={() => {
-                setShowDrawer(1);
-              }}
-            >
-              <Box display="flex" flexDirection="column" alignItems={"center"}>
-                <Badge badgeContent={jobQueue.done} color="success">
-                  <CollectionsIcon />
-                </Badge>
-                <Typography fontSize={"small"}>Done</Typography>
-              </Box>
-            </IconButton>
-
-            <Divider orientation="vertical" flexItem />
-
-            <IconButton
-              size="large"
-              aria-label="shows all jobs"
-              color="inherit"
-              onClick={() => {
-                setShowDrawer(2);
-              }}
-            >
-              <Box display="flex" flexDirection="column" alignItems={"center"}>
-                <Badge badgeContent={jobQueue.total} color="error">
-                  <QueueIcon />
-                </Badge>
-                <Typography fontSize={"small"}>All</Typography>
-              </Box>
-            </IconButton>
+            <JobQueueViewer id={settingsJson.id} />
 
             <IconButton
               disabled={inProgress || stacks.length < 2}
@@ -429,129 +501,6 @@ function App() {
           </ButtonGroup>
         </Toolbar>
       </AppBar>
-
-      <Drawer
-        open={showDrawer > 0}
-        anchor={"right"}
-        onClose={() => setShowDrawer(0)}
-      >
-        {showDrawer == 5 && (
-          <Card>
-            <Dropzone
-              onDrop={async (files) => {
-                setIsLoadingFile(true);
-                const settings = await loadSettings(stacks, files[0]).catch(
-                  console.log
-                );
-                setIsLoadingFile(false);
-                setShowDrawer(0);
-                if (settings) {
-                  setWorldScale(settings.worldScale);
-                  setStacks(settings.workingImages);
-                }
-              }}
-            >
-              {({ getRootProps, getInputProps }) => (
-                <div {...getRootProps()}>
-                  <input {...getInputProps()} />
-                  <Box
-                    padding="2em"
-                    display="flex"
-                    flexDirection={"column"}
-                    justifyContent={"stretch"}
-                    alignItems={"center"}
-                  >
-                    <Typography variant="h2" fontSize={"large"}>
-                      Load an existing settings.json file
-                    </Typography>
-                    <GetAppIcon sx={{ fontSize: 200 }} />
-                    <Typography>Click or Drop File Here </Typography>
-                  </Box>
-                </div>
-              )}
-            </Dropzone>
-          </Card>
-        )}
-        {showDrawer == 3 && (
-          <Stack spacing={2}>
-            <Box display={"flex"}>
-              <IconButton onClick={() => setShowDrawer(2)}>
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography marginLeft="0.25em" variant="h3">
-                Results
-              </Typography>
-            </Box>
-            <Divider />
-            {<Results id={settingsJson.id} files={results} />}
-          </Stack>
-        )}
-        {showDrawer < 3 && (
-          <>
-            <Box display="flex">
-              <IconButton
-                size="large"
-                aria-label="shows completed jobs"
-                color="inherit"
-                onClick={() => {
-                  setShowDrawer(1);
-                }}
-              >
-                <Badge badgeContent={jobQueue.done} color="success">
-                  <CollectionsIcon />
-                </Badge>
-              </IconButton>
-              <IconButton
-                size="large"
-                aria-label="shows all jobs"
-                color="inherit"
-                onClick={() => {
-                  setShowDrawer(2);
-                }}
-              >
-                <Badge badgeContent={jobQueue.total} color="error">
-                  <QueueIcon />
-                </Badge>
-              </IconButton>
-              <Typography marginLeft="0.25em" variant="h3">
-                {showDrawer == 2 ? "All Jobs" : "Completed Jobs"}
-              </Typography>
-            </Box>
-            <Divider />
-
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Job ID</TableCell>
-                    <TableCell>Start Time</TableCell>
-                    <TableCell>End Time</TableCell>
-                    <TableCell>Status</TableCell>
-                  </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {Object.values(jobQueue.jobs)
-                    .filter((x) => showDrawer == 2 || x.status == "success")
-                    .map((x) => (
-                      <TableRow key={x.id} onClick={() => fetchResults(x)}>
-                        <TableCell>{x.id}</TableCell>
-                        <TableCell>
-                          {x.startTime &&
-                            new Date(x.startTime).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          {x.endTime && new Date(x.endTime).toLocaleString()}
-                        </TableCell>
-                        <TableCell>{x.status}</TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
-      </Drawer>
 
       <div
         style={{

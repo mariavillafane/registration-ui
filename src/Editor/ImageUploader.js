@@ -25,7 +25,7 @@ import ReplayIcon from "@mui/icons-material/Replay"; //rotation
 import LocationOnIcon from "@mui/icons-material/LocationOn"; //position
 import PhotoSizeSelectLargeIcon from "@mui/icons-material/PhotoSizeSelectLarge"; //scaling
 import PhotoSizeSelectActualIcon from "@mui/icons-material/PhotoSizeSelectActual"; //size
-import { uploadImage } from "./actions";
+import { uploadImage } from "../utils/actions";
 
 function computeNextId(stacks) {
   return stacks.map((x) => x.id + 1).reduce((a, b) => (a > b ? a : b), 0);

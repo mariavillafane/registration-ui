@@ -1,7 +1,7 @@
 import ImageJs from "image-js";
 import { v4 as uuidv4 } from "uuid";
 
-import { readImageAsBase64, svgToPng } from "./ImageTools";
+import { readImageAsBase64, svgToPng } from "../Editor/ImageTools";
 
 export function download(url, name) {
   const a = document.createElement("a");
@@ -50,15 +50,25 @@ export async function saveCanvas() {
 }
 
 export async function createSettingsDotJson(data) {
-  const { workingImages } = data;
-  return JSON.stringify(
-    {
-      ...data,
-      workingImages: workingImages,
-    },
-    null,
-    2
-  );
+  return JSON.stringify(data, null, 2);
+}
+
+export async function fetchJobs() {
+  const jobs = await fetch("/api/status", {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+  }).then((x) => x.json());
+
+  const entries = Object.values(jobs);
+  const done = entries.filter((x) => x.status == "success").length;
+  const queued = entries.filter((x) => x.status == "queued").length;
+  const inProgress = entries.filter((x) => x.status == "started").length;
+  const total = entries.length;
+  const failed = entries.filter((x) => x.status == "failed").length;
+  const jobsByProject = Object.groupBy(Object.values(jobs), (x) => x.projectId);
+
+  return { done, queued, inProgress, failed, total, jobs, jobsByProject };
 }
 
 export async function downloadSettings(data) {
