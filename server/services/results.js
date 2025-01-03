@@ -1,5 +1,6 @@
 import { glob } from "glob";
 import { Router } from "express";
+import archiver from "archiver";
 
 export const resultsApi = Router();
 
@@ -25,7 +26,7 @@ resultsApi.get("/api/images", async (req, res) => {
 });
 
 resultsApi.get("/api/export/:id", async (req, res) => {
-  const folderToZip = path.join(__dirname, "uploads", req.params.id); // Replace 'your-folder' with your folder name
+  const folderToZip = "uploads/" + req.params.id; // Replace 'your-folder' with your folder name
   const zipFileName = req.params.id + ".zip";
 
   res.setHeader("Content-Type", "application/zip");
