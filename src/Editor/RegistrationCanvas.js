@@ -58,13 +58,14 @@ export function RegistrationCanvas(props) {
         className="myCanvas"
         background="transparent"
         SVGBackground="transparent"
-        width={ref.current?.clientWidth || 1000}
+        width={window.innerWidth || 1000}
         height={ref.current?.clientHeight || 500}
         ref={Viewer}
         value={value}
         onChangeValue={onChangeValue}
         tool={tool}
         onChangeTool={onChangeTool}
+        toolbarProps={{ position: "left" }}
         onMouseDown={(e) => {
           if (e.originalEvent?.target?.dataset?.id === undefined) return;
 

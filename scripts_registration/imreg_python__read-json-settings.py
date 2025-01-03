@@ -156,11 +156,14 @@ def main():
             'best_transform_so_far': {'tx': ini_pos_d[0], 'ty': ini_pos_d[1]}
         }
 
+        print('\n###[progress:0/5]###\n')
         with Pool(5) as p:
             best_tr_s1, config = search_best_transform({
                 **base_config,
                 **search_1
             }, p)
+
+        print('\n###[progress:1/5]###\n')
 
         print('search1 - best_tr' + str(best_tr_s1))
 
@@ -182,6 +185,7 @@ def main():
                 **search_2
             }, p)
 
+        print('\n###[progress:2/5]###\n')
         print('search2 - best_tr' + str(best_tr_s2))
 
 
@@ -201,6 +205,8 @@ def main():
                 **base_config,
                 **search_3
             }, p)
+
+        print('\n###[progress:3/5]###\n')
 
         print('search3 - best_tr' + str(best_tr_s3))
 
@@ -222,6 +228,7 @@ def main():
                 **search_4
             }, p)
 
+        print('\n###[progress:4/5]###\n')
         print('search4 - best_tr' + str(best_tr_s4))
 
         print(str(search_setup['datacube_no']) + ' - ini_pos_d = ' + str(ini_pos_d) + ', at scaling coefs = ' + str(search_setup['scaling_coef_s1']) + ',' + str(search_setup['scaling_coef_s2']) + ',' + str(search_setup['scaling_coef_s3']))
@@ -329,6 +336,7 @@ def main():
 
         with open(destination_folder + '/results/' + config['datacube_no'] + '_transformations.json', 'w') as fp:
             json.dump(final_transformations_applied, fp)
+        print('\n###[progress:5/5]###\n')
 
 if __name__ == '__main__':
 
