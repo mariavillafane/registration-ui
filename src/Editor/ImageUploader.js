@@ -271,9 +271,24 @@ export function ImageUploader({
                         >
                           <ClearIcon
                             onClick={() => {
+                              if (
+                                !window.confirm(
+                                  `are you sure you want to delete ${imageEntry.id}`
+                                )
+                              )
+                                return;
+
                               const newEntries = stack.imageEntries.filter(
                                 //newEntries are all the entries remaining (the ones not-deleted)
                                 (x) => x.id != imageEntry.id
+                              );
+
+                              const basePath = imageEntry.files.url
+                                .split("/")
+                                .slice(0, -1)
+                                .join("/");
+                              fetch(basePath, { method: "delete" }).catch(
+                                console.error
                               );
 
                               //window.URL.revokeObjectURL(imageEntry.imageUrl); //delete image

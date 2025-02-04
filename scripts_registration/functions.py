@@ -1418,7 +1418,7 @@ def save_transform_and_image_0(transform, fixed_image, moving_image, outputfile_
 # for REGUI - applying transforms to other images (than those of datacube registered)
 
 #241205
-def get_image_as_array_from_path(path):
+def get_image_as_array_from_path_v0(path):
     # Fixed image
     image_sitk = sitk.ReadImage(path, sitk.sitkFloat64)
     image_as_array = sitk.GetArrayFromImage(image_sitk)
@@ -1428,6 +1428,11 @@ def get_image_as_array_from_path(path):
     return image_as_array
 
 
+#250114 - to solve the problem of applying identified best transformation to images other than those in moving image (and of format other than JPG, i.e. to apply to TIFF images)
+def get_image_as_array_from_path(path):
+    image_as_array = np.asarray(cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2GRAY), dtype=np.float)
+    #cv2.imwrite(str(path) + 'rawdata_opencv2_fromArray' + '.tiff', image_as_array)
+    return image_as_array
 
 #241202
 def create_array_for_white_image(shape):

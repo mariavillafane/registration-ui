@@ -136,6 +136,8 @@ function ProjectCard({ refresh, ...p }) {
 
         <SpeedDialAction
           onClick={() => {
+            if (!window.confirm(`are you sure you want to delete ${p.id}`))
+              return;
             fetch(`/api/delete/${p.id}`, { method: "POST" })
               .then(console.log)
               .then(refresh);
@@ -330,7 +332,10 @@ export default function ProjectView() {
           <Box> Image Registration </Box>
 
           <Box>
-            <a href="https://github.com/mariavillafane/registration-ui">
+            <a
+              href="https://github.com/mariavillafane/registration-ui"
+              target="_blank"
+            >
               About{" "}
             </a>
           </Box>
@@ -466,11 +471,12 @@ export default function ProjectView() {
                       {x.status != "stopped" && (
                         <Button
                           disabled={x.status != "started"}
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            fetch(`/api/stop/${x.id}`, {
+                            await fetch(`/api/stop/${x.id}`, {
                               method: "POST",
                             });
+                            refresh();
                           }}
                         >
                           {" "}
@@ -480,11 +486,12 @@ export default function ProjectView() {
 
                       {x.status == "stopped" && (
                         <Button
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            fetch(`/api/resume/${x.id}`, {
+                            await fetch(`/api/resume/${x.id}`, {
                               method: "POST",
                             });
+                            refresh();
                           }}
                         >
                           {" "}
@@ -493,11 +500,18 @@ export default function ProjectView() {
                       )}
 
                       <Button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          fetch(`/api/delete/${x.id}`, {
+                          if (
+                            !window.confirm(
+                              `are you sure you want to delete ${x.id}`
+                            )
+                          )
+                            return;
+                          await fetch(`/api/delete/${x.id}`, {
                             method: "POST",
                           });
+                          refresh();
                         }}
                       >
                         {" "}

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { RegistrationCanvas } from "./RegistrationCanvas";
 import { ImageUploader } from "./ImageUploader";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+import AppsIcon from "@mui/icons-material/Apps";
 
 import {
   AppBar,
@@ -12,6 +13,7 @@ import {
   IconButton,
   TextField,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
 
@@ -24,7 +26,7 @@ import {
   saveSettings,
 } from "../utils/actions";
 
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { JobQueueViewer } from "./JobViewer";
 
@@ -127,7 +129,12 @@ function App() {
     >
       <AppBar position="static">
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box display="flex">
+          <Box display="flex" alignItems={"center"}>
+            <Link to="/">
+              <Tooltip title="All Projects">
+                <AppsIcon />
+              </Tooltip>
+            </Link>
             <Box marginLeft={"1em"} display="flex">
               <TextField
                 {...getInputProps("x-coord", "x")}

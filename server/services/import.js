@@ -6,6 +6,7 @@ import express from "express";
 import multer from "multer";
 import prettyBytes from "pretty-bytes";
 import unzipper from "unzipper";
+import { rimraf } from "rimraf";
 
 const upload = multer({ dest: "tmp/" });
 export const importApi = express.Router();
@@ -59,6 +60,12 @@ importApi.post("/api/upload/:id", upload.single("image"), async (req, res) => {
   });
 });
 
+importApi.delete("/api/uploads/:pid/images/:id", async (req, res) => {
+  console.log(`/uploads/${req.params.pid}/images/${req.params.id}`);
+  await rimraf(`uploads/${req.params.pid}/images/${req.params.id}`);
+  res.json({});
+});
+
 importApi.post("/api/save/:id", async (req, res) => {
   const dest = "uploads/" + req.params.id + "/";
   await mkdirp(dest);
@@ -89,7 +96,7 @@ importApi.post("/api/save/:id", async (req, res) => {
 
 importApi.post("/api/import", upload.single("project"), async (req, res) => {
   await unzipper.Open.file(req.file.path)
-    .then((x) => x.extract({ path: __dirname + "/uploads" }))
+    .then((x) => x.extract({ path: "uploads" })) //path: __dirname + "/uploads"
     .then(() => rimraf(req.file.path))
     .catch((e) => {
       console.error(e);
