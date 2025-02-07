@@ -3,6 +3,3 @@ services:
     image: mariavillafane/regui:latest
     ports:
       - "4000:4000"
-    volumes:
-      - ./results:/app/results
-      - ./pythonfiles:/src

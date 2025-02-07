@@ -29,4 +29,4 @@ VOLUME /app/results
 WORKDIR /app/server
 RUN yarn
 
-CMD ["/bin/bash", "--login", "-c", "yarn start"]
+CMD ["/bin/bash", "--login", "-c", "node index.js"]
