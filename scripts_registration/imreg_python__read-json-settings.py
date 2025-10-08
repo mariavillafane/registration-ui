@@ -258,11 +258,16 @@ def main():
 
         # 01.save full size fixed image GREYSCALE (scaled following json settings)
         fixed_image_scaled = image_scale(fixed_image_as_array_from_json_dict['fixed_image_as_array'], fixed_image_as_array_from_json_dict['scaling'])
-        plt.imsave(destination_folder + '/results/' + config['datacube_no'] + '_fixed_image_from_json__scale_' + str(fixed_image_as_array_from_json_dict['scaling']) + '.png', fixed_image_scaled)
+        #plt.imsave(destination_folder + '/results/' + config['datacube_no'] + '_fixed_image_from_json__scale_' + str(fixed_image_as_array_from_json_dict['scaling']) + '.png', fixed_image_scaled) #250925: this worked ok for grayscale fixed images, but we changed it for consistency to Pillow
+        img = Image.fromarray(fixed_image_scaled) #250925
+        img.convert('L').save(destination_folder + '/results/' + config['datacube_no'] + '_fixed_image_from_json__scale_' + str(fixed_image_as_array_from_json_dict['scaling']) + '.png', compress_level=0)#250925
+
 
         # 01 b.save full size fixed image COLOR (scaled following json settings)
         fixed_image_scaled_COLOR = image_scale(fixed_image_as_array_from_json_dict['fixed_image_as_array_COLOR'], fixed_image_as_array_from_json_dict['scaling'])
-        plt.imsave(destination_folder + '/results/' + config['datacube_no'] + '_fixed_image_from_json__scale_' + str(fixed_image_as_array_from_json_dict['scaling']) + '_COLOR.png', fixed_image_scaled_COLOR) #231218
+        #plt.imsave(destination_folder + '/results/' + config['datacube_no'] + '_fixed_image_from_json__scale_' + str(fixed_image_as_array_from_json_dict['scaling']) + '_COLOR.png', fixed_image_scaled_COLOR) #231218 => does not work if Fixed image is GRAYSCALE #250925
+        img = Image.fromarray(fixed_image_scaled_COLOR) #250925
+        img.save(destination_folder + '/results/' + config['datacube_no'] + '_fixed_image_from_json__scale_' + str(fixed_image_as_array_from_json_dict['scaling']) + '_COLOR.png', compress_level=0)#250925
 
         #02.get moving images (before registration - the scaling will be set by the transformation to apply, not by the iniloc at json settings)
         datacube_from_json_by_id = get_datacube_from_json__image_and_settings__by_id(data_from_json, no_of_datacube)

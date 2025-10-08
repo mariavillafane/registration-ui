@@ -26,3 +26,5 @@ yarn-debug.log*
 yarn-error.log*
 
 results
+
+/scripts_registration/__pycache__
