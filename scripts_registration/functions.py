@@ -32,7 +32,9 @@ def load_json_from_path(path_json):
 
 #230119 - 221114 for Miniatures (each XRF comes in a dedicated .jpeg file, still need to be put together as a datacube)
 def get_datacube_from_single_images(config_path_moving_images): #config
-    datacube_eq = {slice: np.asarray(cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2GRAY), dtype=np.float) for slice, path in config_path_moving_images['path_moving_images'].items()}
+    #datacube_eq = {slice: np.asarray(cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2GRAY), dtype=np.float) for slice, path in config_path_moving_images['path_moving_images'].items()}
+    #datacube_eq = {slice: np.asarray(cv2.cvtColor(cv2.imread(path, -1), cv2.COLOR_BGR2GRAY), dtype=np.float) for slice, path in config_path_moving_images['path_moving_images'].items()} #251014
+    datacube_eq = {slice: np.asarray(cv2.cvtColor(cv2.imread(path, cv2.IMREAD_ANYDEPTH), cv2.COLOR_BGR2GRAY), dtype=np.float) for slice, path in config_path_moving_images['path_moving_images'].items()} #251016
     datacube_from_path = {**config_path_moving_images, 'datacube_eq': datacube_eq}
     return datacube_from_path
 
@@ -89,13 +91,14 @@ def loadImageFromEntry (entry):
         return Image.open(entry["path"])
 
 
-#new 231214
+#new 231214 -- 251128
 def get_moving_images_from_json_dict__imagestack__by_id(data_from_json, no_of_datacube):
     for counter, image in enumerate(data_from_json['workingImages'][no_of_datacube]['imageEntries']):               #(= workingImages == all moving images)
         # load moving images
 
-        image_array = toGRAY(loadImageFromEntry(image))
-        
+        #image_array = toGRAY(loadImageFromEntry(image)) #muted 251128 (as 16-bit moving images do not end up into good registered images)
+        image_array = toGRAY_as_8bit_even_if_original_image_is_16bit(loadImageFromEntry(image)) #251128, reviewed 251202
+
         yield  (image['id'], image_array) #yield  (image['id'], image_base64_array)  #DESIRABLE 230830
 
 
@@ -224,8 +227,22 @@ def stringToImage_COLOR(base64_string):
     imgdata = base64.b64decode(base64_string)
     return Image.open(io.BytesIO(imgdata)) #this is converted to greyscale later, so to have the fixed image in color AND greyscale
 
+
+#251208. function to transform pillow-image (whether 8-bit or 16-bit) to 8-bit
+def toGRAY_as_8bit_even_if_original_image_is_16bit(pil_image):
+    #get array from pil_image and ensure it is written as 8-bit array 
+    image_as_array = np.array(pil_image, dtype=np.float) #WORKS
+    image_as_array_8bit = (((image_as_array - image_as_array.min()) / (image_as_array.max() - image_as_array.min())) * 255.9).astype(np.uint8) #WORKS
+    #get pil_image from 8-bit array, and then transofrm into a greyscale image
+    pil_image_8bit_from_array = Image.fromarray(np.uint8(image_as_array_8bit))
+    image_as_array = np.array(pil_image_8bit_from_array.convert('L'), dtype=np.uint8) #np.float) #WORKS - saves image as grayscale (and we need this for moving images sitk)
+
+    return image_as_array #image_as_array_8bit
+
+
+
 # 230209 = array needs to be FLOAT np.dtype
-# 230208 - convert PIL Image to an RGB/Grey image ( technically a numpy array ) that's compatible with opencv
+# 230208 = convert PIL Image to an RGB/Grey image ( technically a numpy array ) that's compatible with opencv
 def toGRAY(image):
     return np.array(image.convert('L'), dtype=np.float) #return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB) #for color image
 
@@ -270,7 +287,6 @@ def get_datacube_from_images(path_moving_images, datacube_no, slices):
 def get_slice(path_moving_images, datacube_no, slice_no):
     slice = loadmat(path_moving_images + datacube_no + '_elemental_map_' + str(slice_no) + '.mat')
     return slice['elemental_map']
-
 
 
 #230123 - 210825 - new updated, clean version
@@ -1430,7 +1446,8 @@ def get_image_as_array_from_path_v0(path):
 
 #250114 - to solve the problem of applying identified best transformation to images other than those in moving image (and of format other than JPG, i.e. to apply to TIFF images)
 def get_image_as_array_from_path(path):
-    image_as_array = np.asarray(cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2GRAY), dtype=np.float)
+    #image_as_array = np.asarray(cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2GRAY), dtype=np.float) #muted 251014
+    image_as_array = np.asarray(cv2.cvtColor(cv2.imread(path, -1), cv2.COLOR_BGR2GRAY), dtype=np.float) #251014
     #cv2.imwrite(str(path) + 'rawdata_opencv2_fromArray' + '.tiff', image_as_array)
     return image_as_array
 

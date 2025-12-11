@@ -336,7 +336,7 @@ export default function ProjectView() {
               href="https://github.com/mariavillafane/registration-ui"
               target="_blank"
             >
-              About{" "}
+              About Image Registration v.202512{" "}
             </a>
           </Box>
         </Toolbar>
